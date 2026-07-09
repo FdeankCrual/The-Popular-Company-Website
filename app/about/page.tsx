@@ -5,8 +5,7 @@ import Header from "../components/Header";
 import Cursor from "../Cursor";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight, Linkedin } from "lucide-react";
-
+import { ArrowDown, ArrowUpRight, Linkedin, Lock } from "lucide-react";
 
 // --- 1. YOUR SPECIFIC DATA ---
 const team = [
@@ -39,6 +38,8 @@ const team = [
     email: "thepopularco.official@gmail.com"
   }
 ];
+
+const isRedacted = (name: string) => name === "Garv Parihar";
 
 // --- 2. COMPONENT: SCROLL REVEAL TEXT ---
 const RevealText = ({ children }: { children: string }) => {
@@ -118,7 +119,9 @@ export default function About() {
         <h2 className="text-xs font-mono uppercase text-tpc-orange mb-10 tracking-widest">The Minds Behind TPC</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {team.map((member, index) => (
+          {team.map((member, index) => {
+            const locked = isRedacted(member.name);
+            return (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
@@ -129,42 +132,66 @@ export default function About() {
             >
               {/* Image Container */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-sm mb-6 bg-neutral-900 border border-white/5">
-                {/* NOTE: Ensure images are in /public folder. 
-                   If images are missing, this will show a gray box. 
-                */}
                 <Image
                   src={member.img}
-                  alt={member.name}
+                  alt={locked ? "Classified" : member.name}
                   fill
-                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
+                  className={`object-cover transition-all duration-700 ease-out ${
+                    locked 
+                      ? "grayscale blur-xl brightness-50" 
+                      : "grayscale group-hover:grayscale-0 group-hover:scale-105"
+                  }`}
                 />
 
-                {/* LinkedIn Overlay */}
-                <a
-                  href={member.linkedin}
-                  target="_blank"
-                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 text-white border border-white/30 px-6 py-3 rounded-full hover:bg-white hover:text-black transition-colors">
-                    <span className="text-xs font-bold uppercase tracking-widest">Connect</span>
-                    <Linkedin className="w-4 h-4" />
+                {/* Overlay */}
+                {locked ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                     <Lock className="w-12 h-12 text-white/40 mb-4" />
+                     <div className="text-white/40 text-xs font-mono tracking-[0.3em] uppercase">Identity Classified</div>
                   </div>
-                </a>
+                ) : (
+                  <a
+                    href={member.linkedin}
+                    target="_blank"
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 text-white border border-white/30 px-6 py-3 rounded-full hover:bg-white hover:text-black transition-colors">
+                      <span className="text-xs font-bold uppercase tracking-widest">Connect</span>
+                      <Linkedin className="w-4 h-4" />
+                    </div>
+                  </a>
+                )}
               </div>
 
               {/* Name & Role */}
               <div className="border-l-2 border-transparent group-hover:border-tpc-orange pl-0 group-hover:pl-4 transition-all duration-300">
-                <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight">{member.name}</h3>
-                <p className="text-gray-500 text-xs md:text-sm mt-1 font-mono">{member.role}</p>
-                <a
-                  href={`mailto:${member.email}`}
-                  className="text-gray-400/80 hover:text-tpc-orange text-xs mt-1.5 font-mono transition-colors block"
-                >
-                  {member.email}
-                </a>
+                {locked ? (
+                  <>
+                    <h3 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-gray-500">
+                      [ REDACTED ]
+                    </h3>
+                    <p className="text-gray-600 text-xs md:text-sm mt-1 font-mono tracking-widest">
+                      CO-FOUNDER & ???????
+                    </p>
+                    <div className="text-gray-600 text-xs mt-1.5 font-mono">
+                      ██████████████
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight">{member.name}</h3>
+                    <p className="text-gray-500 text-xs md:text-sm mt-1 font-mono">{member.role}</p>
+                    <a
+                      href={`mailto:${member.email}`}
+                      className="text-gray-400/80 hover:text-tpc-orange text-xs mt-1.5 font-mono transition-colors block"
+                    >
+                      {member.email}
+                    </a>
+                  </>
+                )}
               </div>
             </motion.div>
-          ))}
+          )})}
         </div>
       </section>
       {/* 5. FOOTER CTA */}

@@ -33,7 +33,13 @@ export default function Cursor() {
         backgroundColor: isHovering ? "#F25F33" : "transparent", // TPC Orange fill on hover
         borderWidth: isHovering ? "0px" : "1px",
       }}
-      transition={{ type: "spring", stiffness: 150, damping: 15 }}
+      transition={{ 
+        x: { duration: 0 },
+        y: { duration: 0 },
+        scale: { type: "spring", stiffness: 300, damping: 20 },
+        backgroundColor: { duration: 0.2 },
+        borderWidth: { duration: 0.2 }
+      }}
     />
   );
 }

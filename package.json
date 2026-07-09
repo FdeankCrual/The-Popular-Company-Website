@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@next/third-parties": "^16.1.3",
+    "@types/papaparse": "^5.5.2",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
+    "papaparse": "^5.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },

@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 
 
 // 1. TELL NEXT.JS WHAT BLOGS EXIST (Crucial for 'npm run build')
@@ -101,7 +100,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       </article>
 
-      <Footer />
     </main>
   );
 }

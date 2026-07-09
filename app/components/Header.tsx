@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 export default function Header() {
   const [isActive, setIsActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [workMenuOpen, setWorkMenuOpen] = useState(false);
   const { scrollY } = useScroll();
 
   // 1. Detect Scroll Position
@@ -144,13 +145,41 @@ export default function Header() {
                   }}
                   className="overflow-hidden"
                 >
-                  <Link 
-                     href={item.href}
-                     onClick={() => setIsActive(false)}
-                     className="text-[12vw] md:text-[6vw] font-bold leading-none hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-tpc-orange hover:to-white transition-all block uppercase tracking-tighter"
-                  >
-                    {item.name}
-                  </Link>
+                  {item.name === "Our Work" ? (
+                    <div className="flex flex-col items-center">
+                        <button 
+                            onClick={() => setWorkMenuOpen(!workMenuOpen)}
+                            className="text-[12vw] md:text-[6vw] font-bold leading-none hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-tpc-orange hover:to-white transition-all block uppercase tracking-tighter"
+                        >
+                            {item.name}
+                        </button>
+                        <AnimatePresence>
+                            {workMenuOpen && (
+                                <motion.div 
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="flex flex-col gap-4 mt-6 overflow-hidden"
+                                >
+                                    <Link href="/work" onClick={() => { setIsActive(false); setWorkMenuOpen(false); }} className="text-2xl md:text-4xl font-bold hover:text-tpc-orange transition-colors tracking-tight">
+                                        Content Creation
+                                    </Link>
+                                    <Link href="/work/web" onClick={() => { setIsActive(false); setWorkMenuOpen(false); }} className="text-2xl md:text-4xl font-bold hover:text-tpc-orange transition-colors tracking-tight">
+                                        Web Development
+                                    </Link>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                  ) : (
+                    <Link 
+                       href={item.href}
+                       onClick={() => { setIsActive(false); setWorkMenuOpen(false); }}
+                       className="text-[12vw] md:text-[6vw] font-bold leading-none hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-tpc-orange hover:to-white transition-all block uppercase tracking-tighter"
+                    >
+                      {item.name}
+                    </Link>
+                  )}
                 </motion.div>
               ))}
             </div>

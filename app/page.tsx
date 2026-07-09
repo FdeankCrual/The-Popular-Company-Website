@@ -37,7 +37,7 @@ export default function Home() {
   const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white overflow-x-hidden selection:bg-tpc-orange selection:text-black"> 
+    <main className="bg-tpc-black min-h-screen text-white overflow-x-clip selection:bg-tpc-orange selection:text-black"> 
       <Cursor />
       <Header />
 

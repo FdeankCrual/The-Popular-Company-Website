@@ -1,6 +1,7 @@
 "use client";
 import Header from "../components/Header";
 import Cursor from "../Cursor";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 const services = [
@@ -27,6 +28,12 @@ const services = [
     title: "Influencer Marketing", // <--- UPDATED THIS SECTION
     description: "Don't just pay for followers; pay for influence. We connect your brand with vetted creators in Udaipur and Rajasthan who have genuine trust with their audience.",
     features: ["Creator Vetting & Selection", "Campaign Strategy", "Reels & Story Integrations", "Performance Tracking"]
+  },
+  {
+    id: "05",
+    title: "Web Development",
+    description: "Your website is your 24/7 salesperson. We build ultra-fast, high-converting digital experiences that look premium and perform flawlessly.",
+    features: ["Custom Next.js Development", "E-commerce & Lead Gen", "SEO Optimization", "Flawless Animations"]
   }
 ];
 
@@ -76,9 +83,12 @@ export default function ServicesPage() {
                 
                 {/* CTA Button */}
                 <div className="mt-10">
-                    <button className="flex items-center gap-2 border-b border-white pb-1 text-sm font-bold uppercase tracking-widest hover:text-tpc-orange hover:border-tpc-orange transition-colors">
-                        Book This Service <ArrowUpRight className="w-4 h-4" />
-                    </button>
+                    <Link 
+                        href={service.id === "05" ? "/work/web" : "/contact"}
+                        className="inline-flex items-center gap-2 border-b border-white pb-1 text-sm font-bold uppercase tracking-widest hover:text-tpc-orange hover:border-tpc-orange transition-colors"
+                    >
+                        {service.id === "05" ? "View Web Portfolio" : "Book This Service"} <ArrowUpRight className="w-4 h-4" />
+                    </Link>
                 </div>
               </div>
 

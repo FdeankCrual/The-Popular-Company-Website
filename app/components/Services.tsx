@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 const services = [
   { title: "Social Media", id: "01" },
   { title: "Performance Ads", id: "02" },
   { title: "Video Production", id: "03" },
   { title: "Influencer Marketing", id: "04" },
+  { title: "Web Development", id: "05" },
 ];
 
 export default function Services() {
@@ -25,7 +27,8 @@ export default function Services() {
 
       <div className="flex flex-col">
         {services.map((service, index) => (
-          <div 
+          <Link 
+            href={service.title === "Web Development" ? "/work/web" : "/services"}
             key={index}
             onMouseEnter={() => setHoveredService(index)}
             onMouseLeave={() => setHoveredService(null)}
@@ -46,7 +49,7 @@ export default function Services() {
             <div className="hidden md:flex w-12 h-12 rounded-full border border-gray-300 items-center justify-center group-hover:bg-tpc-black group-hover:text-white transition-all">
                <ArrowUpRight className="w-5 h-5" />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
