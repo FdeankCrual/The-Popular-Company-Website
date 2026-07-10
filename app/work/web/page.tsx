@@ -61,6 +61,13 @@ const webProjects = [
     category: "Agency Website",
     image: "https://image.thum.io/get/width/1200/crop/800/https://thepopularcompany.com/",
     link: "https://thepopularcompany.com/"
+  },
+  {
+    id: 9,
+    title: "Dorklab Tech",
+    category: "Tech Website",
+    image: "https://image.thum.io/get/width/1200/crop/800/https://dorklab.tech/",
+    link: "https://dorklab.tech/"
   }
 ];
 
