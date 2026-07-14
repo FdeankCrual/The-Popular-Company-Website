@@ -9,6 +9,7 @@ export default function Header() {
   const [isActive, setIsActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [workMenuOpen, setWorkMenuOpen] = useState(false);
+  const [servicesMenuOpen, setServicesMenuOpen] = useState(false);
   const { scrollY } = useScroll();
 
   // 1. Detect Scroll Position
@@ -48,7 +49,7 @@ export default function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20, pointerEvents: "none" }}
             transition={{ duration: 0.3 }}
-            className="fixed top-0 w-full z-50 px-6 md:px-12 py-8 flex justify-between items-center text-white mix-blend-difference"
+            className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-8 flex justify-between items-center text-white mix-blend-difference pointer-events-auto"
           >
             {/* Big Logo */}
             <Link href="/" className="hover:scale-105 transition-transform">
@@ -75,13 +76,13 @@ export default function Header() {
       <AnimatePresence>
         {isScrolled && (
           <motion.div 
-            initial={{ y: -100, x: "-50%" }}
-            animate={{ y: 0, x: "-50%" }}
-            exit={{ y: -100, x: "-50%" }}
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            exit={{ y: -100 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="fixed top-6 left-1/2 z-50"
+            className="fixed top-6 left-0 right-0 z-50 flex justify-center pointer-events-none"
           >
-            <div className="flex items-center gap-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full p-2 pl-4 pr-2 shadow-2xl">
+            <div className="flex items-center gap-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full p-2 pl-4 pr-2 shadow-2xl pointer-events-auto">
               
               {/* 1. Mini Logo */}
               <Link href="/" className="hover:opacity-70 transition-opacity">
@@ -123,7 +124,7 @@ export default function Header() {
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed top-0 left-0 w-full h-screen bg-tpc-black text-white z-[60] flex flex-col justify-center items-center"
+            className="fixed inset-0 w-full h-[100dvh] bg-tpc-black text-white z-[60] flex flex-col justify-center items-center overflow-y-auto"
           >
             {/* Close Button Inside Menu */}
             <button 
@@ -171,10 +172,42 @@ export default function Header() {
                             )}
                         </AnimatePresence>
                     </div>
+                  ) : item.name === "Services" ? (
+                    <div className="flex flex-col items-center">
+                        <button 
+                            onClick={() => setServicesMenuOpen(!servicesMenuOpen)}
+                            className="text-[12vw] md:text-[6vw] font-bold leading-none hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-tpc-orange hover:to-white transition-all block uppercase tracking-tighter"
+                        >
+                            {item.name}
+                        </button>
+                        <AnimatePresence>
+                            {servicesMenuOpen && (
+                                <motion.div 
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="flex flex-col gap-4 mt-6 overflow-hidden items-center"
+                                >
+                                    <Link href="/services#social-media" onClick={() => { setIsActive(false); setServicesMenuOpen(false); }} className="text-2xl md:text-4xl font-bold hover:text-tpc-orange transition-colors tracking-tight text-center">
+                                        Social Media & Content
+                                    </Link>
+                                    <Link href="/services#influencer-marketing" onClick={() => { setIsActive(false); setServicesMenuOpen(false); }} className="text-2xl md:text-4xl font-bold hover:text-tpc-orange transition-colors tracking-tight text-center">
+                                        Influencer Marketing
+                                    </Link>
+                                    <Link href="/services#performance-ads" onClick={() => { setIsActive(false); setServicesMenuOpen(false); }} className="text-2xl md:text-4xl font-bold hover:text-tpc-orange transition-colors tracking-tight text-center">
+                                        Performance Ads
+                                    </Link>
+                                    <Link href="/services#web-development" onClick={() => { setIsActive(false); setServicesMenuOpen(false); }} className="text-2xl md:text-4xl font-bold hover:text-tpc-orange transition-colors tracking-tight text-center">
+                                        Web Development
+                                    </Link>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                   ) : (
                     <Link 
                        href={item.href}
-                       onClick={() => { setIsActive(false); setWorkMenuOpen(false); }}
+                       onClick={() => { setIsActive(false); setWorkMenuOpen(false); setServicesMenuOpen(false); }}
                        className="text-[12vw] md:text-[6vw] font-bold leading-none hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-tpc-orange hover:to-white transition-all block uppercase tracking-tighter"
                     >
                       {item.name}

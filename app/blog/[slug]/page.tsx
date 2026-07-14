@@ -1,13 +1,15 @@
-import { blogs } from "../../data/blogs";
+import { getBlogs } from "../../data/blogs";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import Header from "../../components/Header";
+import Cursor from "../../Cursor";
 
 
 // 1. TELL NEXT.JS WHAT BLOGS EXIST (Crucial for 'npm run build')
 export async function generateStaticParams() {
+  const blogs = await getBlogs();
   return blogs.map((post) => ({
     slug: post.slug,
   }));
@@ -16,6 +18,7 @@ export async function generateStaticParams() {
 // 2. DYNAMIC SEO (Browser Tab Title)
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const blogs = await getBlogs();
   const post = blogs.find((b) => b.slug === slug);
   
   if (!post) {
@@ -34,6 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 // 3. THE PAGE CONTENT
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const blogs = await getBlogs();
   const post = blogs.find((b) => b.slug === slug);
 
   // If slug doesn't match any blog, show 404
@@ -43,6 +47,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <main className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black">
+      <Cursor />
       <Header />
 
       {/* --- HERO SECTION --- */}

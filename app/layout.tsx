@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 
 // --- SEO METADATA ---
 export const metadata: Metadata = {
+  metadataBase: new URL('https://thepopularcompany.com'),
   title: {
     default: "TPC | The Popular Company", 
     template: "%s | TPC", 

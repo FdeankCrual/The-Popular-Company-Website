@@ -7,6 +7,7 @@ import Link from "next/link";
 
 interface GallerySectionProps {
   onBack: () => void;
+  projects?: any[];
 }
 
 type TrackDivider = { type: "divider"; id: string; title: string; subtitle: string };
@@ -15,11 +16,11 @@ type TrackItem = TrackDivider | TrackArtwork;
 
 const GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/16k1uBxpkebVWJBE7ZMkWQBhUFiDawOTys0PJGPBQqNQ/export?format=csv";
 
-export default function GallerySection({ onBack }: GallerySectionProps) {
+export default function GallerySection({ onBack, projects: initialProjects }: GallerySectionProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // LIVE CMS STATE
-  const [projects, setProjects] = useState<any[]>(fallbackProjects);
+  const [projects, setProjects] = useState<any[]>(initialProjects || fallbackProjects);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // MOBILE DETECTION FOR PERFORMANCE & NATIVE SCROLL
@@ -31,15 +32,17 @@ export default function GallerySection({ onBack }: GallerySectionProps) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // FETCH FROM GOOGLE SHEETS ON MOUNT
+  // FETCH FROM GOOGLE SHEETS ON MOUNT (Only if not provided via SSR)
   useEffect(() => {
+    if (initialProjects && initialProjects.length > 0) return;
+
     const fetchLiveCMS = async () => {
       try {
         const res = await fetch(GOOGLE_SHEET_CSV);
         if (!res.ok) throw new Error("Failed to fetch");
         
         const text = await res.text();
-        const lines = text.split('\\n').map(l => l.trim()).filter(Boolean);
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
         
         // Parse CSV (Skip header row)
         const parsedData = lines.slice(1).map(line => {
@@ -47,13 +50,13 @@ export default function GallerySection({ onBack }: GallerySectionProps) {
           const v = line.split(',');
           return {
             id: Number(v[0]),
-            title: v[1],
-            category: v[2],
-            type: v[3],
-            src: v[4],
-            link: v[5]
+            title: v[1] || "Untitled",
+            category: v[2] || "Uncategorized",
+            type: v[3] || "vertical",
+            src: v[4] || "",
+            link: v[5] || "#"
           };
-        });
+        }).filter(w => w.src); // Must have a source video
         
         if (parsedData.length > 0) {
           setProjects(parsedData);
@@ -64,28 +67,35 @@ export default function GallerySection({ onBack }: GallerySectionProps) {
     };
     
     fetchLiveCMS();
-  }, []);
+  }, [initialProjects]);
 
   // Dynamically group the projects whenever the CMS data updates
   const galleryTrack = useMemo(() => {
-    const fitnessReels = projects.filter(w => w.title.toLowerCase().includes("fitness"));
-    const productReels = projects.filter(w => w.title.toLowerCase().includes("stone") || w.title.toLowerCase().includes("astrology"));
-    const commercialAds = projects.filter(w => w.category === "Ads");
-    const longForm = projects.filter(w => w.category === "Podcast");
+    const uniqueCategories = Array.from(new Set(projects.map(p => p.category).filter(Boolean)));
+    const track: TrackItem[] = [];
+    
+    uniqueCategories.forEach((cat, index) => {
+      // Add a divider for the category
+      track.push({ 
+        type: "divider", 
+        id: `div-${index}`, 
+        title: String(cat).toUpperCase(), 
+        subtitle: `Explore ${cat}` 
+      });
+      
+      // Get projects in this category and add them as artworks
+      const catProjects = projects.filter(w => w.category === cat);
+      catProjects.forEach(w => {
+        track.push({ 
+          type: "artwork", 
+          id: `art-${w.id}`, 
+          data: w, 
+          group: String(cat).toUpperCase() 
+        });
+      });
+    });
 
-    return [
-      { type: "divider", id: "div-1", title: "ACT REELS", subtitle: "Performance & Monologues" },
-      ...fitnessReels.map((w): TrackArtwork => ({ type: "artwork", id: `art-${w.id}`, data: w, group: "ACT" })),
-      
-      { type: "divider", id: "div-2", title: "CREATIVE REELS", subtitle: "Artistic & Aesthetic" },
-      ...productReels.map((w): TrackArtwork => ({ type: "artwork", id: `art-${w.id}`, data: w, group: "CREATIVE" })),
-      
-      { type: "divider", id: "div-3", title: "AD REELS", subtitle: "Commercial Campaigns" },
-      ...commercialAds.slice(0, 5).map((w): TrackArtwork => ({ type: "artwork", id: `art-${w.id}`, data: w, group: "AD" })),
-      
-      { type: "divider", id: "div-4", title: "BEYOND", subtitle: "Long Form & Podcasts" },
-      ...longForm.map((w): TrackArtwork => ({ type: "artwork", id: `art-${w.id}`, data: w, group: "BEYOND" })),
-    ] as TrackItem[];
+    return track;
   }, [projects]);
 
 

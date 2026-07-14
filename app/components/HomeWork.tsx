@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import MontageCover from "./MontageCover";
 import GallerySection from "./GallerySection";
 
-export default function HomeWork() {
+export default function HomeWork({ projects }: { projects?: any[] }) {
   const [showGallery, setShowGallery] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export default function HomeWork() {
 
       {/* ── PHASE 2: Gallery Interior ── */}
       {showGallery && (
-        <GallerySection onBack={handleExitGallery} />
+        <GallerySection onBack={handleExitGallery} projects={projects} />
       )}
 
       {/* ── CINEMATIC MULTI-LAYER SWIPE TRANSITION ── */}

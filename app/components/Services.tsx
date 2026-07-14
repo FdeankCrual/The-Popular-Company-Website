@@ -4,11 +4,10 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 const services = [
-  { title: "Social Media", id: "01" },
-  { title: "Performance Ads", id: "02" },
-  { title: "Video Production", id: "03" },
-  { title: "Influencer Marketing", id: "04" },
-  { title: "Web Development", id: "05" },
+  { title: "Social Media & Content", id: "01", link: "/services#social-media" },
+  { title: "Influencer Marketing", id: "02", link: "/services#influencer-marketing" },
+  { title: "Performance Ads", id: "03", link: "/services#performance-ads" },
+  { title: "Web Development", id: "04", link: "/services#web-development" },
 ];
 
 export default function Services() {
@@ -28,7 +27,7 @@ export default function Services() {
       <div className="flex flex-col">
         {services.map((service, index) => (
           <Link 
-            href={service.title === "Web Development" ? "/work/web" : "/services"}
+            href={service.link}
             key={index}
             onMouseEnter={() => setHoveredService(index)}
             onMouseLeave={() => setHoveredService(null)}
@@ -42,7 +41,7 @@ export default function Services() {
               /{service.id}
             </span>
             
-            <h3 className="text-3xl md:text-6xl font-bold uppercase tracking-tight md:group-hover:translate-x-4 transition-transform duration-300">
+            <h3 className="text-3xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight md:group-hover:translate-x-4 transition-transform duration-300">
               {service.title}
             </h3>
 
