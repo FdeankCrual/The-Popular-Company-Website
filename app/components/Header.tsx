@@ -92,11 +92,20 @@ export default function Header() {
               {/* Divider */}
               <div className="w-[1px] h-4 bg-white/20 mx-2" />
 
-              {/* 2. CTA Button (Conversion Focus) */}
-              <Link href="/contact" className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-200">Start Project</span>
-                <ArrowUpRight className="w-3 h-3 text-tpc-orange" />
+              {/* 2a. CTA Button (Free Audit) */}
+              <Link href="/audit" className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
+                <span className="w-1.5 h-1.5 rounded-full bg-tpc-orange animate-pulse"></span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-200">Free Audit</span>
               </Link>
+              
+              {/* 2b. CTA Button (Start Project) */}
+              <Link href="/contact" className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-tpc-orange text-black hover:bg-white transition-colors border border-transparent">
+                <span className="text-[10px] font-bold uppercase tracking-widest">Start Project</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </Link>
+
+              {/* Divider */}
+              <div className="w-[1px] h-4 bg-white/20 mx-2" />
 
               {/* 3. Menu Toggle Circle */}
               <button 

@@ -1,12 +1,12 @@
 "use client";
 import { motion, useScroll, useTransform } from "framer-motion";
-import Cursor from "./Cursor";
 import Header from "./components/Header";
 import Services from "./components/Services";
 import ClientLogos from "./components/ClientLogos";
 import Testimonials from "./components/Testimonials";
 import FAQ from "./components/FAQ";
 import HomePlaygroundTeaser from "./components/HomePlaygroundTeaser";
+import HomeAuditTeaser from "./components/HomeAuditTeaser";
 
 const Marquee = () => {
   return (
@@ -38,7 +38,6 @@ export default function HomeClient({
 
   return (
     <main className="bg-tpc-black min-h-screen text-white overflow-x-clip selection:bg-tpc-orange selection:text-black"> 
-      <Cursor />
       <Header />
 
       {/* 1. HERO */}
@@ -80,6 +79,9 @@ export default function HomeClient({
 
       {/* 6. BLOG PREVIEW (Injected Server Component) */}
       {blogSection}
+
+      {/* 6.5 AUDIT TEASER */}
+      <HomeAuditTeaser />
 
       {/* 7. SOCIAL PROOF & FAQ */}
       <Testimonials />

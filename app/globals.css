@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@plugin "@tailwindcss/typography";
 @theme {
   --color-tpc-orange: #FF6B35;
   --color-tpc-black: #050505;
