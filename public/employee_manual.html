@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPC Employee Manual</title>
+    <style>
+        :root {
+            --tpc-orange: #FF4F00;
+            --tpc-black: #050505;
+            --tpc-gray-bg: #111111;
+            --tpc-gray-border: rgba(255, 255, 255, 0.1);
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--tpc-black);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar / Index */
+        nav {
+            width: 300px;
+            background-color: var(--tpc-gray-bg);
+            border-right: 1px solid var(--tpc-gray-border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        nav h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            margin-bottom: 2rem;
+            color: var(--text-main);
+        }
+
+        nav h1 span {
+            color: var(--tpc-orange);
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav li {
+            margin-bottom: 1rem;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.2s ease;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--tpc-orange);
+        }
+
+        nav .sub-menu {
+            margin-top: 0.5rem;
+            margin-left: 1rem;
+            border-left: 2px solid var(--tpc-gray-border);
+            padding-left: 1rem;
+        }
+
+        nav .sub-menu li {
+            margin-bottom: 0.75rem;
+        }
+
+        nav .sub-menu a {
+            font-size: 0.8rem;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 4rem 10%;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        section {
+            margin-bottom: 6rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid var(--tpc-gray-border);
+        }
+
+        section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--tpc-orange);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+        }
+
+        ul.content-list {
+            padding-left: 1.5rem;
+            color: #cccccc;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        ul.content-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        ul.content-list li strong {
+            color: var(--text-main);
+        }
+
+        .highlight-box {
+            background-color: rgba(255, 79, 0, 0.1);
+            border-left: 4px solid var(--tpc-orange);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 2rem 0;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .btn-fake {
+            display: inline-block;
+            background-color: var(--tpc-gray-bg);
+            border: 1px solid var(--tpc-gray-border);
+            color: var(--tpc-orange);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* A4 PDF Print Optimization */
+        @media print {
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            body {
+                height: auto;
+                overflow: visible;
+                display: block;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background-color: var(--tpc-black) !important;
+            }
+            nav {
+                display: block;
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid var(--tpc-orange);
+                padding: 0 0 2rem 0;
+                margin-bottom: 2rem;
+                overflow: visible;
+            }
+            main {
+                display: block;
+                padding: 0;
+                overflow: visible;
+            }
+            section {
+                page-break-inside: avoid;
+                margin-bottom: 3rem;
+                padding-bottom: 2rem;
+            }
+            h2, h3, h4 {
+                page-break-after: avoid;
+            }
+            .highlight-box, ul, p {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR INDEX -->
+    <nav>
+        <h1>TPC <span>Portal.</span></h1>
+        <ul>
+            <li><a href="#welcome">1. Welcome</a></li>
+            <li><a href="#dashboard">2. Your Dashboard</a></li>
+            <li>
+                <a href="#roles">3. Role Guides</a>
+                <ul class="sub-menu">
+                    <li><a href="#emp-writers">Content Writers</a></li>
+                    <li><a href="#emp-video">Videographers</a></li>
+                    <li><a href="#emp-editors">Editors</a></li>
+                </ul>
+            </li>
+            <li><a href="#cms">4. Website CMS Access</a></li>
+        </ul>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- SECTION 1: WELCOME -->
+        <section id="welcome">
+            <h2>1. Welcome to TPC</h2>
+            <p>Welcome to the custom-built <strong>TPC Employee Portal</strong>. This platform is designed to make your job as easy as possible by showing you exactly what you need to focus on, without the clutter of other departments.</p>
+            
+            <div class="highlight-box">
+                <p><strong>Your Workflow:</strong> You do not need to assign tasks to yourself or pass them to others. When it is your turn to work on a project, it will automatically appear in your dashboard. When you finish it, click a button, and it automatically moves to the next person!</p>
+            </div>
+        </section>
+
+        <!-- SECTION 2: DASHBOARD -->
+        <section id="dashboard">
+            <h2>2. Your Dashboard</h2>
+            <p>When you log in at <code>/employee</code>, you will see a table containing your active projects.</p>
+            <ul class="content-list">
+                <li><strong>Targeted Tasks:</strong> The table only contains tasks that have been explicitly assigned to you based on your role.</li>
+                <li><strong>Priority Sorting:</strong> Tasks are automatically sorted so that the most urgent ones (closest due date) appear at the top.</li>
+                <li><strong>Accessing Work:</strong> Look at the <strong>Links</strong> column. Click on the link icons to instantly open the resources required for your specific stage (e.g., Google Docs for scripts, or Google Drive folders for raw footage).</li>
+            </ul>
+
+            <h3>Submitting Your Work</h3>
+            <p>Once you have finished the work required for a task (e.g., you finished writing the script, or you finished editing the video):</p>
+            <ul class="content-list">
+                <li>1. Locate the task in your dashboard.</li>
+                <li>2. Click the green <span class="btn-fake">Mark as Done</span> button in the Action column.</li>
+                <li>3. The task is instantly sent to your Department Lead Admin for review!</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p><strong>Fixes Required:</strong> If your Admin rejects the work, the task will return to your dashboard with a red <code>Fixes Required</code> status. You will also see a red note explaining exactly what needs to be fixed. Fix it, and click Mark as Done again.</p>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ROLES -->
+        <section id="roles">
+            <h2>3. Role-Specific Guides</h2>
+            
+            <h3 id="emp-writers">For Content Writers</h3>
+            <p>Your primary stage is <strong>Scripting</strong>.</p>
+            <ul class="content-list">
+                <li>Open the attached Google Doc link from your dashboard.</li>
+                <li>Write the reel/video script or ad copy.</li>
+                <li>Click <span class="btn-fake">Mark as Done</span> to send it to Garv for review. If approved, it moves to the videographers automatically.</li>
+            </ul>
+
+            <h3 id="emp-video">For Videographers</h3>
+            <p>Your primary stage is <strong>Shooting</strong>.</p>
+            <ul class="content-list">
+                <li>Review the approved script for the project.</li>
+                <li>Shoot the video.</li>
+                <li>Upload the raw, unedited footage to the provided Google Drive link (Drive Link A).</li>
+                <li>Click <span class="btn-fake">Mark as Done</span> to send it to Garv for review. If approved, it is handed off to the Editors automatically.</li>
+            </ul>
+
+            <h3 id="emp-editors">For Editors</h3>
+            <p>Your primary stage is <strong>Editing</strong>.</p>
+            <ul class="content-list">
+                <li>Download the raw footage from your dashboard (Drive Link B).</li>
+                <li>Edit the video to TPC's high standards (fast pacing, strong hooks).</li>
+                <li>Upload the final exported video to the Final Output link (Drive Link C).</li>
+                <li>Click <span class="btn-fake">Mark as Done</span> to send it to Dhruv for final quality control.</li>
+            </ul>
+        </section>
+
+        <!-- SECTION 4: CMS -->
+        <section id="cms">
+            <h2>4. Website CMS Access</h2>
+            <p><em>Note: This section only applies to users with the <code>CONTENT WRITER</code> role.</em></p>
+            
+            <p>If your role involves writing blogs for the main website, you will see a prominent <strong>Website CMS</strong> button at the top of your personal dashboard.</p>
+            <ul class="content-list">
+                <li>Clicking this takes you to the Content Management System.</li>
+                <li>Here, you can create, edit, and publish rich-text blog posts directly to the live website.</li>
+                <li>Use the familiar, Google Docs-style editor to format your posts without needing to write code. What you see in the editor is exactly how it will look on the live website.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <script>
+        // Smooth scrolling and active state for sidebar links
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

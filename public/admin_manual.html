@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPC Operations Manual</title>
+    <style>
+        :root {
+            --tpc-orange: #FF4F00;
+            --tpc-black: #050505;
+            --tpc-gray-bg: #111111;
+            --tpc-gray-border: rgba(255, 255, 255, 0.1);
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--tpc-black);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar / Index */
+        nav {
+            width: 300px;
+            background-color: var(--tpc-gray-bg);
+            border-right: 1px solid var(--tpc-gray-border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        nav h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            margin-bottom: 2rem;
+            color: var(--text-main);
+        }
+
+        nav h1 span {
+            color: var(--tpc-orange);
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav li {
+            margin-bottom: 1rem;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.2s ease;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--tpc-orange);
+        }
+
+        nav .sub-menu {
+            margin-top: 0.5rem;
+            margin-left: 1rem;
+            border-left: 2px solid var(--tpc-gray-border);
+            padding-left: 1rem;
+        }
+
+        nav .sub-menu li {
+            margin-bottom: 0.75rem;
+        }
+
+        nav .sub-menu a {
+            font-size: 0.8rem;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 4rem 10%;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        section {
+            margin-bottom: 6rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid var(--tpc-gray-border);
+        }
+
+        section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--tpc-orange);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+        }
+
+        ul.content-list {
+            padding-left: 1.5rem;
+            color: #cccccc;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        ul.content-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        ul.content-list li strong {
+            color: var(--text-main);
+        }
+
+        .highlight-box {
+            background-color: rgba(255, 79, 0, 0.1);
+            border-left: 4px solid var(--tpc-orange);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 2rem 0;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .btn-fake {
+            display: inline-block;
+            background-color: var(--tpc-gray-bg);
+            border: 1px solid var(--tpc-gray-border);
+            color: var(--tpc-orange);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* A4 PDF Print Optimization */
+        @media print {
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            body {
+                height: auto;
+                overflow: visible;
+                display: block;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background-color: var(--tpc-black) !important;
+            }
+            nav {
+                display: block;
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid var(--tpc-orange);
+                padding: 0 0 2rem 0;
+                margin-bottom: 2rem;
+                overflow: visible;
+            }
+            main {
+                display: block;
+                padding: 0;
+                overflow: visible;
+            }
+            section {
+                page-break-inside: avoid;
+                margin-bottom: 3rem;
+                padding-bottom: 2rem;
+            }
+            h2, h3, h4 {
+                page-break-after: avoid;
+            }
+            .highlight-box, ul, p {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR INDEX -->
+    <nav>
+        <h1>TPC <span>Docs.</span></h1>
+        <ul>
+            <li><a href="#overview">1. System Overview</a></li>
+            <li>
+                <a href="#employees">2. For Employees</a>
+                <ul class="sub-menu">
+                    <li><a href="#emp-dashboard">Personal Dashboard</a></li>
+                    <li><a href="#emp-writers">Content Writers</a></li>
+                    <li><a href="#emp-video">Videographers</a></li>
+                    <li><a href="#emp-editors">Editors</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#admins">3. For Administrators</a>
+                <ul class="sub-menu">
+                    <li><a href="#admin-garv">Garv Parihar (Content & Video)</a></li>
+                    <li><a href="#admin-dhruv">Dhruv Paneri (Editing)</a></li>
+                    <li><a href="#admin-super">Super Admin (Global)</a></li>
+                </ul>
+            </li>
+            <li><a href="#cms">4. Website CMS Guide</a></li>
+        </ul>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="overview">
+            <h2>1. System Overview</h2>
+            <p>Welcome to the custom-built production pipeline and internal console for <strong>The Popular Company (TPC)</strong>. This platform completely automates how work moves from a signed client to a finalized video.</p>
+            
+            <div class="highlight-box">
+                <p><strong>The Core Philosophy:</strong> The system acts as a "State Machine." You do not need to manually assign tasks to people. Simply change the <em>Status</em> of a task, and the system automatically assigns the right people, moves it to the right dashboard, and notifies the right admins for review.</p>
+            </div>
+
+            <h3>The Pipeline Stages</h3>
+            <ul class="content-list">
+                <li><strong>1. Scripting:</strong> Assigned to Content Writers & Content Admins.</li>
+                <li><strong>2. Shooting:</strong> Assigned to Videographers & Content Admins.</li>
+                <li><strong>3. Editing:</strong> Assigned to Editors & Editor Admins.</li>
+                <li><strong>4. Completed:</strong> Ready for the client.</li>
+            </ul>
+        </section>
+
+        <!-- SECTION 2: EMPLOYEES -->
+        <section id="employees">
+            <h2>2. For Employees</h2>
+            <p>As an employee at TPC, your entire workflow happens inside the <strong>Employee Portal</strong>.</p>
+            
+            <h3 id="emp-dashboard">The Personal Dashboard</h3>
+            <p>When you log in, you will only see tasks that are actively assigned to you. The table is automatically sorted to show the most urgent tasks (closest due date) at the top.</p>
+            <ul class="content-list">
+                <li><strong>Accessing Work:</strong> Click the link icons in the table to open your Google Docs (for scripts) or Google Drive folders (for raw footage).</li>
+                <li><strong>Submitting Work:</strong> When you finish your portion of a task, click the green <span class="btn-fake">Mark as Done</span> button. This locks the task and instantly sends it to your department Lead Admin for review.</li>
+            </ul>
+
+            <h3 id="emp-writers">Content Writers</h3>
+            <p>Your primary stage is <strong>Scripting</strong>. Open the attached Google Doc link, write the reel/video script, and click "Mark as Done". If the admin approves it, it moves to the videographers. If they reject it, it comes back to you marked as <strong>Fixes Required</strong> with a note.</p>
+
+            <h3 id="emp-video">Videographers</h3>
+            <p>Your primary stage is <strong>Shooting</strong>. Review the approved script, shoot the video, and upload the raw footage to the provided Google Drive (Drive Link A). Click "Mark as Done" to send it to Garv for review.</p>
+
+            <h3 id="emp-editors">Editors</h3>
+            <p>Your primary stage is <strong>Editing</strong>. Download the raw footage from Drive Link B, edit the video to TPC's high standards, and upload the final exported video to Drive Link C. Click "Mark as Done" to send it to Dhruv for final approval.</p>
+        </section>
+
+        <!-- SECTION 3: ADMINS -->
+        <section id="admins">
+            <h2>3. For Administrators</h2>
+            <p>Admins control the flow of the pipeline. You approve work, reject mistakes, and manage the high-level data.</p>
+
+            <h3 id="admin-garv">Garv Parihar (Content & Video Admin)</h3>
+            <p>Garv, you oversee the first half of the pipeline. Your job is to ensure the script is perfect, and the raw footage is high-quality before it ever reaches the editors.</p>
+            <ul class="content-list">
+                <li><strong>Reviewing Scripts:</strong> When a writer finishes, the task goes into <code>Reviewing Script</code>. Open the Review Modal (Eye Icon) in the Workbook. If the script is good, click <span class="btn-fake">Approve & Advance</span>. This automatically changes the status to <code>Shooting</code> and assigns your Videographers.</li>
+                <li><strong>Reviewing Shoots:</strong> When a videographer uploads raw footage, the task goes into <code>Reviewing Shoot</code>. If the footage looks great, click <span class="btn-fake">Approve & Advance</span>. This officially hands the project off to Dhruv and the Editors!</li>
+            </ul>
+
+            <h3 id="admin-dhruv">Dhruv Paneri (Editor Admin)</h3>
+            <p>Dhruv, you are the final gatekeeper for quality control. You take the baton from Garv and oversee the final polish.</p>
+            <ul class="content-list">
+                <li><strong>Reviewing Edits:</strong> When your editors upload a final cut, the task goes into <code>Reviewing Edit</code>. Watch the video. If the pacing, color, and retention hooks are perfect, click <span class="btn-fake">Approve & Advance</span>.</li>
+                <li><strong>Completion:</strong> Approving an edit changes the status to <code>Completed</code> and clears all assignees. The video is ready for the client!</li>
+            </ul>
+
+            <h3 id="admin-super">Super Admin (Global View)</h3>
+            <p>Super Admins have access to everything. You can bulk-edit rows in the Workbook by checking multiple boxes, you can forcefully override task assignments, and you can modify global system settings (like adding new Client names to the dropdown menus) via the <strong>Settings</strong> tab.</p>
+        </section>
+
+        <!-- SECTION 4: CMS -->
+        <section id="cms">
+            <h2>4. Website CMS Guide</h2>
+            <p>The TPC platform includes a custom Content Management System (CMS) for updating the live website.</p>
+            <div class="highlight-box">
+                <p>The CMS is accessible to Super Admins, Content Admins, and Content Writers.</p>
+            </div>
+            <ul class="content-list">
+                <li><strong>Creating Blogs:</strong> Navigate to the CMS tab and click <span class="btn-fake">+ New Post</span>.</li>
+                <li><strong>The WYSIWYG Editor:</strong> You do not need to write code. The blog editor functions exactly like Google Docs. You can add bold text, headers, quotes, and links.</li>
+                <li><strong>Live Preview Styling:</strong> As you type in the editor, the fonts and colors are styled <em>exactly</em> how they will look on the live public website. What you see is what you get!</li>
+                <li><strong>Publishing:</strong> Clicking "Save to Sheets" instantly pushes your blog to the live website database.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <script>
+        // Smooth scrolling and active state for sidebar links
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

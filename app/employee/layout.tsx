@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, CheckSquare, LogOut } from "lucide-react";
+import { LayoutDashboard, CheckSquare, LogOut, HelpCircle } from "lucide-react";
 
 export default async function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();

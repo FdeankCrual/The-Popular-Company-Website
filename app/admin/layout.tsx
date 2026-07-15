@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle } from "lucide-react";
+import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
