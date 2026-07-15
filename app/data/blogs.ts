@@ -1,5 +1,3 @@
-import Papa from 'papaparse';
-
 export interface Blog {
   slug: string;
   title: string;
@@ -10,44 +8,51 @@ export interface Blog {
   featured?: string;
 }
 
-// Fallback in case Google Sheets is not configured
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3Ry7tiEaOKETGI3ET8Co58398DVVGwOoGZnHhYtZ81lpj-DbQzVnvnjkoDB2T9GJnbQ/exec";
+
 const fallbackBlogs: Blog[] = [
   {
     slug: "fallback",
-    title: "Please configure your Google Sheets CSV URL",
+    title: "No blog posts found",
     date: "Today",
     category: "System",
     image: "/images/1.jpg",
-    content: "<p>Check your .env.local file and set GOOGLE_SHEETS_CSV_URL.</p>"
+    content: "Publish a post from the Admin Dashboard to see it here."
   }
 ];
 
 export async function getBlogs(): Promise<Blog[]> {
-  const url = process.env.NEXT_PUBLIC_GOOGLE_SHEETS_CSV_URL || process.env.GOOGLE_SHEETS_CSV_URL;
-  if (!url) {
-    console.warn("GOOGLE_SHEETS_CSV_URL is missing. Using fallback blogs.");
-    return fallbackBlogs;
-  }
-
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } }); // Revalidate every 60 seconds
-    const csvData = await res.text();
-    
-    return new Promise((resolve) => {
-      Papa.parse<Blog>(csvData, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          resolve(results.data);
-        },
-        error: (error: any) => {
-          console.error("Error parsing CSV:", error);
-          resolve(fallbackBlogs);
-        }
-      });
+    const res = await fetch(GOOGLE_SCRIPT_URL + "?action=getContent", { 
+      method: "GET",
+      next: { revalidate: 10 } // Revalidate every 10 seconds
     });
+    
+    if (!res.ok) return fallbackBlogs;
+    
+    const data = await res.json();
+    console.log("FETCHED BLOG DATA FROM SHEETS:", data);
+    
+    if (Array.isArray(data) && data.length > 0) {
+      // Map the Google Sheet data (from the Admin UI) to the Blog interface
+      // Filter out drafts, only show published
+      const published = data.filter(post => post.status?.toLowerCase() === "published");
+      
+      if (published.length === 0) return fallbackBlogs;
+      
+      return published.map((post: any) => ({
+        slug: post.slug || "untitled",
+        title: post.title || "Untitled",
+        date: post.date || "",
+        category: post.category || "Marketing",
+        image: post.coverImage || "/images/1.jpg", // Map coverImage to image
+        content: post.content || "",
+      }));
+    }
+    
+    return fallbackBlogs;
   } catch (error) {
-    console.error("Error fetching blogs CSV:", error);
+    console.error("Error fetching blogs from Google Sheets JSON webhook:", error);
     return fallbackBlogs;
   }
 }
