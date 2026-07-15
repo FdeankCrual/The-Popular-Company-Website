@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { FileText, Plus, X, Loader2, Trash2 } from "lucide-react";
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const emptyForm = { id: "", title: "", slug: "", coverImage: "", author: "", date: "", category: "Marketing", status: "Draft", content: "" };
 
@@ -202,7 +206,8 @@ export default function ContentPage() {
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
             </div>
             
-            <form onSubmit={handleSave} className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-6">
+            <form onSubmit={handleSave} className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-6">
               
               {/* LEFT: Metadata */}
               <div className="w-full md:w-1/3 space-y-6 shrink-0">
@@ -242,14 +247,43 @@ export default function ContentPage() {
               </div>
 
               {/* RIGHT: Content Editor */}
-              <div className="w-full md:w-2/3 flex flex-col">
+              <div className="w-full md:w-2/3 flex flex-col h-full min-h-[500px]">
                  <div className="flex justify-between items-end mb-2">
-                    <label className="text-xs uppercase tracking-widest text-gray-500 font-medium">Markdown Content</label>
+                    <label className="text-xs uppercase tracking-widest text-gray-500 font-medium">Rich Text Content</label>
                  </div>
-                 <textarea required value={formData.content || ''} onChange={(e)=>setFormData({...formData, content: e.target.value})} className="flex-1 w-full bg-white/5 border border-white/10 rounded-lg p-4 text-white font-mono text-sm focus:outline-none focus:border-tpc-orange min-h-[300px]" placeholder="Write your blog post in Markdown..." />
+                 <div className="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden flex flex-col text-white">
+                   <ReactQuill 
+                     theme="snow" 
+                     value={formData.content || ''} 
+                     onChange={(content) => setFormData({...formData, content})}
+                     className="flex-1 overflow-y-auto prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-white prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-tpc-orange prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-blockquote:border-tpc-orange prose-blockquote:bg-white/5 prose-blockquote:p-6 prose-blockquote:rounded-r-lg"
+                     modules={{
+                       toolbar: [
+                         [{ 'header': [1, 2, 3, false] }],
+                         ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                         [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                         ['link', 'image'],
+                         ['clean']
+                       ],
+                     }}
+                   />
+                 </div>
+                 <style>{`
+                   .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid rgba(255,255,255,0.1); background: #111; padding: 12px; }
+                   .ql-container.ql-snow { border: none; font-family: inherit; font-size: inherit; }
+                   .ql-editor { min-height: 400px; padding: 24px; }
+                   .ql-stroke { stroke: #aaa !important; }
+                   .ql-fill { fill: #aaa !important; }
+                   .ql-picker { color: #aaa !important; }
+                   button.ql-active .ql-stroke { stroke: #FF4F00 !important; }
+                   button:hover .ql-stroke { stroke: #FF4F00 !important; }
+                   .ql-picker-options { background: #111 !important; border-color: rgba(255,255,255,0.1) !important; }
+                 `}</style>
               </div>
 
-              <div className="absolute bottom-0 right-0 p-6 flex justify-end gap-4 w-full bg-[#191919] border-t border-white/10 rounded-b-2xl shrink-0">
+              </div>
+
+              <div className="p-6 flex justify-end gap-4 w-full bg-[#191919] border-t border-white/10 shrink-0 rounded-b-2xl">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer">Cancel</button>
                 <button disabled={isSaving} type="submit" className="bg-tpc-orange text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer">
                   {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : null} Save to Sheets

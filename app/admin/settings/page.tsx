@@ -13,7 +13,9 @@ export default function SettingsPage() {
     assigned: [] as string[],
     status: [] as string[],
     platforms: [] as string[],
-    months: [] as string[]
+    months: [] as string[],
+    webCategories: [] as string[],
+    galleryCategories: [] as string[]
   });
 
   const [newInputs, setNewInputs] = useState({
@@ -21,7 +23,9 @@ export default function SettingsPage() {
     assigned: "",
     status: "",
     platforms: "",
-    months: ""
+    months: "",
+    webCategories: "",
+    galleryCategories: ""
   });
 
   useEffect(() => {
@@ -40,7 +44,9 @@ export default function SettingsPage() {
           assigned: data.workbook_settings.assigned || [],
           status: data.workbook_settings.status || [],
           platforms: data.workbook_settings.platforms || [],
-          months: data.workbook_settings.months || []
+          months: data.workbook_settings.months || [],
+          webCategories: data.workbook_settings.webCategories || ["Creative Portfolio", "E-Commerce", "Corporate"],
+          galleryCategories: data.workbook_settings.galleryCategories || ["Reels", "Ads", "Podcast"]
         });
       }
     } catch (err: any) {
@@ -164,12 +170,14 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {renderSection("Clients", "clients", "Add new client...")}
-        {renderSection("Team Members", "assigned", "Add new team member...")}
-        {renderSection("Statuses", "status", "Add new status...")}
-        {renderSection("Platforms", "platforms", "Add new platform...")}
-        {renderSection("Months", "months", "Add month...")}
+        {renderSection("Assigned Team", "assigned", "Add team member...")}
+        {renderSection("Status Options", "status", "Add status...")}
+        {renderSection("Platforms", "platforms", "Add platform...")}
+        {renderSection("Delivery Months", "months", "Add month...")}
+        {renderSection("Web Portfolio Categories", "webCategories", "Add category...")}
+        {renderSection("Gallery Categories", "galleryCategories", "Add category...")}
       </div>
     </div>
   );

@@ -31,8 +31,10 @@ function hexToBuffer(hex: string) {
 }
 
 export type SessionPayload = {
+  id: string;
+  name: string;
   email: string;
-  role: "SUPER_ADMIN" | "MANAGER" | "CREATOR";
+  roles: string[];
   exp: number;
 };
 

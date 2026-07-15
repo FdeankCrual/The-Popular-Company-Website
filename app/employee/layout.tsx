@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle } from "lucide-react";
+import { LayoutDashboard, CheckSquare, LogOut } from "lucide-react";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const rolesStr = headersList.get("x-user-roles") || "[]";
   const email = headersList.get("x-user-email") || "Agent";
@@ -11,12 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   try { roles = JSON.parse(rolesStr); } catch(e) {}
 
   const navItems = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Workbook", href: "/admin/workbook", icon: Database },
-    { name: "Leads", href: "/admin/leads", icon: Users },
-    { name: "Content", href: "/cms", icon: FileText },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
-    { name: "Employees", href: "/admin/employees", icon: UserCircle }, // New Employees Tab
+    { name: "My Workspace", href: "/employee", icon: LayoutDashboard },
   ];
 
   return (
@@ -31,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div>
           <div className="h-[60px] md:h-20 flex items-center px-6 border-b border-white/10">
             <h1 className="font-black tracking-tighter uppercase text-xl">
-              TPC <span className="text-tpc-orange">Admin</span>
+              TPC <span className="text-tpc-orange">Portal</span>
             </h1>
           </div>
           

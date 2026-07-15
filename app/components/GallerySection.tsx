@@ -34,7 +34,7 @@ export default function GallerySection({ onBack, projects: initialProjects }: Ga
 
   // FETCH FROM GOOGLE SHEETS ON MOUNT (Only if not provided via SSR)
   useEffect(() => {
-    if (initialProjects && initialProjects.length > 0) return;
+    if (initialProjects !== undefined) return;
 
     const fetchLiveCMS = async () => {
       try {

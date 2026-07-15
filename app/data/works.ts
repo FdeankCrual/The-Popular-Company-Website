@@ -150,82 +150,47 @@ export const allProjects = [
 export const works = allProjects;
 
 export async function getWebProjects(): Promise<any[]> {
-  const url = process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEB_CSV_URL || process.env.GOOGLE_SHEETS_WEB_CSV_URL;
-  if (!url) {
-    console.warn("GOOGLE_SHEETS_WEB_CSV_URL is missing. Using empty fallback.");
-    return [];
-  }
-
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    const csvData = await res.text();
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getWebPortfolio`, { next: { revalidate: 60 } });
+    const liveData = await res.json();
     
-    return new Promise((resolve) => {
-      Papa.parse(csvData, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const parsedData = results.data
-            .filter((row: any) => row && row.id)
-            .map((row: any) => {
-              const image = row.image && row.image.trim() !== "" 
-                ? row.image 
-                : `https://image.thum.io/get/width/1200/crop/800/${row.link || ""}`;
-                
-              return {
-                id: row.id || Math.random(),
-                title: row.title || "Untitled",
-                category: row.category || "Uncategorized",
-                image: image,
-                link: row.link || "#"
-              };
-            });
-          resolve(parsedData);
-        },
-        error: (err: any) => {
-          console.error("Error parsing Web Projects CSV:", err);
-          resolve([]);
-        }
-      });
-    });
+    if (Array.isArray(liveData) && liveData.length > 0) {
+      return liveData.map((item, index) => ({
+         id: item.id || (index + 100),
+         title: item.title || "Untitled",
+         category: item.category || "Uncategorized",
+         image: item.image || "",
+         link: item.link || "#"
+      }));
+    }
+    return [];
   } catch (error) {
-    console.error("Error fetching Web Projects CSV:", error);
+    console.error("Error fetching Web Portfolio API:", error);
     return [];
   }
 }
 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzjoGHdI1UfEeAHTlbgA8pKd-OGcvJVJnmHcZApos76TqT6DasPMuzuanonRTrxynVxnA/exec";
+
 export async function getGalleryProjects(): Promise<any[]> {
-  const url = "https://docs.google.com/spreadsheets/d/1I74kK__yQUlKL_JrbvkJIIGzc1GP8XD_04T1u72Byt4/export?format=csv";
-  
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    const csvData = await res.text();
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getGallery`, { next: { revalidate: 60 } });
+    const liveData = await res.json();
     
-    return new Promise((resolve) => {
-      Papa.parse(csvData, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const parsedData = results.data
-            .filter((row: any) => row.title && row.src)
-            .map((row: any, index: number) => ({
-              id: index + 100, // offset id
-              title: row.title || "Untitled",
-              category: row.category || "Uncategorized",
-              type: row.type || "vertical",
-              src: row.src || "",
-              link: row.link || "#"
-            }));
-          resolve(parsedData);
-        },
-        error: (err: any) => {
-          console.error("Error parsing Gallery CSV:", err);
-          resolve(allProjects);
-        }
-      });
-    });
+    if (Array.isArray(liveData) && liveData.length > 0) {
+      return liveData.map((item, index) => ({
+         id: item.id || (index + 100),
+         title: item.title || "Untitled",
+         category: item.category || "Uncategorized",
+         type: item.type || "vertical",
+         src: item.src || "",
+         link: item.link || "#",
+         featured: item.featured === true || item.featured === "TRUE" || item.featured === "true" || item.featured === "1"
+      }));
+    }
+    return [];
   } catch (error) {
-    console.error("Error fetching Gallery CSV:", error);
-    return allProjects;
+    console.error("Error fetching Gallery API:", error);
+    return [];
   }
 }

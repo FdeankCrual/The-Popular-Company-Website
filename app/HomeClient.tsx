@@ -28,13 +28,21 @@ const Marquee = () => {
 
 export default function HomeClient({ 
   workSection, 
-  blogSection 
+  blogSection,
+  cmsData
 }: { 
   workSection: React.ReactNode, 
-  blogSection: React.ReactNode 
+  blogSection: React.ReactNode,
+  cmsData?: any
 }) {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
+
+  // Format Hero Title: Last word gets orange span
+  const rawTitle = cmsData?.heroTitle || "WE MAKE BRANDS POPULAR.";
+  const titleWords = rawTitle.split(" ");
+  const lastWord = titleWords.pop();
+  const titleStart = titleWords.join(" ");
 
   return (
     <main className="bg-tpc-black min-h-screen text-white overflow-x-clip selection:bg-tpc-orange selection:text-black"> 
@@ -49,14 +57,12 @@ export default function HomeClient({
             transition={{ duration: 1 }}
             className="text-[14vw] md:text-[15vw] leading-[0.9] font-bold tracking-tighter text-center md:text-left break-words"
           >
-            WE MAKE <br />
-            BRANDS <br />
-            <span className="text-tpc-orange">POPULAR.</span>
+            {titleStart} <span className="text-tpc-orange">{lastWord}</span>
           </motion.h1>
           
           <div className="mt-8 md:mt-12 flex flex-col md:flex-row justify-between items-center md:items-end w-full gap-8">
             <p className="text-lg md:text-xl text-gray-400 max-w-xl leading-relaxed text-center md:text-left">
-              A digital agency in Udaipur that refuses to be boring.
+              {cmsData?.aboutText || "A digital agency in Udaipur that refuses to be boring."}
             </p>
             <div className="animate-bounce text-tpc-orange text-sm uppercase tracking-widest">
                ↓ Scroll

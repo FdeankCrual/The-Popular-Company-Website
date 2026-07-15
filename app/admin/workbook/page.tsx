@@ -1,17 +1,31 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy } from "lucide-react";
+import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy, CheckSquare } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
 
 const initialData: any[] = [];
 const emptyForm = { id: "", name: "", client: "", status: "Planning", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", desc: "" };
 
+const formatForDateTimeLocal = (dateString?: string) => {
+  if (!dateString) return "";
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch(e) {
+    return dateString;
+  }
+};
+
 export default function WorkbookPage() {
   const [data, setData] = useState<any[]>(initialData);
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<any>({ clients: [], assigned: [], status: [], platforms: [], months: [] });
+  const [employees, setEmployees] = useState<string[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
 
   // Advanced Table States
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -20,12 +34,18 @@ export default function WorkbookPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
+  // Modals
+  const [editingTask, setEditingTask] = useState<any>(null);
+  const [reviewTask, setReviewTask] = useState<any>(null);
+  const [reviewNote, setReviewNote] = useState("");
+
   // Extracted unique values for dropdowns
   const clients = Array.from(new Set([...(config.clients || []), ...data.map(d => d.client)].filter(Boolean)));
   const statuses = Array.from(new Set([...(config.status || []), ...data.map(d => d.status)].filter(Boolean)));
   const platforms = Array.from(new Set([...(config.platforms || []), ...data.map(d => d.platform)].filter(Boolean)));
   const assigned = Array.from(new Set([
     ...(config.assigned || []),
+    ...employees,
     ...data.flatMap(d => d.assigned ? d.assigned.split(',').map((s: string) => s.trim()) : [])
   ].filter(Boolean)));
   const months = Array.from(new Set([...(config.months || []), ...data.map(d => d.month)].filter(Boolean)));
@@ -36,9 +56,10 @@ export default function WorkbookPage() {
 
   async function fetchData() {
     try {
-      const [wbRes, confRes] = await Promise.all([
+      const [wbRes, confRes, userRes] = await Promise.all([
         fetch("/api/admin/data?action=getWorkbook"),
-        fetch("/api/admin/data?action=getConfig")
+        fetch("/api/admin/data?action=getConfig"),
+        fetch("/api/admin/data?action=getUsers")
       ]);
       if (wbRes.ok) {
         const liveData = await wbRes.json();
@@ -47,6 +68,13 @@ export default function WorkbookPage() {
       if (confRes.ok) {
         const confData = await confRes.json();
         if (confData.workbook_settings) setConfig(confData.workbook_settings);
+      }
+      if (userRes.ok) {
+        const liveUsers = await userRes.json();
+        if (Array.isArray(liveUsers)) {
+          setUsers(liveUsers);
+          setEmployees(liveUsers.map((u: any) => u.Name).filter(Boolean));
+        }
       }
     } catch (err) {
       console.error("Failed to fetch data", err);
@@ -102,19 +130,56 @@ export default function WorkbookPage() {
   };
 
   const handleInlineChange = async (id: string, field: string, value: string) => {
+    const applyAutomation = (item: any, field: string, value: string) => {
+      let updated = { ...item, [field]: value };
+      if (field === 'status') {
+        const s = value.toLowerCase();
+        
+        // Find users based on their roles
+        const getNamesByRole = (role: string) => 
+          users.filter(u => {
+            try {
+              const uRoles = typeof u.Roles === 'string' ? JSON.parse(u.Roles) : u.Roles;
+              return (Array.isArray(uRoles) ? uRoles : []).includes(role);
+            } catch(e) { return false; }
+          }).map(u => u.Name);
+
+        const contentWriters = getNamesByRole("CONTENT WRITER");
+        const videographers = getNamesByRole("VIDEOGRAPHER");
+        const editors = getNamesByRole("EDITOR"); // Assuming standard editor role if any
+
+        const adminContent = getNamesByRole("ADMIN_CONTENT");
+        const adminEditor = getNamesByRole("ADMIN_EDITOR");
+
+        if (s === 'scripting') {
+          const assignees = [...contentWriters, ...adminContent];
+          updated.assigned = Array.from(new Set(assignees)).join(', ');
+        } else if (s === 'shooting') {
+          const assignees = [...videographers, ...adminContent];
+          updated.assigned = Array.from(new Set(assignees)).join(', ');
+        } else if (s === 'editing') {
+          const assignees = [...editors, ...adminEditor];
+          updated.assigned = Array.from(new Set(assignees)).join(', ');
+        } else if (s === 'completed') {
+          updated.assigned = "";
+        }
+      }
+      return updated;
+    };
+
     // Check if we are doing a BULK UPDATE via Row Selection
     if (selectedRows.has(id) && selectedRows.size > 1) {
       const rowIdsToUpdate = Array.from(selectedRows);
       
       // Optimistic update locally
       setData(prev => prev.map(item => 
-        rowIdsToUpdate.includes(item.id) ? { ...item, [field]: value } : item
+        rowIdsToUpdate.includes(item.id) ? applyAutomation(item, field, value) : item
       ));
 
       // Grab the modified rows for the server payload
       const updates = data
         .filter(item => rowIdsToUpdate.includes(item.id))
-        .map(item => ({ ...item, [field]: value }));
+        .map(item => applyAutomation(item, field, value));
 
       try {
         await fetch("/api/admin/data", {
@@ -127,10 +192,11 @@ export default function WorkbookPage() {
       }
     } else {
       // STANDARD SINGLE ROW UPDATE
-      setData(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
       const updatedRow = data.find(item => item.id === id);
       if (!updatedRow) return;
-      const newRow = { ...updatedRow, [field]: value };
+      const newRow = applyAutomation(updatedRow, field, value);
+
+      setData(prev => prev.map(item => item.id === id ? newRow : item));
       
       try {
         await fetch("/api/admin/data", {
@@ -269,18 +335,18 @@ export default function WorkbookPage() {
     <div className="flex flex-col h-full bg-[#191919] min-h-screen text-[#D4D4D4] font-sans relative">
       
       {/* HEADER */}
-      <div className="flex justify-between items-end p-8 md:p-12 pb-8 border-b border-white/10 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between p-4 sm:p-8 md:p-12 pb-4 sm:pb-8 border-b border-white/10 shrink-0 gap-4">
         <div>
-          <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 text-white">
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2 text-white">
             Live <span className="text-tpc-orange">Workbook</span>
           </h2>
-          <div className="flex items-center gap-4">
-            <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-gray-500 font-mono text-xs md:text-sm uppercase tracking-widest">
               Production Pipeline Manager
             </p>
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 text-xs font-bold uppercase px-3 py-1.5 rounded transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+              className={`flex items-center gap-2 w-max text-xs font-bold uppercase px-3 py-1.5 rounded transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
             >
               <Filter className="w-3 h-3" /> Filters
             </button>
@@ -288,7 +354,7 @@ export default function WorkbookPage() {
         </div>
         <button 
           onClick={handleAddNewRow} 
-          className="bg-tpc-orange text-black px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-colors cursor-pointer"
+          className="bg-tpc-orange text-black px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer w-full md:w-auto mt-2 md:mt-0"
         >
           <Plus className="w-4 h-4" /> New Task
         </button>
@@ -407,38 +473,34 @@ export default function WorkbookPage() {
                   {/* Dates */}
                   <td className="px-6 py-3 border-r border-white/5">
                     <input 
-                      type="text"
-                      value={row.scriptDate || ''} 
+                      type="datetime-local"
+                      value={formatForDateTimeLocal(row.scriptDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'scriptDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark]"
-                      placeholder="e.g. July 12"
+                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
                     <input 
-                      type="text"
-                      value={row.shootDate || ''} 
+                      type="datetime-local"
+                      value={formatForDateTimeLocal(row.shootDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'shootDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark]"
-                      placeholder="e.g. July 15"
+                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
                     <input 
-                      type="text"
-                      value={row.editDate || ''} 
+                      type="datetime-local"
+                      value={formatForDateTimeLocal(row.editDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'editDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark]"
-                      placeholder="e.g. July 18"
+                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
                     <input 
-                      type="text"
-                      value={row.finalDate || ''} 
+                      type="datetime-local"
+                      value={formatForDateTimeLocal(row.finalDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'finalDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark]"
-                      placeholder="e.g. July 20"
+                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
                     />
                   </td>
                   {/* Platform - NotionDropdown */}
@@ -461,9 +523,19 @@ export default function WorkbookPage() {
                   </td>
                   {/* Actions */}
                   <td className="px-6 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                     <button onClick={() => setEditingTask(row)} className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors" title="Task Settings">
+                       <CheckSquare className="w-4 h-4" />
+                     </button>
+                     {row.status === "Under Review" && (
+                       <button onClick={() => setReviewTask(row)} className="px-3 py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
+                         Review
+                       </button>
+                     )}
                      <button onClick={() => handleDeleteRow(row.id)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100">
                         <Trash2 className="w-4 h-4" />
                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -508,6 +580,104 @@ export default function WorkbookPage() {
           </div>
         </div>
       )}
+
+      {/* TASK SETTINGS MODAL */}
+      {editingTask && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-8 max-w-md w-full relative">
+            <button onClick={() => setEditingTask(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-xl font-bold uppercase tracking-widest mb-6 text-white">Task Settings</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Google Doc Link</label>
+                <input value={editingTask.docLink || ''} onChange={e => setEditingTask({...editingTask, docLink: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://docs.google.com/..." />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Drive Link A (Raw Upload)</label>
+                <input value={editingTask.driveA || ''} onChange={e => setEditingTask({...editingTask, driveA: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Drive Link B (Raw Download for Editor)</label>
+                <input value={editingTask.driveB || ''} onChange={e => setEditingTask({...editingTask, driveB: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Drive Link C (Final Output)</label>
+                <input value={editingTask.driveC || ''} onChange={e => setEditingTask({...editingTask, driveC: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
+              </div>
+            </div>
+
+            <button onClick={() => {
+              handleInlineChange(editingTask.id, 'docLink', editingTask.docLink);
+              handleInlineChange(editingTask.id, 'driveA', editingTask.driveA);
+              handleInlineChange(editingTask.id, 'driveB', editingTask.driveB);
+              handleInlineChange(editingTask.id, 'driveC', editingTask.driveC);
+              setEditingTask(null);
+            }} className="w-full mt-8 bg-tpc-orange text-black font-bold uppercase tracking-widest p-4 rounded-xl">Save Settings</button>
+          </div>
+        </div>
+      )}
+
+      {/* REVIEW MODAL */}
+      {reviewTask && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-8 max-w-md w-full relative">
+            <button onClick={() => { setReviewTask(null); setReviewNote(""); }} className="absolute top-4 right-4 text-gray-500 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-xl font-bold uppercase tracking-widest mb-6 text-yellow-500 flex items-center gap-2">
+              Review Task
+            </h3>
+            
+            <p className="text-gray-400 mb-6 text-sm">Review the uploaded files from Drive Link C before approving.</p>
+
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Admin Note (Required for Fixes)</label>
+                <textarea 
+                  value={reviewNote} 
+                  onChange={e => setReviewNote(e.target.value)} 
+                  className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white h-24 resize-none" 
+                  placeholder="Explain what needs to be fixed..." 
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => {
+                  if (!reviewNote.trim()) return alert("You must provide an admin note for fixes.");
+                  handleInlineChange(reviewTask.id, 'adminNote', reviewNote);
+                  handleInlineChange(reviewTask.id, 'status', 'Fixes Required');
+                  setReviewTask(null);
+                  setReviewNote("");
+                }} 
+                className="flex-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-black font-bold uppercase tracking-widest p-4 rounded-xl transition-colors text-xs"
+              >
+                Needs Fixes
+              </button>
+              <button 
+                onClick={() => {
+                  const s = reviewTask.status?.toLowerCase() || "";
+                  let nextStatus = "Completed";
+                  if (s === "reviewing script") nextStatus = "Shooting";
+                  else if (s === "reviewing shoot") nextStatus = "Editing";
+
+                  handleInlineChange(reviewTask.id, 'status', nextStatus);
+                  setReviewTask(null);
+                  setReviewNote("");
+                }} 
+                className="flex-1 bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-black font-bold uppercase tracking-widest p-4 rounded-xl transition-colors text-xs"
+              >
+                Approve & Advance
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

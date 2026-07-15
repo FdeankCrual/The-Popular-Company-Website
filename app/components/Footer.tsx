@@ -1,9 +1,15 @@
 "use client";
 import Link from "next/link";
 import { Instagram, Linkedin, Twitter, ArrowUpRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/cms") || pathname?.startsWith("/employee")) {
+    return null;
+  }
 
   return (
     <footer className="bg-white text-black pt-20 pb-10 px-6 md:px-12 rounded-t-[3rem] mt-[-2rem] relative z-20">
