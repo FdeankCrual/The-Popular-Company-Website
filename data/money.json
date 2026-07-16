@@ -1,0 +1,31 @@
+{
+  "expenses": [
+    { "id": "exp_1", "month": "July", "expense": "Caracal domain", "amount": 6095, "paid": true },
+    { "id": "exp_2", "month": "July", "expense": "TPC domain", "amount": 3087, "paid": true },
+    { "id": "exp_3", "month": "July", "expense": "Canva", "amount": 500, "paid": true },
+    { "id": "exp_4", "month": "July", "expense": "Petrol allowance", "amount": 1000, "paid": true },
+    { "id": "exp_5", "month": "July", "expense": "Google ai pro", "amount": 489, "paid": true },
+    { "id": "exp_6", "month": "July", "expense": "Food meet", "amount": 734, "paid": true },
+    { "id": "exp_7", "month": "July", "expense": "Color print ppt", "amount": 160, "paid": true },
+    { "id": "exp_8", "month": "July", "expense": "Shahi taj ai reel", "amount": 2500, "paid": true }
+  ],
+  "incomes": [
+    { "id": "inc_1", "month": "July", "client": "Last month P", "smm": 3800, "reels": 0, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": true },
+    { "id": "inc_2", "month": "July", "client": "MyRatna", "smm": 13500, "reels": 9, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": false },
+    { "id": "inc_3", "month": "July", "client": "D+ Pending 1", "smm": 5000, "reels": 6, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": true },
+    { "id": "inc_4", "month": "July", "client": "Triform June", "smm": 10000, "reels": 6, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": false },
+    { "id": "inc_5", "month": "July", "client": "Neeta aunty", "smm": 10000, "reels": 6, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": true },
+    { "id": "inc_6", "month": "July", "client": "Caracal first half", "smm": 9000, "reels": 0, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": true },
+    { "id": "inc_7", "month": "July", "client": "Caracal sec half", "smm": 6095, "reels": 0, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": true },
+    { "id": "inc_8", "month": "July", "client": "MyRatna Naamank", "smm": 13500, "reels": 9, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": false },
+    { "id": "inc_9", "month": "July", "client": "D+ Pending 2", "smm": 6800, "reels": 9, "perReel": 0, "ytVids": 0, "ytCost": 0, "posts": 0, "perPost": 0, "instAds": 0, "paid": false }
+  ],
+  "employees": [
+    { "id": "emp_1", "name": "Yatharth", "work": "Editor", "startDate": "30 June", "minMonthly": 10000, "duration": "3 months", "active": true },
+    { "id": "emp_2", "name": "Angle", "work": "Content writer", "startDate": "30 June", "minMonthly": 6000, "duration": "3 months", "active": true },
+    { "id": "emp_3", "name": "Muktansh", "work": "Videographer", "startDate": "30 June", "minMonthly": 10000, "duration": "3 months", "active": true }
+  ],
+  "emis": [
+    { "id": "emi_1", "thing": "Google drive", "duration": "3 months", "date": "5 July 2026 - 5 October 2026", "payment": 489, "active": true }
+  ]
+}
