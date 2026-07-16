@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle, CheckSquare, TrendingUp } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -11,6 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   try { roles = JSON.parse(rolesStr); } catch(e) {}
 
   const navItems = [
+    { name: "My Tasks", href: "/admin/my-tasks", icon: CheckSquare },
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Workbook", href: "/admin/workbook", icon: Database },
     { name: "Leads", href: "/admin/leads", icon: Users },

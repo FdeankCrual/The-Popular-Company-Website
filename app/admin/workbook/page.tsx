@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy, CheckSquare } from "lucide-react";
+import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy, CheckSquare, Save } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
 
@@ -33,6 +33,7 @@ export default function WorkbookPage() {
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc'|'desc'|null }>({ key: '', direction: null });
   const [showFilters, setShowFilters] = useState(false);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+  const [unsavedUpdates, setUnsavedUpdates] = useState<Map<string, any>>(new Map());
 
   // Modals
   const [editingTask, setEditingTask] = useState<any>(null);
@@ -113,6 +114,56 @@ export default function WorkbookPage() {
     return result;
   }, [data, columnFilters, sortConfig]);
 
+  const isStageCompleted = (stage: 'script' | 'shoot' | 'edit' | 'final', status: string) => {
+    const s = (status || "").toLowerCase();
+    
+    const stages = [
+      "ideation",
+      "planning",
+      "scripting",
+      "reviewing script",
+      "shooting",
+      "reviewing shoot",
+      "editing",
+      "reviewing edit",
+      "under review",
+      "completed",
+      "posted"
+    ];
+    
+    let currentIndex = stages.indexOf(s);
+    if (currentIndex === -1) {
+      if (s.includes('reviewing script')) currentIndex = 3;
+      else if (s.includes('reviewing shoot')) currentIndex = 5;
+      else if (s.includes('reviewing edit')) currentIndex = 7;
+      else if (s.includes('review')) currentIndex = 8;
+      else currentIndex = 0;
+    }
+
+    if (stage === 'script') return currentIndex >= 4; // Past Scripting (started Shooting)
+    if (stage === 'shoot') return currentIndex >= 6; // Past Shooting (started Editing)
+    if (stage === 'edit') return currentIndex >= 8; // Past Editing (started Reviewing)
+    if (stage === 'final') return currentIndex >= 9; // Completed or Posted
+    
+    return false;
+  };
+
+  const getDateClass = (stage: 'script' | 'shoot' | 'edit' | 'final', status: string, dateStr: string) => {
+    if (isStageCompleted(stage, status)) {
+      return 'bg-green-500/20 text-green-500';
+    }
+    
+    if (dateStr) {
+      const targetDate = new Date(dateStr);
+      const now = new Date();
+      if (targetDate < now) {
+        return 'bg-red-500/20 text-red-500 border border-red-500/30';
+      }
+    }
+    
+    return 'bg-transparent text-gray-300 focus:bg-white/10';
+  };
+
   // Handlers
   const handleAddNewRow = async () => {
     const newRow = { ...emptyForm, id: "proj_" + Math.random().toString(36).substring(2, 9), name: "Untitled Task" };
@@ -176,20 +227,16 @@ export default function WorkbookPage() {
         rowIdsToUpdate.includes(item.id) ? applyAutomation(item, field, value) : item
       ));
 
-      // Grab the modified rows for the server payload
+      // Grab the modified rows to queue
       const updates = data
         .filter(item => rowIdsToUpdate.includes(item.id))
         .map(item => applyAutomation(item, field, value));
 
-      try {
-        await fetch("/api/admin/data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "bulkUpdateWorkbook", updates })
-        });
-      } catch (err) {
-        console.error("Failed to bulk update", err);
-      }
+      setUnsavedUpdates(prev => {
+        const next = new Map(prev);
+        updates.forEach(u => next.set(u.id, u));
+        return next;
+      });
     } else {
       // STANDARD SINGLE ROW UPDATE
       const updatedRow = data.find(item => item.id === id);
@@ -198,15 +245,27 @@ export default function WorkbookPage() {
 
       setData(prev => prev.map(item => item.id === id ? newRow : item));
       
-      try {
-        await fetch("/api/admin/data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "updateWorkbook", data: newRow })
-        });
-      } catch (err) {
-        console.error("Failed to save inline edit");
-      }
+      setUnsavedUpdates(prev => {
+        const next = new Map(prev);
+        next.set(newRow.id, newRow);
+        return next;
+      });
+    }
+  };
+
+  const saveAllChanges = async () => {
+    if (unsavedUpdates.size === 0) return;
+    const updates = Array.from(unsavedUpdates.values());
+    try {
+      await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "bulkUpdateWorkbook", updates })
+      });
+      setUnsavedUpdates(new Map());
+    } catch (err) {
+      console.error("Failed to save all changes", err);
+      alert("Failed to save changes.");
     }
   };
 
@@ -476,7 +535,7 @@ export default function WorkbookPage() {
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.scriptDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'scriptDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
+                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('script', row.status, row.scriptDate)}`}
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
@@ -484,7 +543,7 @@ export default function WorkbookPage() {
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.shootDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'shootDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
+                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('shoot', row.status, row.shootDate)}`}
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
@@ -492,7 +551,7 @@ export default function WorkbookPage() {
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.editDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'editDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
+                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('edit', row.status, row.editDate)}`}
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
@@ -500,7 +559,7 @@ export default function WorkbookPage() {
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.finalDate)} 
                       onChange={(e) => handleInlineChange(row.id, 'finalDate', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-gray-300 focus:bg-white/10 p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer"
+                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('final', row.status, row.finalDate)}`}
                     />
                   </td>
                   {/* Platform - NotionDropdown */}
@@ -527,7 +586,7 @@ export default function WorkbookPage() {
                      <button onClick={() => setEditingTask(row)} className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors" title="Task Settings">
                        <CheckSquare className="w-4 h-4" />
                      </button>
-                     {row.status === "Under Review" && (
+                     {(row.status || "").toLowerCase().includes("review") && (
                        <button onClick={() => setReviewTask(row)} className="px-3 py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
                          Review
                        </button>
@@ -581,6 +640,22 @@ export default function WorkbookPage() {
         </div>
       )}
 
+      {/* FLOATING SAVE CHANGES BUTTON */}
+      {unsavedUpdates.size > 0 && (
+        <button 
+          onClick={saveAllChanges}
+          className="fixed bottom-8 right-8 bg-tpc-orange text-black p-4 rounded-full shadow-[0_0_20px_rgba(255,102,0,0.3)] flex items-center justify-center z-[100] hover:scale-110 active:scale-95 transition-all group animate-in slide-in-from-bottom-8"
+          title={`Save ${unsavedUpdates.size} changes`}
+        >
+          <div className="relative">
+            <Save className="w-6 h-6 group-hover:animate-pulse" />
+            <span className="absolute -top-3 -right-3 bg-white text-black text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-tpc-orange shadow-lg">
+              {unsavedUpdates.size}
+            </span>
+          </div>
+        </button>
+      )}
+
       {/* TASK SETTINGS MODAL */}
       {editingTask && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -596,24 +671,32 @@ export default function WorkbookPage() {
                 <input value={editingTask.docLink || ''} onChange={e => setEditingTask({...editingTask, docLink: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://docs.google.com/..." />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Drive Link A (Raw Upload)</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Google Drive Folder</label>
                 <input value={editingTask.driveA || ''} onChange={e => setEditingTask({...editingTask, driveA: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
-              </div>
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Drive Link B (Raw Download for Editor)</label>
-                <input value={editingTask.driveB || ''} onChange={e => setEditingTask({...editingTask, driveB: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
-              </div>
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Drive Link C (Final Output)</label>
-                <input value={editingTask.driveC || ''} onChange={e => setEditingTask({...editingTask, driveC: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
               </div>
             </div>
 
-            <button onClick={() => {
-              handleInlineChange(editingTask.id, 'docLink', editingTask.docLink);
-              handleInlineChange(editingTask.id, 'driveA', editingTask.driveA);
-              handleInlineChange(editingTask.id, 'driveB', editingTask.driveB);
-              handleInlineChange(editingTask.id, 'driveC', editingTask.driveC);
+            <button onClick={async () => {
+              // Combine all changes into a single object to prevent race conditions
+              const updatedFields = {
+                docLink: editingTask.docLink,
+                driveA: editingTask.driveA,
+                driveB: '',
+                driveC: ''
+              };
+
+              const updatedRow = { ...data.find(r => r.id === editingTask.id), ...updatedFields };
+
+              // Optimistic UI update
+              setData(prev => prev.map(item => item.id === editingTask.id ? updatedRow : item));
+
+              // Queue update
+              setUnsavedUpdates(prev => {
+                const next = new Map(prev);
+                next.set(updatedRow.id, updatedRow);
+                return next;
+              });
+              
               setEditingTask(null);
             }} className="w-full mt-8 bg-tpc-orange text-black font-bold uppercase tracking-widest p-4 rounded-xl">Save Settings</button>
           </div>
@@ -631,7 +714,14 @@ export default function WorkbookPage() {
               Review Task
             </h3>
             
-            <p className="text-gray-400 mb-6 text-sm">Review the uploaded files from Drive Link C before approving.</p>
+            <p className="text-gray-400 mb-4 text-sm">Review the uploaded files from the Google Drive Folder before approving.</p>
+            {reviewTask.driveA ? (
+               <a href={reviewTask.driveA} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl mb-6 transition-colors">
+                 Open Google Drive Folder
+               </a>
+            ) : (
+               <p className="text-red-400 text-xs italic mb-6">No Drive Folder provided by Admin.</p>
+            )}
 
             <div className="space-y-4 mb-8">
               <div>

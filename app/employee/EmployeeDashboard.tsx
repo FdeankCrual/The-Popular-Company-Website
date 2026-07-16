@@ -46,19 +46,6 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
   const markDone = async (task: any, updates: any) => {
     setUpdating(task.id);
     try {
-      // If Videographer marking done, trigger sync A -> B
-      if (roles.includes("VIDEOGRAPHER") && updates.driveA) {
-        await fetch("/api/admin/data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "syncDriveFolder",
-            sourceUrl: updates.driveA,
-            targetUrl: task.driveB || ""
-          })
-        });
-      }
-
       const getNextStatus = () => {
         if (roles.includes("CONTENT WRITER")) return "Reviewing Script";
         if (roles.includes("VIDEOGRAPHER")) return "Reviewing Shoot";
@@ -222,12 +209,8 @@ function TaskRow({ task, onMarkDone, updating, roles, isFix = false }: any) {
   
   // Local state for role-specific links
   const [docLink, setDocLink] = useState(task.docLink || "");
-  const [driveA, setDriveA] = useState(task.driveA || "");
-  const [driveB, setDriveB] = useState(task.driveB || "");
-  const [driveC, setDriveC] = useState(task.driveC || "");
-
   const handleMarkDone = () => {
-    onMarkDone(task, { docLink, driveA, driveB, driveC });
+    onMarkDone(task, { docLink });
   };
 
   return (
@@ -271,39 +254,24 @@ function TaskRow({ task, onMarkDone, updating, roles, isFix = false }: any) {
             </div>
           )}
 
-          {/* Videographer Links */}
-          {roles.includes("VIDEOGRAPHER") && (
-            <div className="flex flex-col gap-1">
-              <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold flex items-center gap-1"><LinkIcon className="w-3 h-3"/> Drive Link A (Raw Files)</span>
-              <input 
-                type="text" 
-                placeholder="Paste Drive link..."
-                value={driveA} 
-                onChange={e => setDriveA(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs focus:outline-none focus:border-tpc-orange transition-colors"
-              />
-            </div>
-          )}
-
-          {/* Editor Links */}
-          {roles.includes("EDITOR") && (
-            <>
-              {task.driveB && (
-                 <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
-                   <LinkIcon className="w-3 h-3" /> Get Raw Files: <a href={task.driveB} target="_blank" className="text-blue-400 hover:underline">Drive Link B</a>
+          {/* Videographer & Editor Links */}
+          {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR")) && (
+            <div className="flex flex-col gap-2 mt-2">
+               {task.docLink && (
+                 <a href={task.docLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 p-3 rounded-lg text-xs font-bold transition-colors">
+                   <FileText className="w-4 h-4"/> Open Script Doc
+                 </a>
+               )}
+               {task.driveA ? (
+                 <a href={task.driveA} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white p-3 rounded-lg text-xs font-bold transition-colors">
+                   <LinkIcon className="w-4 h-4"/> Open Google Drive Folder
+                 </a>
+               ) : (
+                 <div className="flex items-center justify-center w-full bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-xs font-bold italic">
+                   No Drive Folder Provided
                  </div>
-              )}
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold flex items-center gap-1"><LinkIcon className="w-3 h-3"/> Drive Link C (Final Video)</span>
-                <input 
-                  type="text" 
-                  placeholder="Paste Drive link..."
-                  value={driveC} 
-                  onChange={e => setDriveC(e.target.value)}
-                  className="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs focus:outline-none focus:border-tpc-orange transition-colors"
-                />
-              </div>
-            </>
+               )}
+            </div>
           )}
         </div>
       </td>
