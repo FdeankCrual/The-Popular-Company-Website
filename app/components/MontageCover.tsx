@@ -20,7 +20,7 @@ export default function MontageCover({ onEnterGallery }: MontageCoverProps) {
     <div className="relative w-full overflow-hidden" style={{ height: "100vh" }}>
       {/* Background video */}
       <video
-        src="/reels/dplus1.mp4"
+        src="/reels/main.mp4"
         autoPlay muted loop playsInline
         className="absolute inset-0 w-full h-full object-cover"
       />
