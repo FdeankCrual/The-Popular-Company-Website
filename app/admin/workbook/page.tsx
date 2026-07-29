@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy, CheckSquare, Save } from "lucide-react";
+import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy, CheckSquare, Save, ExternalLink, Link as LinkIcon, FileText } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
 
@@ -23,6 +23,7 @@ const formatForDateTimeLocal = (dateString?: string) => {
 export default function WorkbookPage() {
   const [data, setData] = useState<any[]>(initialData);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'Active' | 'Archive'>('Active');
   const [config, setConfig] = useState<any>({ clients: [], assigned: [], status: [], platforms: [], months: [] });
   const [employees, setEmployees] = useState<string[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -88,6 +89,19 @@ export default function WorkbookPage() {
   const processedData = useMemo(() => {
     let result = [...data];
 
+    // Filter by Tab
+    if (activeTab === 'Active') {
+      result = result.filter(r => {
+        const s = (r.status || '').toLowerCase();
+        return s !== 'completed' && s !== 'posted';
+      });
+    } else {
+      result = result.filter(r => {
+        const s = (r.status || '').toLowerCase();
+        return s === 'completed' || s === 'posted';
+      });
+    }
+
     // Filter
     const activeFilterKeys = Object.keys(columnFilters).filter(k => columnFilters[k].trim() !== "");
     if (activeFilterKeys.length > 0) {
@@ -112,7 +126,7 @@ export default function WorkbookPage() {
     }
 
     return result;
-  }, [data, columnFilters, sortConfig]);
+  }, [data, columnFilters, sortConfig, activeTab]);
 
   const isStageCompleted = (stage: 'script' | 'shoot' | 'edit' | 'final', status: string) => {
     const s = (status || "").toLowerCase();
@@ -419,6 +433,22 @@ export default function WorkbookPage() {
         </button>
       </div>
 
+      {/* TABS */}
+      <div className="flex border-b border-white/10 px-4 sm:px-8 md:px-12 pt-2 bg-[#191919]">
+        <button 
+          onClick={() => setActiveTab('Active')}
+          className={`px-6 py-3 font-bold uppercase tracking-widest text-xs border-b-2 transition-colors ${activeTab === 'Active' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+        >
+          Active Tasks
+        </button>
+        <button 
+          onClick={() => setActiveTab('Archive')}
+          className={`px-6 py-3 font-bold uppercase tracking-widest text-xs border-b-2 transition-colors ${activeTab === 'Archive' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+        >
+          Archive (Completed/Posted)
+        </button>
+      </div>
+
       {/* SPREADSHEET */}
       <div className="flex-1 overflow-auto bg-[#111]">
         {loading ? (
@@ -441,6 +471,8 @@ export default function WorkbookPage() {
                 <th onClick={() => handleSort('client')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Client <SortIcon columnKey="client"/></th>
                 <th onClick={() => handleSort('status')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Status <SortIcon columnKey="status"/></th>
                 <th onClick={() => handleSort('assigned')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Assigned <SortIcon columnKey="assigned"/></th>
+                <th onClick={() => handleSort('docLink')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Link <SortIcon columnKey="docLink"/></th>
+                <th onClick={() => handleSort('driveA')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Drive Link <SortIcon columnKey="driveA"/></th>
                 <th onClick={() => handleSort('scriptDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Date <SortIcon columnKey="scriptDate"/></th>
                 <th onClick={() => handleSort('shootDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Shoot Date <SortIcon columnKey="shootDate"/></th>
                 <th onClick={() => handleSort('editDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Edit Date <SortIcon columnKey="editDate"/></th>
@@ -457,6 +489,8 @@ export default function WorkbookPage() {
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter client..." value={columnFilters.client || ''} onChange={e => setColumnFilters(p => ({...p, client: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter status..." value={columnFilters.status || ''} onChange={e => setColumnFilters(p => ({...p, status: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter assigned..." value={columnFilters.assigned || ''} onChange={e => setColumnFilters(p => ({...p, assigned: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"></th>
+                  <th className="px-6 py-2 border-r border-white/5"></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.scriptDate || ''} onChange={e => setColumnFilters(p => ({...p, scriptDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.shootDate || ''} onChange={e => setColumnFilters(p => ({...p, shootDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.editDate || ''} onChange={e => setColumnFilters(p => ({...p, editDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
@@ -529,6 +563,40 @@ export default function WorkbookPage() {
                       placeholder="Assign..."
                     />
                   </td>
+                  {/* Script Link */}
+                  <td className="px-6 py-3 border-r border-white/5 w-48 relative">
+                    <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.docLink ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'}`}>
+                      <LinkIcon className={`w-3 h-3 shrink-0 ${row.docLink ? 'text-green-500' : 'text-gray-500'}`} />
+                      <input 
+                        value={row.docLink || ''}
+                        onChange={(e) => handleInlineChange(row.id, 'docLink', e.target.value)}
+                        placeholder="Paste Script URL..."
+                        className="w-full bg-transparent border-none outline-none text-white text-xs"
+                      />
+                      {row.docLink && (
+                        <a href={row.docLink} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white shrink-0 ml-1">
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                  {/* Drive Link */}
+                  <td className="px-6 py-3 border-r border-white/5 w-48 relative">
+                    <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.driveA ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'}`}>
+                      <FileText className={`w-3 h-3 shrink-0 ${row.driveA ? 'text-green-500' : 'text-gray-500'}`} />
+                      <input 
+                        value={row.driveA || ''}
+                        onChange={(e) => handleInlineChange(row.id, 'driveA', e.target.value)}
+                        placeholder="Paste Drive URL..."
+                        className="w-full bg-transparent border-none outline-none text-white text-xs"
+                      />
+                      {row.driveA && (
+                        <a href={row.driveA} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white shrink-0 ml-1">
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </td>
                   {/* Dates */}
                   <td className="px-6 py-3 border-r border-white/5">
                     <input 
@@ -583,9 +651,6 @@ export default function WorkbookPage() {
                   {/* Actions */}
                   <td className="px-6 py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
-                     <button onClick={() => setEditingTask(row)} className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors" title="Task Settings">
-                       <CheckSquare className="w-4 h-4" />
-                     </button>
                      {(row.status || "").toLowerCase().includes("review") && (
                        <button onClick={() => setReviewTask(row)} className="px-3 py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
                          Review
@@ -656,52 +721,7 @@ export default function WorkbookPage() {
         </button>
       )}
 
-      {/* TASK SETTINGS MODAL */}
-      {editingTask && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/10 rounded-2xl p-8 max-w-md w-full relative">
-            <button onClick={() => setEditingTask(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-xl font-bold uppercase tracking-widest mb-6 text-white">Task Settings</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Google Doc Link</label>
-                <input value={editingTask.docLink || ''} onChange={e => setEditingTask({...editingTask, docLink: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://docs.google.com/..." />
-              </div>
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Google Drive Folder</label>
-                <input value={editingTask.driveA || ''} onChange={e => setEditingTask({...editingTask, driveA: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white" placeholder="https://drive.google.com/..." />
-              </div>
-            </div>
-
-            <button onClick={async () => {
-              // Combine all changes into a single object to prevent race conditions
-              const updatedFields = {
-                docLink: editingTask.docLink,
-                driveA: editingTask.driveA,
-                driveB: '',
-                driveC: ''
-              };
-
-              const updatedRow = { ...data.find(r => r.id === editingTask.id), ...updatedFields };
-
-              // Optimistic UI update
-              setData(prev => prev.map(item => item.id === editingTask.id ? updatedRow : item));
-
-              // Queue update
-              setUnsavedUpdates(prev => {
-                const next = new Map(prev);
-                next.set(updatedRow.id, updatedRow);
-                return next;
-              });
-              
-              setEditingTask(null);
-            }} className="w-full mt-8 bg-tpc-orange text-black font-bold uppercase tracking-widest p-4 rounded-xl">Save Settings</button>
-          </div>
-        </div>
-      )}
+      {/* (Task settings modal removed in favor of inline links) */}
 
       {/* REVIEW MODAL */}
       {reviewTask && (
