@@ -138,8 +138,8 @@ export default function ServicesMasterPage() {
                   <Link
                     href={service.id === "web-development" ? "/work/web" : "/contact"}
                     className={`inline-flex items-center gap-4 px-8 py-5 rounded-full font-bold uppercase tracking-widest text-sm transition-all hover:scale-105 ${service.theme === 'light'
-                        ? 'bg-black text-white hover:bg-tpc-orange'
-                        : 'bg-white text-black hover:bg-tpc-orange hover:text-white'
+                      ? 'bg-black text-white hover:bg-tpc-orange'
+                      : 'bg-white text-black hover:bg-tpc-orange hover:text-white'
                       }`}
                   >
                     {service.id === "web-development" ? "View Portfolio" : "Initiate Protocol"} <ArrowUpRight className="w-5 h-5" />
