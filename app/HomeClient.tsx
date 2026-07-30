@@ -104,8 +104,8 @@ export default function HomeClient({
             </div>
           </div>
           
-          <Link href="/meta-expert" className="inline-flex items-center gap-3 border border-tpc-orange bg-tpc-orange/10 hover:bg-tpc-orange hover:text-black transition-all duration-300 px-8 py-4 rounded-full uppercase tracking-widest text-sm font-bold text-tpc-orange group">
-            Meet Our Meta Ads Expert <ArrowUpRight className="w-5 h-5 group-hover:scale-125 transition-transform" />
+          <Link href="/track-record" className="inline-flex items-center gap-3 border border-tpc-orange bg-tpc-orange/10 hover:bg-tpc-orange hover:text-black transition-all duration-300 px-8 py-4 rounded-full uppercase tracking-widest text-sm font-bold text-tpc-orange group">
+            View Our Track Record <ArrowUpRight className="w-5 h-5 group-hover:scale-125 transition-transform" />
           </Link>
         </div>
       </section>
