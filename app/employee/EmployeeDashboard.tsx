@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, CheckCircle, Clock, Link as LinkIcon, FileText } from "lucide-react";
+import { Loader2, CheckCircle, Clock, Link as LinkIcon, FileText, X, MessageSquare } from "lucide-react";
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "TBD";
@@ -18,6 +18,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
 
   useEffect(() => {
     fetchTasks();
@@ -70,6 +71,28 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
     } catch (e) {
       console.error("Failed to mark done", e);
       alert("Failed to update task.");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const updateTaskDetails = async (task: any, updates: any) => {
+    setUpdating(task.id);
+    try {
+      await fetch("/api/admin/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updateWorkbook",
+          data: {
+            ...task,
+            ...updates
+          }
+        })
+      });
+      await fetchTasks();
+    } catch (e) {
+      console.error("Failed to update", e);
     } finally {
       setUpdating(null);
     }
@@ -133,7 +156,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
               </thead>
               <tbody className="divide-y divide-red-500/10">
                 {fixesTasks.map((t, i) => (
-                  <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} isFix />
+                  <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} isFix onOpenQuery={setActiveQueryTask} />
                 ))}
               </tbody>
             </table>
@@ -159,7 +182,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
               </thead>
               <tbody className="divide-y divide-white/5">
                 {activeTasks.map((t, i) => (
-                  <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} />
+                  <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} onOpenQuery={setActiveQueryTask} />
                 ))}
               </tbody>
             </table>
@@ -185,7 +208,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
               </thead>
               <tbody className="divide-y divide-white/5">
                 {reviewTasks.map((t, i) => (
-                  <tr key={i} className="hover:bg-white/5 transition-colors">
+                  <tr key={i} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setActiveQueryTask(t)}>
                     <td className="px-4 py-4 font-bold text-white">{t.name || "Untitled Task"}</td>
                     <td className="px-4 py-4 text-gray-400">{t.client || "No Client"}</td>
                     <td className="px-4 py-4">
@@ -200,11 +223,60 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
           </div>
         )}
       </div>
+
+      {/* QUERY MODAL */}
+      {activeQueryTask && (
+        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center p-6 border-b border-white/10 shrink-0">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">💬 Task Support: {activeQueryTask.name}</h3>
+              <button onClick={() => setActiveQueryTask(null)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="bg-[#111] border border-white/5 rounded-xl p-4">
+                <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2 block">Admin Reply / Notes</label>
+                <div className="w-full bg-black border border-white/10 rounded-lg p-4 text-gray-300 min-h-[100px] whitespace-pre-wrap text-sm">
+                  {activeQueryTask.adminReply ? activeQueryTask.adminReply : <span className="italic opacity-50">No replies from admin yet.</span>}
+                </div>
+              </div>
+
+              <div className="bg-tpc-orange/5 border border-tpc-orange/20 rounded-xl p-4">
+                <label className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-2 flex items-center justify-between">
+                  Your Message / Query
+                  {updating === activeQueryTask.id && <Loader2 className="w-3 h-3 animate-spin" />}
+                </label>
+                <textarea 
+                  rows={5} 
+                  placeholder="Type your questions or status updates here..."
+                  value={activeQueryTask.employeeQuery || ""} 
+                  onChange={(e) => setActiveQueryTask({...activeQueryTask, employeeQuery: e.target.value})} 
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-4 text-white focus:outline-none focus:border-tpc-orange text-sm resize-none" 
+                />
+              </div>
+
+              <div className="flex justify-end gap-4 pt-2">
+                <button type="button" onClick={() => setActiveQueryTask(null)} className="px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">Close</button>
+                <button 
+                  onClick={async () => {
+                    await updateTaskDetails(activeQueryTask, { employeeQuery: activeQueryTask.employeeQuery });
+                    setActiveQueryTask(null);
+                  }}
+                  disabled={updating === activeQueryTask.id}
+                  className="bg-tpc-orange text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2 cursor-pointer text-sm"
+                >
+                  Send Message
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function TaskRow({ task, onMarkDone, updating, roles, isFix = false }: any) {
+function TaskRow({ task, onMarkDone, updating, roles, isFix = false, onOpenQuery }: any) {
   const isUpdating = updating === task.id;
   
   // Local state for role-specific links
@@ -277,13 +349,24 @@ function TaskRow({ task, onMarkDone, updating, roles, isFix = false }: any) {
       </td>
 
       <td className="px-4 py-4 align-top w-40">
-        <button 
-          onClick={handleMarkDone}
-          disabled={isUpdating}
-          className="w-full py-2 bg-white/5 hover:bg-green-500 hover:text-black text-white font-bold uppercase tracking-widest text-xs rounded transition-colors flex items-center justify-center gap-2"
-        >
-          {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> Mark Done</>}
-        </button>
+        <div className="flex flex-col gap-2">
+          <button 
+            onClick={handleMarkDone}
+            disabled={isUpdating}
+            className="w-full py-2 bg-white/5 hover:bg-green-500 hover:text-black text-white font-bold uppercase tracking-widest text-xs rounded transition-colors flex items-center justify-center gap-2"
+          >
+            {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> Mark Done</>}
+          </button>
+          <button 
+            onClick={() => onOpenQuery(task)}
+            className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] rounded transition-colors flex items-center justify-center gap-2"
+          >
+            <MessageSquare className="w-3 h-3" /> Support
+            {(task.adminReply && task.adminReply.trim() !== "") && (
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse absolute -mt-4 -mr-16"></span>
+            )}
+          </button>
+        </div>
       </td>
     </tr>
   );

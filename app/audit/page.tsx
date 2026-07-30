@@ -32,14 +32,16 @@ export default function AuditPage() {
           name: "Website Owner",
           email: webEmail,
           target: url,
-          message: "Requesting a manual website teardown."
+          message: "Requesting a manual website teardown.",
+          agent: "Bhavik Bhardwaj"
         }
       : {
           type: "Social Media Audit",
           name: brand,
           email: socialEmail,
           target: handle,
-          message: "Requesting a manual social media teardown."
+          message: "Requesting a manual social media teardown.",
+          agent: "Garv Parihar, Dhruv Paneri"
         };
 
     try {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy, CheckSquare, Save, ExternalLink, Link as LinkIcon, FileText } from "lucide-react";
+import { Loader2, Plus, ArrowUpDown, ArrowDown, ArrowUp, X, Filter, Copy, CheckSquare, Trash2, Calendar, FileText, Download, Check, Save, MessageSquare, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
 
@@ -40,6 +40,7 @@ export default function WorkbookPage() {
   const [editingTask, setEditingTask] = useState<any>(null);
   const [reviewTask, setReviewTask] = useState<any>(null);
   const [reviewNote, setReviewNote] = useState("");
+  const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
 
   // Extracted unique values for dropdowns
   const clients = Array.from(new Set([...(config.clients || []), ...data.map(d => d.client)].filter(Boolean)));
@@ -479,6 +480,7 @@ export default function WorkbookPage() {
                 <th onClick={() => handleSort('finalDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Final Date <SortIcon columnKey="finalDate"/></th>
                 <th onClick={() => handleSort('platform')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform"/></th>
                 <th onClick={() => handleSort('month')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month"/></th>
+                <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 border-r border-white/5">Support</th>
                 <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-12 text-center"></th>
               </tr>
               {/* FILTER ROW */}
@@ -497,6 +499,7 @@ export default function WorkbookPage() {
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.finalDate || ''} onChange={e => setColumnFilters(p => ({...p, finalDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter platform..." value={columnFilters.platform || ''} onChange={e => setColumnFilters(p => ({...p, platform: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({...p, month: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"></th>
                   <th className="px-6 py-2"></th>
                 </tr>
               )}
@@ -648,6 +651,18 @@ export default function WorkbookPage() {
                       placeholder="Month"
                     />
                   </td>
+                  {/* Support Hub */}
+                  <td className="px-6 py-3 border-r border-white/5 align-middle">
+                    <button 
+                      onClick={() => setActiveQueryTask(row)}
+                      className="bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded transition-colors w-full relative flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare className="w-3 h-3" /> Hub
+                      {(row.employeeQuery && row.employeeQuery.trim() !== "") && (
+                        <span className="w-2 h-2 rounded-full bg-tpc-orange animate-pulse absolute -mt-1 -mr-1 top-0 right-0"></span>
+                      )}
+                    </button>
+                  </td>
                   {/* Actions */}
                   <td className="px-6 py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
@@ -783,6 +798,56 @@ export default function WorkbookPage() {
               >
                 Approve & Advance
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADMIN QUERY MODAL */}
+      {activeQueryTask && (
+        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center p-6 border-b border-white/10 shrink-0">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">💬 Task Support Hub</h3>
+              <button onClick={() => setActiveQueryTask(null)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="bg-[#111] border border-white/5 rounded-xl p-4">
+                <label className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-2 flex items-center justify-between">
+                  Employee Query / Message
+                </label>
+                <div className="w-full bg-black border border-white/10 rounded-lg p-4 text-white min-h-[100px] whitespace-pre-wrap text-sm">
+                  {activeQueryTask.employeeQuery ? activeQueryTask.employeeQuery : <span className="italic opacity-50 text-gray-500">No message from employee yet.</span>}
+                </div>
+              </div>
+
+              <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4">
+                <label className="text-[10px] uppercase tracking-widest text-green-500 font-bold mb-2 flex items-center justify-between">
+                  Your Reply / Action
+                </label>
+                <textarea 
+                  rows={5} 
+                  placeholder="Type your reply to the employee here..."
+                  value={activeQueryTask.adminReply || ""} 
+                  onChange={(e) => setActiveQueryTask({...activeQueryTask, adminReply: e.target.value})} 
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-4 text-white focus:outline-none focus:border-green-500 text-sm resize-none" 
+                />
+              </div>
+
+              <div className="flex justify-end gap-4 pt-2">
+                <button type="button" onClick={() => setActiveQueryTask(null)} className="px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">Close</button>
+                <button 
+                  onClick={async () => {
+                    handleInlineChange(activeQueryTask.id, 'adminReply', activeQueryTask.adminReply);
+                    setActiveQueryTask(null);
+                    saveAllChanges(); 
+                  }}
+                  className="bg-green-500 text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2 cursor-pointer text-sm"
+                >
+                  Save Reply
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -65,9 +65,6 @@ export default function MyTasksClient({ initialName }: { initialName: string }) 
   // Extract Admins (or anyone assigned tasks)
   const adminNames = Array.from(new Set([
     initialName,
-    "Garv",
-    "Dhruv",
-    "Bhavik",
     ...users.map(u => u.Name)
   ])).filter(Boolean);
 

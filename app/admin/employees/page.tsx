@@ -7,6 +7,7 @@ const AVAILABLE_ROLES = [
   "SUPER_ADMIN",
   "ADMIN_VIDEO",
   "ADMIN_CONTENT",
+  "SALES AGENT",
   "VIDEOGRAPHER",
   "EDITOR",
   "CONTENT WRITER",
@@ -21,7 +22,7 @@ export default function EmployeesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState({ Name: "", Email: "", Password: "", Roles: [] as string[] });
+  const [formData, setFormData] = useState({ Name: "", Email: "", Password: "", Roles: [] as string[], City: "" });
 
   useEffect(() => {
     fetchEmployees();
@@ -76,13 +77,13 @@ export default function EmployeesPage() {
 
   const openNew = () => {
     setEditingId(null);
-    setFormData({ Name: "", Email: "", Password: "", Roles: [] });
+    setFormData({ Name: "", Email: "", Password: "", Roles: [], City: "" });
     setIsModalOpen(true);
   };
 
   const openEdit = (emp: any) => {
     setEditingId(emp.ID);
-    setFormData({ Name: emp.Name, Email: emp.Email, Password: emp.Password, Roles: Array.isArray(emp.Roles) ? emp.Roles : [] });
+    setFormData({ Name: emp.Name, Email: emp.Email, Password: emp.Password, Roles: Array.isArray(emp.Roles) ? emp.Roles : [], City: emp.City || "" });
     setIsModalOpen(true);
   };
 
@@ -132,6 +133,11 @@ export default function EmployeesPage() {
               </div>
               
               <div className="space-y-2">
+                {emp.City && (
+                  <div className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-2">
+                    Region: {emp.City}
+                  </div>
+                )}
                 <div className="text-xs uppercase tracking-widest text-gray-600 font-bold mb-3 flex items-center gap-2">
                   <Shield className="w-3 h-3" /> Security Clearance
                 </div>
@@ -172,6 +178,13 @@ export default function EmployeesPage() {
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2"><Key className="w-3 h-3" /> Passcode</label>
                 <input required type="text" value={formData.Password} onChange={e => setFormData({...formData, Password: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-xl mt-2 text-white outline-none focus:border-tpc-orange transition-colors" />
               </div>
+
+              {formData.Roles.includes("SALES AGENT") && (
+                <div className="animate-in slide-in-from-top-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-tpc-orange">Operating City</label>
+                  <input required value={formData.City} onChange={e => setFormData({...formData, City: e.target.value})} placeholder="e.g. New York, London..." className="w-full bg-black border border-tpc-orange/30 focus:border-tpc-orange p-4 rounded-xl mt-2 text-white outline-none transition-colors" />
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 block">Assigned Roles</label>

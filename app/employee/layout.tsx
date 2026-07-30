@@ -10,9 +10,20 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   let roles: string[] = [];
   try { roles = JSON.parse(rolesStr); } catch(e) {}
 
-  const navItems = [
-    { name: "My Workspace", href: "/employee", icon: LayoutDashboard },
-  ];
+  const isSalesAgent = roles.includes("SALES AGENT");
+  const isCreative = roles.includes("CONTENT WRITER") || roles.includes("EDITOR") || roles.includes("VIDEOGRAPHER") || roles.includes("GRAPHIC DESIGNER") || roles.includes("AI VIDEO CREATOR");
+  
+  const navItems = [];
+  
+  if (isSalesAgent && !isCreative) {
+    navItems.push({ name: "Analytics Dashboard", href: "/employee", icon: LayoutDashboard });
+    navItems.push({ name: "My Leads", href: "/employee/leads", icon: CheckSquare });
+  } else if (isCreative && !isSalesAgent) {
+    navItems.push({ name: "My Tasks", href: "/employee", icon: LayoutDashboard });
+  } else {
+    navItems.push({ name: "My Tasks", href: "/employee", icon: LayoutDashboard });
+    navItems.push({ name: "My Leads", href: "/employee/leads", icon: CheckSquare });
+  }
 
   return (
     <div className="admin-panel fixed inset-0 z-[10000] bg-tpc-black text-white flex flex-col md:flex-row overflow-hidden font-sans cursor-default">

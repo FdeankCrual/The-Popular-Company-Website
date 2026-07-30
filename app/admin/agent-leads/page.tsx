@@ -5,17 +5,15 @@ import { Plus, Loader2, Trash2, Filter, ArrowUpDown, ArrowDown, ArrowUp, X, Copy
 import { NotionDropdown } from "../workbook/components/NotionDropdown";
 
 const initialData: any[] = [];
-const emptyLead = { id: "", date: "", type: "Manual", name: "", email: "", phone: "", target: "", message: "", status: "New", agent: "" };
+const emptyLead = { id: "", date: "", type: "Agent Initiated", name: "", email: "", phone: "", target: "", message: "", status: "New", agent: "" };
 
-export default function AdminLeadsPage() {
+export default function AdminAgentLeadsPage() {
   const [data, setData] = useState<any[]>(initialData);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'Active' | 'Archive'>('Active');
   
-  // Need to pull employees for the Agent dropdown
   const [employees, setEmployees] = useState<string[]>([]);
   
-  // Advanced Table States
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [lastSelectedRowIdx, setLastSelectedRowIdx] = useState<number | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc'|'desc'|null }>({ key: '', direction: null });
@@ -24,8 +22,7 @@ export default function AdminLeadsPage() {
   const [unsavedUpdates, setUnsavedUpdates] = useState<Map<number, any>>(new Map());
   const [activeQueryLead, setActiveQueryLead] = useState<any>(null);
 
-  // Extract unique values
-  const leadTypes = Array.from(new Set(["Manual", "Contact Form", "Audit", ...data.map(d => d.type)].filter(Boolean)));
+  const leadTypes = Array.from(new Set(["Manual", "Agent Initiated", ...data.map(d => d.type)].filter(Boolean)));
   const statuses = Array.from(new Set(["New", "Contacted", "Meeting Scheduled", "Converted", "Rejected", ...data.map(d => d.status)].filter(Boolean)));
   const agents = Array.from(new Set(["Unassigned", ...employees].filter(Boolean)));
 
@@ -47,7 +44,6 @@ export default function AdminLeadsPage() {
       if (leadsRes.ok) {
         const liveData = await leadsRes.json();
         if (Array.isArray(liveData)) {
-          // Assign original index for updates/deletes mapped to Google Sheets
           const mapped = liveData.map((row, idx) => ({ ...row, _originalIndex: idx }));
           setData(mapped);
         }
@@ -66,10 +62,9 @@ export default function AdminLeadsPage() {
     }
   }
 
-  // Data Processing
   const processedData = useMemo(() => {
-    // ONLY SHOW WEBSITE LEADS
-    let result = data.filter(d => d.type !== 'Manual' && d.type !== 'Agent Initiated');
+    // ONLY SHOW AGENT LEADS
+    let result = data.filter(d => d.type === 'Manual' || d.type === 'Agent Initiated');
 
     if (activeTab === 'Active') {
       result = result.filter(r => r.status !== 'Converted' && r.status !== 'Rejected');
@@ -109,7 +104,7 @@ export default function AdminLeadsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "bulkAddLeads", data: [newRow] })
       });
-      await fetchData(); // Refetch to get the proper index
+      await fetchData(); 
     } catch (err) {
       console.error(err);
     }
@@ -158,7 +153,7 @@ export default function AdminLeadsPage() {
         body: JSON.stringify({ action: "bulkUpdateLeads", updates })
       });
       setUnsavedUpdates(new Map());
-      await fetchData(); // refresh indices
+      await fetchData(); 
     } catch (err) {
       console.error("Failed to save all changes", err);
       alert("Failed to save changes.");
@@ -280,11 +275,11 @@ export default function AdminLeadsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between p-4 sm:p-8 md:p-12 pb-4 sm:pb-8 border-b border-white/10 shrink-0 gap-4">
         <div>
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2 text-white">
-            Website <span className="text-tpc-orange">Leads</span>
+            Agent <span className="text-tpc-orange">Leads</span>
           </h2>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <p className="text-gray-500 font-mono text-xs md:text-sm uppercase tracking-widest">
-              Inbound Audit & Contact Leads
+              Internal Team Initiated Leads
             </p>
             <button 
               onClick={() => setShowFilters(!showFilters)}
@@ -357,7 +352,7 @@ export default function AdminLeadsPage() {
             <tbody className="divide-y divide-white/5">
               {processedData.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-6 py-12 text-center text-gray-500 italic">No leads match your filters.</td>
+                  <td colSpan={11} className="px-6 py-12 text-center text-gray-500 italic">No agent leads match your filters.</td>
                 </tr>
               )}
               {processedData.map((row) => (

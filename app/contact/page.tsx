@@ -40,7 +40,8 @@ export default function ContactPage() {
           name: name,
           email: email,
           target: selectedService, // Using target column for selected service
-          message: message
+          message: message,
+          agent: "Bhavik Bhardwaj"
         }),
       });
 

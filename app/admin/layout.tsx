@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle, CheckSquare, TrendingUp, Wallet } from "lucide-react";
+import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle, CheckSquare, TrendingUp, Wallet, Globe } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -15,7 +15,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Money", href: "/admin/money", icon: Wallet },
     { name: "Workbook", href: "/admin/workbook", icon: Database },
-    { name: "Leads", href: "/admin/leads", icon: Users },
+    { name: "Website Leads", href: "/admin/leads", icon: Globe },
+    { name: "Agent Leads", href: "/admin/agent-leads", icon: Users },
     { name: "Content", href: "/cms", icon: FileText },
     { name: "Settings", href: "/admin/settings", icon: Settings },
     { name: "Employees", href: "/admin/employees", icon: UserCircle }, // New Employees Tab
