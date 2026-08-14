@@ -82,16 +82,27 @@ export function CalendarView({ data, onTaskClick }: { data: any[], onTaskClick?:
               </div>
               
               <div className="flex-1 overflow-y-auto space-y-1">
-                {tasks.map(task => (
-                  <div 
-                    key={task.id} 
-                    onClick={() => onTaskClick?.(task)}
-                    className="text-[10px] bg-[#252525] text-white p-1.5 rounded border border-white/10 flex flex-col gap-1 truncate cursor-pointer hover:border-tpc-orange/50 transition-colors"
-                  >
-                    <span className="font-bold truncate text-tpc-orange">{task.client || "Untitled"}</span>
-                    <span className="truncate opacity-80">{task.name}</span>
-                  </div>
-                ))}
+                {tasks.map(task => {
+                  const s = (task.status || "").toLowerCase();
+                  const isDone = s === "completed" || s === "posted";
+                  const colorClass = isDone 
+                    ? "bg-green-500/10 text-green-400 border-green-500/30 hover:border-green-500/50"
+                    : "bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:border-yellow-500/50";
+
+                  const timeStr = task.finalDate ? new Date(task.finalDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+                  return (
+                    <div 
+                      key={task.id} 
+                      onClick={() => onTaskClick?.(task)}
+                      className={`text-[10px] p-1.5 rounded border flex flex-col gap-1 truncate cursor-pointer transition-colors ${colorClass}`}
+                    >
+                      <span className="font-bold truncate opacity-90">{task.client || "Untitled"}</span>
+                      <span className="truncate opacity-80">{task.name}</span>
+                      {timeStr && <span className="text-[9px] font-mono opacity-70 mt-1 flex items-center gap-1"><Clock className="w-3 h-3"/> {timeStr}</span>}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );

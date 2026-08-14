@@ -8,7 +8,7 @@ import { KanbanView } from "./components/KanbanView";
 import { CalendarView } from "./components/CalendarView";
 
 const initialData: any[] = [];
-const emptyForm = { id: "", name: "", client: "", status: "Planning", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", desc: "" };
+const emptyForm = { id: "", name: "", client: "", status: "Planning", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", desc: "", captionApproved: "false" };
 
 const formatForDateTimeLocal = (dateString?: string) => {
   if (!dateString) return "";
@@ -506,7 +506,7 @@ export default function WorkbookPage() {
                 <th onClick={() => handleSort('scriptDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Date <SortIcon columnKey="scriptDate"/></th>
                 <th onClick={() => handleSort('shootDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Shoot Date <SortIcon columnKey="shootDate"/></th>
                 <th onClick={() => handleSort('editDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Edit Date <SortIcon columnKey="editDate"/></th>
-                <th onClick={() => handleSort('finalDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Final Date <SortIcon columnKey="finalDate"/></th>
+                <th onClick={() => handleSort('finalDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Posting Date / Time <SortIcon columnKey="finalDate"/></th>
                 <th onClick={() => handleSort('platform')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform"/></th>
                 <th onClick={() => handleSort('month')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month"/></th>
                 <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 border-r border-white/5">Support</th>
@@ -903,6 +903,26 @@ export default function WorkbookPage() {
                 </div>
               </div>
 
+              {editingTask.reelCaption && (
+                <div className="mt-4 bg-white/5 border border-white/10 p-4 rounded-lg">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="checkbox" 
+                      checked={editingTask.captionApproved === 'true'}
+                      onChange={(e) => setEditingTask({...editingTask, captionApproved: e.target.checked ? 'true' : 'false'})}
+                      className="w-5 h-5 accent-green-500 rounded cursor-pointer"
+                    />
+                    <div>
+                      <div className="text-sm font-bold text-white group-hover:text-green-400 transition-colors">Caption Approved</div>
+                      <div className="text-xs text-gray-500 font-mono mt-1">Check this to lock the caption and approve it for posting.</div>
+                    </div>
+                  </label>
+                  <div className="mt-4 text-xs text-gray-400 bg-black/50 p-3 rounded italic border border-white/5">
+                    "{editingTask.reelCaption}"
+                  </div>
+                </div>
+              )}
+              
             </div>
 
             <div className="flex gap-4">

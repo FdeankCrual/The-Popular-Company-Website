@@ -10,7 +10,7 @@ export default function MoneyManagementPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  const [month, setMonth] = useState("July");
+  const [month, setMonth] = useState(() => new Date().toLocaleString('default', { month: 'long' }));
 
   const [incomes, setIncomes] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);

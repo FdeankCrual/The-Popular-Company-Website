@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Loader2, CheckCircle, Clock, Link as LinkIcon, FileText, X, MessageSquare } from "lucide-react";
 
 const formatDate = (dateStr?: string) => {
@@ -25,6 +25,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
   const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
   const [activeActionTask, setActiveActionTask] = useState<any>(null);
   const [activeView, setActiveView] = useState<'List' | 'Kanban' | 'Calendar'>('List');
+  const [activeMonth, setActiveMonth] = useState(() => new Date().toLocaleString('default', { month: 'long' }));
 
   useEffect(() => {
     fetchTasks();
@@ -111,14 +112,6 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
-
   const sortTasks = (taskList: any[]) => {
     return taskList.sort((a, b) => {
       const da = new Date(a.finalDate || a.shootDate || a.scriptDate || a.editDate || "9999-12-31").getTime();
@@ -128,26 +121,52 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
   };
 
   const getAllowedKanbanStages = () => {
+    let stages: string[] = [];
     if (roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER")) {
-      return ["Ideation", "Scripting", "Shooting", "Editing", "Review", "Completed", "Posted"];
+      return ["Ideation", "Scripting", "Designing", "Shooting", "Editing", "Review", "Completed", "Posted"];
     }
-    
-    const stages = [];
-    if (roles.includes("CONTENT WRITER")) stages.push("Ideation", "Scripting");
+    if (roles.includes("CONTENT WRITER") || roles.includes("ADMIN_CONTENT")) stages.push("Ideation", "Scripting");
+    if (roles.includes("GRAPHIC DESIGNER")) stages.push("Designing");
     if (roles.includes("VIDEOGRAPHER")) stages.push("Shooting");
     if (roles.includes("EDITOR")) stages.push("Editing");
     
     if (stages.length > 0) {
-      stages.push("Review"); // Everyone needs Review to see tasks sent back for fixes
+      stages.push("Review"); 
       return stages;
     }
     
-    return ["Ideation", "Scripting", "Shooting", "Editing", "Review", "Completed", "Posted"];
+    return ["Ideation", "Scripting", "Designing", "Shooting", "Editing", "Review", "Completed", "Posted"];
   };
 
-  const activeTasks = sortTasks(tasks.filter(t => t.status !== "Completed" && !t.status?.toLowerCase().startsWith("review") && t.status !== "Under Review" && t.status !== "Fixes Required"));
-  const reviewTasks = sortTasks(tasks.filter(t => t.status?.toLowerCase().startsWith("review") || t.status === "Under Review"));
-  const fixesTasks = sortTasks(tasks.filter(t => t.status === "Fixes Required"));
+  const filteredTasksByMonth = useMemo(() => {
+    if (activeMonth === "All") return tasks;
+    return tasks.filter(t => {
+      const dates = [t.scriptDate, t.shootDate, t.editDate, t.finalDate].filter(Boolean);
+      if (dates.length > 0) {
+        return dates.some(d => {
+          try {
+            const dateObj = new Date(d);
+            return dateObj.toLocaleString('default', { month: 'long' }) === activeMonth;
+          } catch(e) { return false; }
+        });
+      }
+      return true; 
+    });
+  }, [tasks, activeMonth]);
+
+  const activeTasks = sortTasks(filteredTasksByMonth.filter(t => t.status !== "Completed" && !t.status?.toLowerCase().startsWith("review") && t.status !== "Under Review" && t.status !== "Fixes Required"));
+  const reviewTasks = sortTasks(filteredTasksByMonth.filter(t => t.status?.toLowerCase().startsWith("review") || t.status === "Under Review"));
+  const fixesTasks = sortTasks(filteredTasksByMonth.filter(t => t.status === "Fixes Required"));
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+
   
   return (
     <div className="p-4 sm:p-8 md:p-12 text-[#D4D4D4] bg-[#191919] min-h-screen pb-24 md:pb-12">
@@ -161,7 +180,18 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <select 
+            value={activeMonth}
+            onChange={e => setActiveMonth(e.target.value)}
+            className="bg-black/50 border border-white/10 p-2 text-sm text-white focus:outline-none focus:border-tpc-orange transition-colors rounded"
+          >
+            <option value="All">All Months</option>
+            {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+          
           <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
             <button 
               onClick={() => setActiveView('List')}
@@ -316,7 +346,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
                 </div>
               )}
 
-              {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR")) && (
+              {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR") || roles.includes("GRAPHIC DESIGNER")) && (
                 <div className="flex flex-col gap-3">
                    {activeActionTask.docLink ? (
                      <a href={activeActionTask.docLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 p-4 rounded-xl text-sm font-bold transition-colors">
@@ -468,8 +498,8 @@ function TaskRow({ task, onMarkDone, updating, roles, isFix = false, onOpenQuery
             </div>
           )}
 
-          {/* Videographer & Editor Links */}
-          {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR")) && (
+          {/* Videographer, Editor & Graphic Designer Links */}
+          {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR") || roles.includes("GRAPHIC DESIGNER")) && (
             <div className="flex flex-col gap-2 mt-2">
                {task.docLink && (
                  <a href={task.docLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 p-3 rounded-lg text-xs font-bold transition-colors">
