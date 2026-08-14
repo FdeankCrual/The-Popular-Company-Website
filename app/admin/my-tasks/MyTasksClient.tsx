@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, CheckSquare, X, ChevronDown, User, ExternalLink } from "lucide-react";
+import { Loader2, CheckSquare, X, ChevronDown, User, ExternalLink, Calendar, KanbanSquare } from "lucide-react";
+import { CalendarView } from "../workbook/components/CalendarView";
+import { KanbanView } from "../workbook/components/KanbanView";
 
 export default function MyTasksClient({ initialName }: { initialName: string }) {
   const [data, setData] = useState<any[]>([]);
@@ -10,6 +12,7 @@ export default function MyTasksClient({ initialName }: { initialName: string }) 
   
   // The selected admin to view tasks for
   const [selectedAdmin, setSelectedAdmin] = useState(initialName);
+  const [activeView, setActiveView] = useState<'List' | 'Kanban' | 'Calendar'>('List');
   
   // Modals
   const [reviewTask, setReviewTask] = useState<any>(null);
@@ -62,6 +65,10 @@ export default function MyTasksClient({ initialName }: { initialName: string }) 
     }
   };
 
+  const handleInlineChange = (id: string, field: string, value: string) => {
+    updateTask(id, { [field]: value });
+  };
+
   // Extract Admins (or anyone assigned tasks)
   const adminNames = Array.from(new Set([
     initialName,
@@ -85,9 +92,9 @@ export default function MyTasksClient({ initialName }: { initialName: string }) 
   };
 
   return (
-    <div className="flex-1 bg-tpc-black p-6 md:p-10 min-h-screen relative overflow-y-auto">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+    <div className="flex-1 bg-tpc-black min-h-screen flex flex-col relative overflow-hidden">
+      <div className="p-6 md:p-10 border-b border-white/10 shrink-0">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className="text-3xl font-black uppercase tracking-tighter text-white mb-2 flex items-center gap-3">
               <CheckSquare className="w-8 h-8 text-tpc-orange" />
@@ -96,93 +103,124 @@ export default function MyTasksClient({ initialName }: { initialName: string }) 
             <p className="text-gray-400 text-sm">Review and manage your assigned tasks efficiently.</p>
           </div>
           
-          <div className="relative">
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
-              <User className="w-4 h-4 text-gray-400" />
-              <select 
-                value={selectedAdmin} 
-                onChange={(e) => setSelectedAdmin(e.target.value)}
-                className="bg-transparent border-none text-white outline-none font-bold text-sm cursor-pointer appearance-none pr-6"
+          <div className="flex items-center gap-4">
+            <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
+              <button 
+                onClick={() => setActiveView('List')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'List' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
               >
-                {adminNames.map(name => (
-                  <option key={name} value={name} className="bg-tpc-black text-white">{name}</option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-gray-500 absolute right-4 pointer-events-none" />
+                List
+              </button>
+              <button 
+                onClick={() => setActiveView('Kanban')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${activeView === 'Kanban' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
+              >
+                <KanbanSquare className="w-3 h-3" /> Kanban
+              </button>
+              <button 
+                onClick={() => setActiveView('Calendar')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${activeView === 'Calendar' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
+              >
+                <Calendar className="w-3 h-3" /> Calendar
+              </button>
+            </div>
+
+            <div className="relative">
+              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
+                <User className="w-4 h-4 text-gray-400" />
+                <select 
+                  value={selectedAdmin} 
+                  onChange={(e) => setSelectedAdmin(e.target.value)}
+                  className="bg-transparent border-none text-white outline-none font-bold text-sm cursor-pointer appearance-none pr-6"
+                >
+                  {adminNames.map(name => (
+                    <option key={name} value={name} className="bg-tpc-black text-white">{name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-gray-500 absolute right-4 pointer-events-none" />
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <Loader2 className="w-8 h-8 animate-spin mb-4" />
-            <p className="uppercase tracking-widest text-xs font-bold">Loading tasks...</p>
-          </div>
-        ) : (
-          <>
-            {myTasks.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-                <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">You're all caught up!</h3>
-                <p className="text-gray-400 text-sm">There are no active tasks assigned to {selectedAdmin}.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myTasks.map(task => (
-                  <div key={task.id} className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-colors group flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${getStatusColor(task.status)}`}>
-                        {task.status}
-                      </span>
-                      <span className="text-xs text-gray-500 font-mono">{task.month}</span>
+      <div className="flex-1 overflow-y-auto p-6 md:p-10">
+        <div className="max-w-6xl mx-auto h-full">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full py-20 text-gray-500">
+              <Loader2 className="w-8 h-8 animate-spin mb-4" />
+              <p className="uppercase tracking-widest text-xs font-bold">Loading tasks...</p>
+            </div>
+          ) : activeView === 'Kanban' ? (
+            <KanbanView data={myTasks} handleInlineChange={handleInlineChange} onTaskClick={(task) => setReviewTask(task)} />
+          ) : activeView === 'Calendar' ? (
+            <CalendarView data={myTasks} onTaskClick={(task) => setReviewTask(task)} />
+          ) : (
+            <>
+              {myTasks.length === 0 ? (
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+                  <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">You're all caught up!</h3>
+                  <p className="text-gray-400 text-sm">There are no active tasks assigned to {selectedAdmin}.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {myTasks.map(task => (
+                    <div key={task.id} className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-colors group flex flex-col">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${getStatusColor(task.status)}`}>
+                          {task.status}
+                        </span>
+                        <span className="text-xs text-gray-500 font-mono">{task.month}</span>
+                      </div>
+                      
+                      <h3 className="text-lg font-bold text-white mb-1 line-clamp-2">{task.name}</h3>
+                      <p className="text-sm text-gray-400 mb-6">{task.client} • {task.platform}</p>
+
+                      <div className="mt-auto space-y-3">
+                        {(task.status || "").toLowerCase().includes("review") ? (
+                          <button 
+                            onClick={() => setReviewTask(task)}
+                            className="w-full py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 border border-yellow-500/30 font-bold uppercase tracking-widest text-xs rounded-xl transition-colors animate-pulse flex items-center justify-center gap-2"
+                          >
+                            <CheckSquare className="w-4 h-4" /> Review Task
+                          </button>
+                        ) : (
+                          <div className="w-full py-3 bg-white/5 text-gray-500 border border-white/10 font-bold uppercase tracking-widest text-xs rounded-xl text-center cursor-not-allowed">
+                            In Progress
+                          </div>
+                        )}
+                        {task.docLink && (
+                          <a 
+                            href={task.docLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="w-full py-2 bg-transparent hover:bg-white/5 text-blue-400 hover:text-blue-300 border border-white/10 font-bold uppercase tracking-widest text-[10px] rounded-xl transition-colors flex items-center justify-center gap-2"
+                          >
+                            <ExternalLink className="w-3 h-3" /> Open Script Doc
+                          </a>
+                        )}
+
+                        {task.driveA ? (
+                          <a 
+                            href={task.driveA} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="w-full py-2 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white border border-white/10 font-bold uppercase tracking-widest text-[10px] rounded-xl transition-colors flex items-center justify-center gap-2"
+                          >
+                            <ExternalLink className="w-3 h-3" /> Open Drive Folder
+                          </a>
+                        ) : (
+                          <p className="text-center text-[10px] text-red-400 italic">No Drive Folder provided.</p>
+                        )}
+                      </div>
                     </div>
-                    
-                    <h3 className="text-lg font-bold text-white mb-1 line-clamp-2">{task.name}</h3>
-                    <p className="text-sm text-gray-400 mb-6">{task.client} • {task.platform}</p>
-
-                    <div className="mt-auto space-y-3">
-                      {(task.status || "").toLowerCase().includes("review") ? (
-                        <button 
-                          onClick={() => setReviewTask(task)}
-                          className="w-full py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 border border-yellow-500/30 font-bold uppercase tracking-widest text-xs rounded-xl transition-colors animate-pulse flex items-center justify-center gap-2"
-                        >
-                          <CheckSquare className="w-4 h-4" /> Review Task
-                        </button>
-                      ) : (
-                        <div className="w-full py-3 bg-white/5 text-gray-500 border border-white/10 font-bold uppercase tracking-widest text-xs rounded-xl text-center cursor-not-allowed">
-                          In Progress
-                        </div>
-                      )}
-                      {task.docLink && (
-                        <a 
-                          href={task.docLink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="w-full py-2 bg-transparent hover:bg-white/5 text-blue-400 hover:text-blue-300 border border-white/10 font-bold uppercase tracking-widest text-[10px] rounded-xl transition-colors flex items-center justify-center gap-2"
-                        >
-                          <ExternalLink className="w-3 h-3" /> Open Script Doc
-                        </a>
-                      )}
-
-                      {task.driveA ? (
-                        <a 
-                          href={task.driveA} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="w-full py-2 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white border border-white/10 font-bold uppercase tracking-widest text-[10px] rounded-xl transition-colors flex items-center justify-center gap-2"
-                        >
-                          <ExternalLink className="w-3 h-3" /> Open Drive Folder
-                        </a>
-                      ) : (
-                        <p className="text-center text-[10px] text-red-400 italic">No Drive Folder provided.</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* REVIEW MODAL */}

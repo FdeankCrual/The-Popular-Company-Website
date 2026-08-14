@@ -1,0 +1,128 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { CheckCircle2, Clock, Play } from "lucide-react";
+
+const STAGES = ["Ideation", "Scripting", "Shooting", "Editing", "Review", "Completed", "Posted"];
+
+// Map current statuses to our 7 Kanban stages
+const mapStatusToStage = (status: string) => {
+  const s = (status || "").toLowerCase();
+  if (s.includes('ideation') || s.includes('planning')) return "Ideation";
+  if (s.includes('script')) return "Scripting";
+  if (s.includes('shoot')) return "Shooting";
+  if (s.includes('edit')) return "Editing";
+  if (s.includes('review') || s === "fixes required") return "Review";
+  if (s === "completed") return "Completed";
+  if (s === "posted") return "Posted";
+  return "Ideation"; // Default
+};
+
+export function KanbanView({ 
+  data, 
+  handleInlineChange, 
+  onTaskClick,
+  allowedStages 
+}: { 
+  data: any[], 
+  handleInlineChange: (id: string, field: string, value: string) => void, 
+  onTaskClick?: (task: any) => void,
+  allowedStages?: string[]
+}) {
+  
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData("taskId", id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, stage: string) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData("taskId");
+    if (!taskId) return;
+    
+    let mappedStatus = stage;
+    if (stage === "Review") mappedStatus = "Under Review";
+    if (stage === "Ideation") mappedStatus = "Planning";
+    
+    handleInlineChange(taskId, "status", mappedStatus);
+  };
+
+  const activeStages = allowedStages || STAGES;
+
+  // Group data by stage
+  const columns: Record<string, any[]> = {};
+  activeStages.forEach(s => columns[s] = []);
+  
+  data.forEach(task => {
+    const stage = mapStatusToStage(task.status);
+    if (columns[stage]) {
+      columns[stage].push(task);
+    }
+  });
+
+  return (
+    <div className="flex h-[calc(100vh-250px)] w-max min-w-full gap-4 p-4 overflow-x-auto bg-[#111]">
+      {activeStages.map((stage) => (
+        <div 
+          key={stage} 
+          className="flex flex-col w-[320px] shrink-0 bg-[#1a1a1a] rounded-xl border border-white/5 overflow-hidden"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, stage)}
+        >
+          {/* Column Header */}
+          <div className="flex items-center justify-between p-4 border-b border-white/5 bg-black/20">
+            <h3 className="font-bold text-sm tracking-widest uppercase text-white/80">{stage}</h3>
+            <span className="bg-white/10 text-white/50 text-xs px-2 py-0.5 rounded-full font-mono">{columns[stage].length}</span>
+          </div>
+
+          {/* Task Cards */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            {columns[stage].map(task => (
+              <motion.div
+                layoutId={task.id}
+                key={task.id}
+                draggable
+                onDragStart={(e: any) => handleDragStart(e, task.id)}
+                onClick={() => onTaskClick?.(task)}
+                className="bg-[#252525] p-4 rounded-lg border border-white/10 hover:border-tpc-orange/50 transition-colors cursor-grab active:cursor-grabbing shadow-lg"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-[10px] font-mono text-tpc-orange uppercase tracking-widest bg-tpc-orange/10 px-2 py-0.5 rounded">
+                    {task.client || "No Client"}
+                  </span>
+                  {task.platform && (
+                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                      {task.platform}
+                    </span>
+                  )}
+                </div>
+                
+                <h4 className="font-bold text-white text-sm mb-3 leading-snug">{task.name || "Untitled Task"}</h4>
+                
+                {task.assigned && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {task.assigned.split(',').map((a: string, i: number) => (
+                      <span key={i} className="text-[9px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                        {a.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between text-xs text-gray-500 font-mono mt-4 pt-3 border-t border-white/5">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> 
+                    {task.month || "No Month"}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { Loader2, Plus, ArrowUpDown, ArrowDown, ArrowUp, X, Filter, Copy, CheckSquare, Trash2, Calendar, FileText, Download, Check, Save, MessageSquare, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
+import { KanbanView } from "./components/KanbanView";
+import { CalendarView } from "./components/CalendarView";
 
 const initialData: any[] = [];
 const emptyForm = { id: "", name: "", client: "", status: "Planning", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", desc: "" };
@@ -24,6 +26,7 @@ export default function WorkbookPage() {
   const [data, setData] = useState<any[]>(initialData);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'Active' | 'Archive'>('Active');
+  const [activeView, setActiveView] = useState<'Table' | 'Kanban' | 'Calendar'>('Table');
   const [config, setConfig] = useState<any>({ clients: [], assigned: [], status: [], platforms: [], months: [] });
   const [employees, setEmployees] = useState<string[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -450,12 +453,38 @@ export default function WorkbookPage() {
         </button>
       </div>
 
-      {/* SPREADSHEET */}
+      {/* VIEW TOGGLES */}
+      <div className="flex px-4 sm:px-8 md:px-12 py-4 bg-[#191919] gap-4 border-b border-white/5">
+        <button 
+          onClick={() => setActiveView('Table')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'Table' ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
+        >
+          Table View
+        </button>
+        <button 
+          onClick={() => setActiveView('Kanban')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'Kanban' ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
+        >
+          Kanban Board
+        </button>
+        <button 
+          onClick={() => setActiveView('Calendar')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'Calendar' ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
+        >
+          Calendar
+        </button>
+      </div>
+
+      {/* MAIN VIEW CONTENT */}
       <div className="flex-1 overflow-auto bg-[#111]">
         {loading ? (
           <div className="flex items-center justify-center h-full text-gray-500 gap-2">
             <Loader2 className="w-5 h-5 animate-spin"/> Loading Workbook...
           </div>
+        ) : activeView === 'Kanban' ? (
+          <KanbanView data={processedData} handleInlineChange={handleInlineChange} onTaskClick={(task) => setEditingTask(task)} />
+        ) : activeView === 'Calendar' ? (
+          <CalendarView data={processedData} onTaskClick={(task) => setEditingTask(task)} />
         ) : (
           <table className="w-max min-w-full text-left text-sm whitespace-nowrap border-collapse pb-32">
             <thead className="sticky top-0 bg-[#111] z-20 text-gray-400 shadow-sm border-b border-white/10">
@@ -736,7 +765,163 @@ export default function WorkbookPage() {
         </button>
       )}
 
-      {/* (Task settings modal removed in favor of inline links) */}
+      {/* EDIT MODAL (for Kanban/Calendar views) */}
+      {editingTask && (
+        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg p-8 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <button onClick={() => setEditingTask(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-xl font-bold uppercase tracking-widest mb-6 text-tpc-orange flex items-center gap-2">
+              Edit Task
+            </h3>
+            
+            <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-2">
+              <div>
+                <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Task Name</label>
+                <input 
+                  value={editingTask.name || ''}
+                  onChange={(e) => setEditingTask({...editingTask, name: e.target.value})}
+                  className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Client</label>
+                  <input 
+                    value={editingTask.client || ''}
+                    onChange={(e) => setEditingTask({...editingTask, client: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Status</label>
+                  <select 
+                    value={editingTask.status || ''}
+                    onChange={(e) => setEditingTask({...editingTask, status: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
+                  >
+                    {statuses.map(s => <option key={s as string} value={s as string}>{s as string}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Assigned To</label>
+                  <input 
+                    value={editingTask.assigned || ''}
+                    onChange={(e) => setEditingTask({...editingTask, assigned: e.target.value})}
+                    placeholder="Comma separated names"
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Platform</label>
+                  <select 
+                    value={editingTask.platform || ''}
+                    onChange={(e) => setEditingTask({...editingTask, platform: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
+                  >
+                    {platforms.map(p => <option key={p as string} value={p as string}>{p as string}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Month</label>
+                  <select 
+                    value={editingTask.month || ''}
+                    onChange={(e) => setEditingTask({...editingTask, month: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
+                  >
+                    {months.map(m => <option key={m as string} value={m as string}>{m as string}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Script Link</label>
+                  <input 
+                    value={editingTask.docLink || ''}
+                    onChange={(e) => setEditingTask({...editingTask, docLink: e.target.value})}
+                    placeholder="https://..."
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Drive Link</label>
+                <input 
+                  value={editingTask.driveA || ''}
+                  onChange={(e) => setEditingTask({...editingTask, driveA: e.target.value})}
+                  placeholder="https://..."
+                  className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Script Date</label>
+                  <input 
+                    type="datetime-local"
+                    value={formatForDateTimeLocal(editingTask.scriptDate)}
+                    onChange={(e) => setEditingTask({...editingTask, scriptDate: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Shoot Date</label>
+                  <input 
+                    type="datetime-local"
+                    value={formatForDateTimeLocal(editingTask.shootDate)}
+                    onChange={(e) => setEditingTask({...editingTask, shootDate: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Edit Date</label>
+                  <input 
+                    type="datetime-local"
+                    value={formatForDateTimeLocal(editingTask.editDate)}
+                    onChange={(e) => setEditingTask({...editingTask, editDate: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Final Date</label>
+                  <input 
+                    type="datetime-local"
+                    value={formatForDateTimeLocal(editingTask.finalDate)}
+                    onChange={(e) => setEditingTask({...editingTask, finalDate: e.target.value})}
+                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => {
+                  // Propagate all changes
+                  Object.keys(editingTask).forEach(key => {
+                    handleInlineChange(editingTask.id, key, editingTask[key]);
+                  });
+                  setEditingTask(null);
+                }} 
+                className="w-full bg-tpc-orange hover:bg-white text-black font-bold uppercase tracking-widest py-3 rounded-xl transition-colors text-sm"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* REVIEW MODAL */}
       {reviewTask && (

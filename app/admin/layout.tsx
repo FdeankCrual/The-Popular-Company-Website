@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle, CheckSquare, TrendingUp, Wallet, Globe } from "lucide-react";
+import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, HelpCircle, CheckSquare, TrendingUp, Wallet, Globe, BookOpen } from "lucide-react";
+import CommandPalette from "./components/CommandPalette";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -15,11 +16,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Money", href: "/admin/money", icon: Wallet },
     { name: "Workbook", href: "/admin/workbook", icon: Database },
+    { name: "Client Research", href: "/admin/research", icon: BookOpen },
     { name: "Website Leads", href: "/admin/leads", icon: Globe },
     { name: "Agent Leads", href: "/admin/agent-leads", icon: Users },
     { name: "Content", href: "/cms", icon: FileText },
     { name: "Settings", href: "/admin/settings", icon: Settings },
-    { name: "Employees", href: "/admin/employees", icon: UserCircle }, // New Employees Tab
+    { name: "Employees", href: "/admin/employees", icon: UserCircle },
   ];
 
   return (
@@ -78,6 +80,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </Link>
           ))}
       </nav>
+
+      {/* COMMAND PALETTE */}
+      <CommandPalette />
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100vh-60px)] md:h-screen relative pb-20 md:pb-0">

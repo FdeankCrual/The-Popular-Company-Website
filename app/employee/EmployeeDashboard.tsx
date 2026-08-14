@@ -14,11 +14,17 @@ const formatDate = (dateStr?: string) => {
   }
 };
 
+import { CalendarView } from "../admin/workbook/components/CalendarView";
+import { KanbanView } from "../admin/workbook/components/KanbanView";
+import { Calendar, KanbanSquare, List } from "lucide-react";
+
 export default function EmployeeDashboard({ email, name, roles }: { email: string, name: string, roles: string[] }) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
+  const [activeActionTask, setActiveActionTask] = useState<any>(null);
+  const [activeView, setActiveView] = useState<'List' | 'Kanban' | 'Calendar'>('List');
 
   useEffect(() => {
     fetchTasks();
@@ -98,6 +104,13 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
     }
   };
 
+  const handleInlineChange = async (id: string, field: string, value: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      await updateTaskDetails(task, { [field]: value });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
@@ -112,6 +125,24 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
       const db = new Date(b.finalDate || b.shootDate || b.scriptDate || b.editDate || "9999-12-31").getTime();
       return da - db;
     });
+  };
+
+  const getAllowedKanbanStages = () => {
+    if (roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER")) {
+      return ["Ideation", "Scripting", "Shooting", "Editing", "Review", "Completed", "Posted"];
+    }
+    
+    const stages = [];
+    if (roles.includes("CONTENT WRITER")) stages.push("Ideation", "Scripting");
+    if (roles.includes("VIDEOGRAPHER")) stages.push("Shooting");
+    if (roles.includes("EDITOR")) stages.push("Editing");
+    
+    if (stages.length > 0) {
+      stages.push("Review"); // Everyone needs Review to see tasks sent back for fixes
+      return stages;
+    }
+    
+    return ["Ideation", "Scripting", "Shooting", "Editing", "Review", "Completed", "Posted"];
   };
 
   const activeTasks = sortTasks(tasks.filter(t => t.status !== "Completed" && !t.status?.toLowerCase().startsWith("review") && t.status !== "Under Review" && t.status !== "Fixes Required"));
@@ -129,14 +160,44 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
             Personal Task Dashboard
           </p>
         </div>
-        {roles.includes("ADMIN_CONTENT") || roles.includes("CONTENT WRITER") ? (
-          <a href="/cms" className="px-4 py-3 md:py-2 bg-tpc-orange text-black font-bold uppercase tracking-widest rounded-lg hover:bg-white transition-colors text-xs text-center w-full md:w-auto">
-            Website CMS
-          </a>
-        ) : null}
+        
+        <div className="flex items-center gap-4">
+          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
+            <button 
+              onClick={() => setActiveView('List')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${activeView === 'List' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
+            >
+              <List className="w-3 h-3" /> List
+            </button>
+            <button 
+              onClick={() => setActiveView('Kanban')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${activeView === 'Kanban' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
+            >
+              <KanbanSquare className="w-3 h-3" /> Kanban
+            </button>
+            <button 
+              onClick={() => setActiveView('Calendar')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${activeView === 'Calendar' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
+            >
+              <Calendar className="w-3 h-3" /> Calendar
+            </button>
+          </div>
+
+          {roles.includes("ADMIN_CONTENT") || roles.includes("CONTENT WRITER") ? (
+            <a href="/cms" className="px-4 py-3 md:py-2 bg-tpc-orange text-black font-bold uppercase tracking-widest rounded-lg hover:bg-white transition-colors text-xs text-center">
+              Website CMS
+            </a>
+          ) : null}
+        </div>
       </div>
 
-      {fixesTasks.length > 0 && (
+      {activeView === 'Kanban' ? (
+        <KanbanView data={tasks} handleInlineChange={handleInlineChange} onTaskClick={setActiveActionTask} allowedStages={getAllowedKanbanStages()} />
+      ) : activeView === 'Calendar' ? (
+        <CalendarView data={tasks} onTaskClick={setActiveActionTask} />
+      ) : (
+        <>
+          {fixesTasks.length > 0 && (
         <div className="mb-10">
           <h3 className="text-xl font-bold uppercase tracking-widest text-red-500 mb-4 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -223,6 +284,87 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
           </div>
         )}
       </div>
+      </>
+      )}
+
+      {/* ACTION MODAL (For Calendar & Kanban clicks) */}
+      {activeActionTask && (
+        <div className="fixed inset-0 z-[15000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-lg flex flex-col shadow-2xl relative p-8">
+            <button onClick={() => setActiveActionTask(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white cursor-pointer">
+              <X className="w-5 h-5"/>
+            </button>
+            
+            <h3 className="text-2xl font-bold text-white mb-2">{activeActionTask.name || "Untitled"}</h3>
+            <p className="text-sm font-mono text-gray-400 uppercase tracking-widest mb-6">
+              {activeActionTask.client || "No Client"} • {activeActionTask.platform || "Platform TBD"}
+            </p>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-tpc-orange mb-4">Required Links</h4>
+              
+              {(roles.includes("CONTENT WRITER") || roles.includes("ADMIN_CONTENT")) && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs uppercase tracking-widest text-gray-300 font-bold flex items-center gap-2"><FileText className="w-4 h-4"/> Script Doc Link</span>
+                  <input 
+                    type="text" 
+                    placeholder="Paste Google Doc link here..."
+                    value={activeActionTask.docLink || ""} 
+                    onChange={e => updateTaskDetails(activeActionTask, { docLink: e.target.value })}
+                    className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm focus:outline-none focus:border-tpc-orange transition-colors"
+                  />
+                </div>
+              )}
+
+              {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR")) && (
+                <div className="flex flex-col gap-3">
+                   {activeActionTask.docLink ? (
+                     <a href={activeActionTask.docLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 p-4 rounded-xl text-sm font-bold transition-colors">
+                       <FileText className="w-5 h-5"/> Open Script Doc
+                     </a>
+                   ) : (
+                     <div className="text-center text-xs text-gray-500 italic p-2 border border-dashed border-white/10 rounded-lg">No Script Doc available</div>
+                   )}
+                   {activeActionTask.driveA ? (
+                     <a href={activeActionTask.driveA} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-xl text-sm font-bold transition-colors">
+                       <LinkIcon className="w-5 h-5"/> Open Google Drive Folder
+                     </a>
+                   ) : (
+                     <div className="flex items-center justify-center w-full bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-bold italic">
+                       No Drive Folder Provided
+                     </div>
+                   )}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => {
+                  markDone(activeActionTask, { docLink: activeActionTask.docLink });
+                  setActiveActionTask(null);
+                }}
+                disabled={updating === activeActionTask.id}
+                className="w-full py-4 bg-green-500 hover:bg-green-400 text-black font-black uppercase tracking-widest text-xs rounded-xl transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+              >
+                {updating === activeActionTask.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle className="w-5 h-5" /> Mark Done</>}
+              </button>
+              <button 
+                onClick={() => {
+                  setActiveQueryTask(activeActionTask);
+                  setActiveActionTask(null);
+                }}
+                className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold uppercase tracking-widest text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <MessageSquare className="w-5 h-5" /> Ask Support
+                {(activeActionTask.adminReply && activeActionTask.adminReply.trim() !== "") && (
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse absolute -mt-6 ml-24"></span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* QUERY MODAL */}
       {activeQueryTask && (

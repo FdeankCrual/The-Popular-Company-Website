@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
-import { LayoutDashboard, CheckSquare, LogOut, HelpCircle } from "lucide-react";
+import { LayoutDashboard, CheckSquare, LogOut, HelpCircle, BookOpen } from "lucide-react";
 
 export default async function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -11,7 +11,7 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   try { roles = JSON.parse(rolesStr); } catch(e) {}
 
   const isSalesAgent = roles.includes("SALES AGENT");
-  const isCreative = roles.includes("CONTENT WRITER") || roles.includes("EDITOR") || roles.includes("VIDEOGRAPHER") || roles.includes("GRAPHIC DESIGNER") || roles.includes("AI VIDEO CREATOR");
+  const isCreative = roles.includes("CONTENT WRITER") || roles.includes("EDITOR") || roles.includes("VIDEOGRAPHER") || roles.includes("GRAPHIC DESIGNER") || roles.includes("AI VIDEO CREATOR") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT");
   
   const navItems = [];
   
@@ -20,8 +20,10 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
     navItems.push({ name: "My Leads", href: "/employee/leads", icon: CheckSquare });
   } else if (isCreative && !isSalesAgent) {
     navItems.push({ name: "My Tasks", href: "/employee", icon: LayoutDashboard });
+    navItems.push({ name: "Client Research", href: "/employee/research", icon: BookOpen });
   } else {
     navItems.push({ name: "My Tasks", href: "/employee", icon: LayoutDashboard });
+    navItems.push({ name: "Client Research", href: "/employee/research", icon: BookOpen });
     navItems.push({ name: "My Leads", href: "/employee/leads", icon: CheckSquare });
   }
 
