@@ -16,15 +16,15 @@ type FileNode = {
 };
 
 export default function ClientResearchHub({ initialRoles }: { initialRoles?: string[] }) {
-  const canEdit = initialRoles === undefined;
+  const canEdit = initialRoles === undefined || initialRoles.some(r => r.toUpperCase().includes("CONTENT WRITER"));
 
   const [researchData, setResearchData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   const [clients, setClients] = useState<string[]>([]);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
-  
+
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'reading' | 'editing' | 'graph'>('reading');
   const [currentMarkdown, setCurrentMarkdown] = useState("");
@@ -40,7 +40,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   const [newItemName, setNewItemName] = useState("");
   const [newItemParent, setNewItemParent] = useState("");
 
-  const [itemToDelete, setItemToDelete] = useState<{path: string, type: 'file' | 'folder'} | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ path: string, type: 'file' | 'folder' } | null>(null);
 
   // Global Hotkeys
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   // Build Tree
   const fileTree = useMemo(() => {
     const root: FileNode[] = [];
-    
+
     clientFiles.forEach(file => {
       const parts = file.filePath.split('/').filter(Boolean);
       let currentLevel = root;
@@ -109,9 +109,9 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       parts.forEach((part: string, index: number) => {
         currentPath += (currentPath ? '/' : '') + part;
         const isFile = index === parts.length - 1;
-        
+
         let existing = currentLevel.find(n => n.name === part && n.type === (isFile ? 'file' : 'folder'));
-        
+
         if (!existing) {
           existing = {
             name: part,
@@ -121,7 +121,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
           };
           currentLevel.push(existing);
         }
-        
+
         if (!isFile) {
           currentLevel = existing.children!;
         }
@@ -173,7 +173,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
           }
         })
       });
-      
+
       setResearchData(prev => {
         const exists = prev.find(p => p.clientName === client && p.filePath === path);
         if (exists) {
@@ -190,15 +190,15 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   const handleMarkdownChange = (val: string) => {
     setCurrentMarkdown(val);
-    
+
     if (saveTimeout) clearTimeout(saveTimeout);
-    
+
     const timeout = setTimeout(() => {
       if (selectedClient && selectedFile) {
         saveToDatabase(selectedClient, selectedFile, val);
       }
     }, 1500);
-    
+
     setSaveTimeout(timeout);
   };
 
@@ -218,7 +218,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   const handleCreateNew = async () => {
     if (!newItemName.trim() || !selectedClient) return;
     let path = newItemParent ? `${newItemParent}/${newItemName.trim()}` : newItemName.trim();
-    
+
     if (showNewModal === 'file' && !path.endsWith('.md')) {
       path += '.md';
     }
@@ -229,12 +229,12 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
     }
 
     await saveToDatabase(selectedClient, path, `# ${newItemName.trim()}`);
-    
+
     if (showNewModal === 'file') {
       setSelectedFile(path);
       setViewMode('editing');
     }
-    
+
     setShowNewModal(null);
     setNewItemName("");
     setNewItemParent("");
@@ -255,10 +255,10 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
     e.preventDefault();
     const oldPath = e.dataTransfer.getData("filePath");
     if (!oldPath || !selectedClient) return;
-    
+
     const filename = oldPath.split('/').pop();
     const newPath = targetFolder ? `${targetFolder}/${filename}` : filename as string;
-    
+
     if (oldPath === newPath) return;
 
     setSaving(true);
@@ -275,15 +275,15 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
           }
         })
       });
-      
+
       setResearchData(prev => {
-        return prev.map(p => 
-          (p.clientName === selectedClient && p.filePath === oldPath) 
-            ? { ...p, filePath: newPath } 
+        return prev.map(p =>
+          (p.clientName === selectedClient && p.filePath === oldPath)
+            ? { ...p, filePath: newPath }
             : p
         );
       });
-      
+
       if (selectedFile === oldPath) {
         setSelectedFile(newPath);
       }
@@ -296,7 +296,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   const handleDelete = async () => {
     if (!itemToDelete || !selectedClient) return;
-    
+
     setSaving(true);
     try {
       await fetch("/api/admin/data", {
@@ -310,7 +310,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
           }
         })
       });
-      
+
       setResearchData(prev => prev.filter(p => {
         if (p.clientName !== selectedClient) return true;
         if (itemToDelete.type === 'file') return p.filePath !== itemToDelete.path;
@@ -322,7 +322,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       } else if (itemToDelete.type === 'folder' && selectedFile?.startsWith(itemToDelete.path + "/")) {
         setSelectedFile(null);
       }
-      
+
     } catch (e) {
       console.error("Delete failed", e);
     } finally {
@@ -339,20 +339,30 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   };
 
   const CustomLink = ({ href, children }: any) => {
-    if (href?.startsWith('wiki://')) {
-      const targetName = decodeURIComponent(href.replace('wiki://', ''));
+    const isExternal = href?.startsWith('http://') || href?.startsWith('https://');
+
+    if (!isExternal) {
+      let targetName = decodeURIComponent(href?.replace('wiki://', '') || '');
+      targetName = targetName.replace(/^\//, ''); // remove leading slash
+      targetName = targetName.replace(/\.md$/, ''); // remove .md suffix
+
       return (
-        <span 
-          onClick={() => {
+        <span
+          onClick={(e) => {
+            e.preventDefault();
             // Find file by name (ignoring path)
             const targetFile = clientFiles.find(f => f.filePath.endsWith(`/${targetName}.md`) || f.filePath === `${targetName}.md`);
             if (targetFile) {
               setSelectedFile(targetFile.filePath);
             } else {
               // Auto create it
-              setNewItemName(targetName);
-              setNewItemParent("");
-              setShowNewModal('file');
+              if (canEdit) {
+                setNewItemName(targetName);
+                setNewItemParent("");
+                setShowNewModal('file');
+              } else {
+                alert("This file does not exist yet.");
+              }
             }
           }}
           className="text-tpc-orange hover:underline cursor-pointer font-bold mx-1"
@@ -371,7 +381,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
         const isOpen = expandedFolders.has(node.path);
         return (
           <div key={node.path} className="w-full">
-            <div 
+            <div
               className="group flex items-center gap-2 py-1.5 px-2 hover:bg-white/5 rounded cursor-pointer text-gray-300"
               style={{ paddingLeft: `${level * 12 + 8}px` }}
               onClick={() => toggleFolder(node.path)}
@@ -383,14 +393,14 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
               <span className="text-[11px] font-bold truncate">{node.name}</span>
               {canEdit && (
                 <div className="ml-auto flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setItemToDelete({path: node.path, type: 'folder'}); }}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setItemToDelete({ path: node.path, type: 'folder' }); }}
                     className="hover:bg-red-500/20 p-1 rounded text-red-500/70 hover:text-red-500 transition-colors"
                     title="Delete Folder"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
-                  <button 
+                  <button
                     onClick={(e) => { e.stopPropagation(); setNewItemParent(node.path); setShowNewModal('file'); }}
                     className="hover:bg-white/10 p-1 rounded text-tpc-orange"
                     title="New File in Folder"
@@ -410,8 +420,8 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       } else {
         if (node.name === '_Index.md') return null; // hide placeholder index
         return (
-          <div 
-            key={node.path} 
+          <div
+            key={node.path}
             draggable={canEdit}
             onDragStart={(e) => canEdit && handleDragStart(e, node.path)}
             className={`group flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer transition-colors ${selectedFile === node.path ? 'bg-tpc-orange/20 text-tpc-orange' : 'hover:bg-white/5 text-gray-400'}`}
@@ -421,8 +431,8 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
             <FileText className="w-3 h-3 opacity-50 shrink-0" />
             <span className="text-[11px] truncate">{node.name.replace('.md', '')}</span>
             {canEdit && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); setItemToDelete({path: node.path, type: 'file'}); }}
+              <button
+                onClick={(e) => { e.stopPropagation(); setItemToDelete({ path: node.path, type: 'file' }); }}
                 className="ml-auto opacity-0 group-hover:opacity-100 hover:bg-red-500/20 p-1 rounded text-red-500/70 hover:text-red-500 transition-all shrink-0"
                 title="Delete File"
               >
@@ -437,12 +447,12 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   // Build Graph Data
   const graphData = useMemo(() => {
-    const nodes = clientFiles.map(f => ({ 
-      id: f.filePath, 
+    const nodes = clientFiles.map(f => ({
+      id: f.filePath,
       name: f.filePath.split('/').pop()?.replace('.md', ''),
       val: 1
     }));
-    
+
     const links: any[] = [];
     clientFiles.forEach(f => {
       const matches = f.markdownContent?.match(/\[\[(.*?)\]\]/g) || [];
@@ -469,13 +479,13 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   return (
     <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[#191919] text-[#D4D4D4] overflow-hidden">
-      
+
       {/* SIDEBAR: Vault/Client Selector & File Tree */}
       <div className="w-64 md:w-72 bg-[#111] border-r border-white/10 flex flex-col shrink-0 h-full">
         {/* Vault Selector */}
         <div className="p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
           <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>
-          <select 
+          <select
             value={selectedClient || ""}
             onChange={e => {
               setSelectedClient(e.target.value);
@@ -485,18 +495,18 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
           >
             {clients.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          
+
           {canEdit && (
             <form onSubmit={handleAddClient} className="flex gap-2 mt-2">
-              <input 
-                type="text" 
-                placeholder="New client..." 
+              <input
+                type="text"
+                placeholder="New client..."
                 value={newClientName}
                 onChange={e => setNewClientName(e.target.value)}
                 className="flex-1 bg-black/50 border border-white/10 rounded px-2 py-1.5 text-[10px] text-white focus:outline-none"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isAddingClient || !newClientName.trim()}
                 className="bg-white/5 hover:bg-white/10 text-white px-2 py-1.5 rounded text-[10px] font-bold disabled:opacity-50"
               >
@@ -507,7 +517,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
         </div>
 
         {/* File Tree Controls */}
-        <div 
+        <div
           className="p-2 border-b border-white/10 flex justify-between items-center bg-white/5 shrink-0"
           onDragOver={(e) => canEdit && e.preventDefault()}
           onDrop={(e) => canEdit && handleDrop(e, "")}
@@ -548,30 +558,30 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
                   {selectedClient} Vault
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 {saving && (
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-2">
                     <Loader2 className="w-3 h-3 animate-spin" /> Saving...
                   </span>
                 )}
-                
+
                 <div className="flex bg-black/50 border border-white/10 rounded p-1">
-                  <button 
+                  <button
                     onClick={() => setViewMode('reading')}
                     className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'reading' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                   >
                     <BookOpen className="w-3 h-3" /> Read
                   </button>
                   {canEdit && (
-                    <button 
+                    <button
                       onClick={() => setViewMode('editing')}
                       className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'editing' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                       <Edit3 className="w-3 h-3" /> Edit
                     </button>
                   )}
-                  <button 
+                  <button
                     onClick={() => setViewMode('graph')}
                     className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'graph' ? 'bg-tpc-orange text-black' : 'text-gray-500 hover:text-gray-300'}`}
                   >
@@ -614,7 +624,10 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
               ) : (
                 <div className="h-full overflow-y-auto p-8 md:p-12">
                   <article className="prose prose-invert prose-orange max-w-3xl mx-auto font-sans leading-relaxed">
-                    <ReactMarkdown components={{ a: CustomLink }}>
+                    <ReactMarkdown 
+                      components={{ a: CustomLink }}
+                      urlTransform={(url: string) => url}
+                    >
                       {processWikilinks(currentMarkdown)}
                     </ReactMarkdown>
                   </article>
@@ -640,10 +653,10 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
             {newItemParent && (
               <p className="text-[10px] text-gray-400 font-mono mb-4">In: {newItemParent}</p>
             )}
-            <input 
+            <input
               autoFocus
-              type="text" 
-              placeholder="Name..." 
+              type="text"
+              placeholder="Name..."
               value={newItemName}
               onChange={e => setNewItemName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCreateNew()}
@@ -666,7 +679,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
               Delete {itemToDelete.type === 'file' ? 'File' : 'Folder'}?
             </h3>
             <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-              Are you sure you want to delete <span className="text-white font-mono bg-white/10 px-1 rounded">{itemToDelete.path}</span>? 
+              Are you sure you want to delete <span className="text-white font-mono bg-white/10 px-1 rounded">{itemToDelete.path}</span>?
               {itemToDelete.type === 'folder' && " This will permanently delete ALL files inside this folder!"}
             </p>
             <div className="flex justify-end gap-2">
