@@ -64,11 +64,11 @@ export function KanbanView({
   });
 
   return (
-    <div className="flex h-[calc(100vh-250px)] w-max min-w-full gap-4 p-4 overflow-x-auto bg-[#111]">
+    <div className="flex h-[calc(100vh-200px)] min-w-full gap-4 p-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory bg-[#111] overscroll-x-contain">
       {activeStages.map((stage) => (
         <div 
           key={stage} 
-          className="flex flex-col w-[320px] shrink-0 bg-[#1a1a1a] rounded-xl border border-white/5 overflow-hidden"
+          className="flex flex-col w-[85vw] md:w-[320px] min-w-[85vw] md:min-w-[320px] shrink-0 snap-center bg-[#1a1a1a] rounded-xl border border-white/5 overflow-hidden"
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, stage)}
         >

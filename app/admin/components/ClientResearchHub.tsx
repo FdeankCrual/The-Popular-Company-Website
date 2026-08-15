@@ -478,10 +478,10 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   }
 
   return (
-    <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[#191919] text-[#D4D4D4] overflow-hidden">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-60px)] md:h-screen bg-[#191919] text-[#D4D4D4] overflow-hidden">
 
       {/* SIDEBAR: Vault/Client Selector & File Tree */}
-      <div className="w-64 md:w-72 bg-[#111] border-r border-white/10 flex flex-col shrink-0 h-full">
+      <div className="w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex flex-col shrink-0 h-[40vh] md:h-full">
         {/* Vault Selector */}
         <div className="p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
           <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>

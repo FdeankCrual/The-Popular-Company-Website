@@ -440,18 +440,18 @@ export default function WorkbookPage() {
     <div className="flex flex-col h-full bg-[#191919] min-h-screen text-[#D4D4D4] font-sans relative">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between p-4 sm:p-8 md:p-12 pb-4 sm:pb-8 border-b border-white/10 shrink-0 gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between p-3 md:p-12 pb-3 md:pb-8 border-b border-white/10 shrink-0 gap-3">
         <div>
-          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2 text-white">
+          <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter mb-1 md:mb-2 text-white">
             Live <span className="text-tpc-orange">Workbook</span>
           </h2>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <p className="text-gray-500 font-mono text-xs md:text-sm uppercase tracking-widest">
+            <p className="text-gray-500 font-mono text-[10px] md:text-sm uppercase tracking-widest leading-tight">
               Production Pipeline Manager
             </p>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 w-max text-xs font-bold uppercase px-3 py-1.5 rounded transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+              className={`flex items-center gap-1.5 w-max text-[10px] md:text-xs font-bold uppercase px-2 py-1 md:px-3 md:py-1.5 rounded transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
             >
               <Filter className="w-3 h-3" /> Filters
             </button>
@@ -459,25 +459,25 @@ export default function WorkbookPage() {
         </div>
         <button
           onClick={handleAddNewRow}
-          className="bg-tpc-orange text-black px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer w-full md:w-auto mt-2 md:mt-0"
+          className="bg-tpc-orange text-black px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer w-full md:w-auto mt-1 md:mt-0"
         >
           <Plus className="w-4 h-4" /> New Task
         </button>
       </div>
 
       {/* TABS */}
-      <div className="flex border-b border-white/10 px-4 sm:px-8 md:px-12 pt-2 bg-[#191919]">
+      <div className="flex border-b border-white/10 px-3 md:px-12 pt-1 md:pt-2 bg-[#191919]">
         <button
           onClick={() => setActiveTab('Active')}
-          className={`px-6 py-3 font-bold uppercase tracking-widest text-xs border-b-2 transition-colors ${activeTab === 'Active' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+          className={`px-4 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[10px] md:text-xs border-b-2 transition-colors flex-1 md:flex-none ${activeTab === 'Active' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
         >
           Active Tasks
         </button>
         <button
           onClick={() => setActiveTab('Archive')}
-          className={`px-6 py-3 font-bold uppercase tracking-widest text-xs border-b-2 transition-colors ${activeTab === 'Archive' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+          className={`px-4 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[10px] md:text-xs border-b-2 transition-colors flex-1 md:flex-none ${activeTab === 'Archive' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
         >
-          Archive (Completed/Posted)
+          Archive (Completed)
         </button>
       </div>
 

@@ -158,39 +158,39 @@ export default function EmployeesPage() {
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <form onSubmit={handleSave} className="bg-[#111] border border-white/10 rounded-3xl p-8 max-w-lg w-full relative">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <form onSubmit={handleSave} className="bg-[#111] border border-white/10 rounded-3xl p-5 md:p-8 max-w-lg w-full relative my-auto">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-5 right-5 text-gray-500 hover:text-white">
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-2xl font-black uppercase tracking-tighter mb-8 text-white">
+            <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-6 md:mb-8 text-white">
               {editingId ? "Edit Agent" : "New Agent"}
             </h3>
 
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Agent Name</label>
-                <input required value={formData.Name} onChange={e => setFormData({...formData, Name: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-xl mt-2 text-white outline-none focus:border-tpc-orange transition-colors font-bold" />
+                <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500">Agent Name</label>
+                <input required value={formData.Name} onChange={e => setFormData({...formData, Name: e.target.value})} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors font-bold text-sm" />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Email Login</label>
-                <input required type="email" value={formData.Email} onChange={e => setFormData({...formData, Email: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-xl mt-2 text-white outline-none focus:border-tpc-orange transition-colors" />
+                <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500">Email Login</label>
+                <input required type="email" value={formData.Email} onChange={e => setFormData({...formData, Email: e.target.value})} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors text-sm" />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2"><Key className="w-3 h-3" /> Passcode</label>
-                <input required type="text" value={formData.Password} onChange={e => setFormData({...formData, Password: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-xl mt-2 text-white outline-none focus:border-tpc-orange transition-colors" />
+                <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1.5"><Key className="w-3 h-3" /> Passcode</label>
+                <input required type="text" value={formData.Password} onChange={e => setFormData({...formData, Password: e.target.value})} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors text-sm" />
               </div>
 
               {formData.Roles.includes("SALES AGENT") && (
                 <div className="animate-in slide-in-from-top-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-tpc-orange">Operating City</label>
-                  <input required value={formData.City} onChange={e => setFormData({...formData, City: e.target.value})} placeholder="e.g. New York, London..." className="w-full bg-black border border-tpc-orange/30 focus:border-tpc-orange p-4 rounded-xl mt-2 text-white outline-none transition-colors" />
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-tpc-orange">Operating City</label>
+                  <input required value={formData.City} onChange={e => setFormData({...formData, City: e.target.value})} placeholder="e.g. New York, London..." className="w-full bg-black border border-tpc-orange/30 focus:border-tpc-orange p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none transition-colors text-sm" />
                 </div>
               )}
 
               <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 block">Assigned Roles</label>
-                <div className="grid grid-cols-2 gap-3">
+                <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 md:mb-4 block">Assigned Roles</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                   {AVAILABLE_ROLES.map(role => {
                     const active = formData.Roles.includes(role);
                     return (
@@ -198,7 +198,7 @@ export default function EmployeesPage() {
                         type="button" 
                         key={role} 
                         onClick={() => toggleRole(role)}
-                        className={`p-3 rounded-xl border text-xs font-bold uppercase tracking-widest text-left transition-colors ${active ? (role.includes('ADMIN') ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-tpc-orange/20 border-tpc-orange/50 text-tpc-orange') : 'bg-black border-white/10 text-gray-500 hover:border-white/30'}`}
+                        className={`p-2.5 md:p-3 rounded-lg md:rounded-xl border text-[10px] md:text-xs font-bold uppercase tracking-widest text-left transition-colors ${active ? (role.includes('ADMIN') ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-tpc-orange/20 border-tpc-orange/50 text-tpc-orange') : 'bg-black border-white/10 text-gray-500 hover:border-white/30'}`}
                       >
                         {role}
                       </button>
@@ -208,7 +208,7 @@ export default function EmployeesPage() {
               </div>
             </div>
 
-            <button type="submit" className="w-full mt-10 bg-white text-black font-black uppercase tracking-widest py-4 rounded-xl hover:bg-tpc-orange hover:text-white transition-all">
+            <button type="submit" className="w-full mt-6 md:mt-10 bg-white text-black font-black uppercase tracking-widest py-3 md:py-4 rounded-xl hover:bg-tpc-orange hover:text-white transition-all text-sm md:text-base">
               Commit Changes
             </button>
           </form>

@@ -55,9 +55,11 @@ export function CalendarView({ data, onTaskClick }: { data: any[], onTaskClick?:
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2 md:gap-4 mb-4">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-          <div key={day} className="text-center text-xs font-mono font-bold text-gray-500 uppercase tracking-widest">
+      <div className="flex-1 overflow-x-auto pb-4">
+        <div className="min-w-[700px]">
+          <div className="grid grid-cols-7 gap-2 md:gap-4 mb-4">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+              <div key={day} className="text-center text-xs font-mono font-bold text-gray-500 uppercase tracking-widest">
             {day}
           </div>
         ))}
@@ -107,6 +109,8 @@ export function CalendarView({ data, onTaskClick }: { data: any[], onTaskClick?:
             </div>
           );
         })}
+      </div>
+      </div>
       </div>
 
     </div>
