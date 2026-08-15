@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Loader2, Search, Edit3, BookOpen, Share2, Folder, FileText, ChevronRight, ChevronDown, Plus, Network, X, Trash2 } from "lucide-react";
+import { Loader2, Search, Edit3, BookOpen, Share2, Folder, FileText, ChevronRight, ChevronDown, ChevronLeft, Plus, Network, X, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import dynamic from 'next/dynamic';
 
@@ -478,10 +478,10 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-60px)] md:h-screen bg-[#191919] text-[#D4D4D4] overflow-hidden">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-60px)] md:h-screen bg-[#191919] text-[#D4D4D4] overflow-hidden relative">
 
       {/* SIDEBAR: Vault/Client Selector & File Tree */}
-      <div className="w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex flex-col shrink-0 h-[40vh] md:h-full">
+      <div className={`w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex-col shrink-0 h-full ${selectedFile ? 'hidden md:flex' : 'flex'}`}>
         {/* Vault Selector */}
         <div className="p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
           <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>
@@ -546,15 +546,21 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       </div>
 
       {/* MAIN EDITOR PANE */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#151515]">
+      <div className={`flex-1 flex-col h-full overflow-hidden bg-[#151515] min-w-0 ${selectedFile ? 'flex' : 'hidden md:flex'}`}>
         {selectedClient ? (
           <>
-            <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#111] shrink-0">
-              <div className="flex flex-col">
-                <h1 className="text-sm font-bold text-white truncate max-w-md">
+            <div className="h-20 md:h-16 py-2 md:py-0 border-b border-white/10 flex items-center justify-between px-4 md:px-6 bg-[#111] shrink-0">
+              <div className="flex flex-col justify-center">
+                <button 
+                  onClick={() => setSelectedFile(null)}
+                  className="md:hidden flex items-center gap-1 text-[10px] uppercase font-bold text-tpc-orange mb-1 -ml-1 py-1"
+                >
+                  <ChevronLeft className="w-3 h-3" /> Back to Files
+                </button>
+                <h1 className="text-sm font-bold text-white truncate max-w-[180px] md:max-w-md">
                   {selectedFile ? selectedFile : "No file selected"}
                 </h1>
-                <span className="text-[10px] text-gray-500 font-mono">
+                <span className="text-[10px] text-gray-500 font-mono hidden md:block mt-1">
                   {selectedClient} Vault
                 </span>
               </div>

@@ -54,54 +54,42 @@ export function CalendarView({ data, onTaskClick }: { data: any[], onTaskClick?:
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex-1 overflow-x-auto pb-4">
-        <div className="min-w-[700px]">
-          <div className="grid grid-cols-7 gap-2 md:gap-4 mb-4">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-              <div key={day} className="text-center text-xs font-mono font-bold text-gray-500 uppercase tracking-widest">
-            {day}
+      {/* MOBILE AGENDA VIEW */}
+      <div className="block md:hidden flex-1 overflow-y-auto space-y-4 pb-12">
+        {days.filter(d => getTasksForDate(d).length > 0).length === 0 && (
+          <div className="text-center text-gray-500 py-10 font-mono text-xs uppercase tracking-widest">
+            No tasks scheduled for this month.
           </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-2 md:gap-4 flex-1">
-        {padding.map(i => (
-          <div key={`pad-${i}`} className="min-h-[120px] rounded-xl border border-white/5 bg-[#1a1a1a]/50 opacity-50" />
-        ))}
-        
+        )}
         {days.map(day => {
           const tasks = getTasksForDate(day);
+          if (tasks.length === 0) return null;
           const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
           
           return (
-            <div 
-              key={day} 
-              className={`min-h-[120px] p-2 rounded-xl border ${isToday ? 'border-tpc-orange bg-tpc-orange/5' : 'border-white/5 bg-[#1a1a1a]'} hover:border-white/20 transition-colors flex flex-col`}
-            >
-              <div className={`text-xs font-mono font-bold mb-2 ${isToday ? 'text-tpc-orange' : 'text-gray-400'}`}>
-                {day}
-              </div>
-              
-              <div className="flex-1 overflow-y-auto space-y-1">
+            <div key={`mobile-${day}`} className={`p-4 rounded-xl border ${isToday ? 'border-tpc-orange bg-tpc-orange/5' : 'border-white/5 bg-[#1a1a1a]'}`}>
+              <h4 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isToday ? 'text-tpc-orange' : 'text-white'}`}>
+                {day} {currentDate.toLocaleString('default', { month: 'short' })}
+              </h4>
+              <div className="space-y-2">
                 {tasks.map(task => {
                   const s = (task.status || "").toLowerCase();
                   const isDone = s === "completed" || s === "posted";
                   const colorClass = isDone 
-                    ? "bg-green-500/10 text-green-400 border-green-500/30 hover:border-green-500/50"
-                    : "bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:border-yellow-500/50";
+                    ? "bg-green-500/10 text-green-400 border-green-500/30"
+                    : "bg-yellow-500/10 text-yellow-500 border-yellow-500/30";
 
                   const timeStr = task.finalDate ? new Date(task.finalDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
 
                   return (
                     <div 
-                      key={task.id} 
+                      key={`mob-${task.id}`} 
                       onClick={() => onTaskClick?.(task)}
-                      className={`text-[10px] p-1.5 rounded border flex flex-col gap-1 truncate cursor-pointer transition-colors ${colorClass}`}
+                      className={`text-xs p-3 rounded-lg border flex flex-col gap-1 cursor-pointer transition-colors ${colorClass}`}
                     >
-                      <span className="font-bold truncate opacity-90">{task.client || "Untitled"}</span>
-                      <span className="truncate opacity-80">{task.name}</span>
-                      {timeStr && <span className="text-[9px] font-mono opacity-70 mt-1 flex items-center gap-1"><Clock className="w-3 h-3"/> {timeStr}</span>}
+                      <span className="font-bold opacity-90">{task.client || "Untitled"}</span>
+                      <span className="opacity-80">{task.name}</span>
+                      {timeStr && <span className="text-[10px] font-mono opacity-70 mt-1 flex items-center gap-1"><Clock className="w-3 h-3"/> {timeStr}</span>}
                     </div>
                   );
                 })}
@@ -110,7 +98,64 @@ export function CalendarView({ data, onTaskClick }: { data: any[], onTaskClick?:
           );
         })}
       </div>
-      </div>
+
+      {/* DESKTOP CALENDAR GRID */}
+      <div className="hidden md:block flex-1 overflow-x-auto pb-4">
+        <div className="min-w-[700px]">
+          <div className="grid grid-cols-7 gap-4 mb-4">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+              <div key={day} className="text-center text-xs font-mono font-bold text-gray-500 uppercase tracking-widest">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-4 flex-1">
+            {padding.map(i => (
+              <div key={`pad-${i}`} className="min-h-[120px] rounded-xl border border-white/5 bg-[#1a1a1a]/50 opacity-50" />
+            ))}
+            
+            {days.map(day => {
+              const tasks = getTasksForDate(day);
+              const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+              
+              return (
+                <div 
+                  key={day} 
+                  className={`min-h-[120px] p-2 rounded-xl border ${isToday ? 'border-tpc-orange bg-tpc-orange/5' : 'border-white/5 bg-[#1a1a1a]'} hover:border-white/20 transition-colors flex flex-col`}
+                >
+                  <div className={`text-xs font-mono font-bold mb-2 ${isToday ? 'text-tpc-orange' : 'text-gray-400'}`}>
+                    {day}
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto space-y-1">
+                    {tasks.map(task => {
+                      const s = (task.status || "").toLowerCase();
+                      const isDone = s === "completed" || s === "posted";
+                      const colorClass = isDone 
+                        ? "bg-green-500/10 text-green-400 border-green-500/30 hover:border-green-500/50"
+                        : "bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:border-yellow-500/50";
+
+                      const timeStr = task.finalDate ? new Date(task.finalDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+                      return (
+                        <div 
+                          key={task.id} 
+                          onClick={() => onTaskClick?.(task)}
+                          className={`text-[10px] p-1.5 rounded border flex flex-col gap-1 truncate cursor-pointer transition-colors ${colorClass}`}
+                        >
+                          <span className="font-bold truncate opacity-90">{task.client || "Untitled"}</span>
+                          <span className="truncate opacity-80">{task.name}</span>
+                          {timeStr && <span className="text-[9px] font-mono opacity-70 mt-1 flex items-center gap-1"><Clock className="w-3 h-3"/> {timeStr}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
     </div>
