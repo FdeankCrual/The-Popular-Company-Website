@@ -839,7 +839,7 @@ export default function WorkbookPage() {
       {/* EDIT MODAL (for Kanban/Calendar views - SIDE PEEK) */}
       {editingTask && (
         <div className="fixed inset-0 z-[20000] flex justify-end bg-black/50 backdrop-blur-sm">
-          <div className="bg-[#111] border-l border-white/10 w-full max-w-md h-full relative shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+          <div className="bg-[#111] border-l border-white/10 w-full md:w-[600px] md:max-w-[600px] h-full relative shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
             
             <div className="p-6 md:p-8 border-b border-white/10 flex justify-between items-center shrink-0">
               <h3 className="text-xl font-bold uppercase tracking-widest text-tpc-orange flex items-center gap-2">

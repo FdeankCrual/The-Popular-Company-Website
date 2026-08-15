@@ -230,7 +230,7 @@ export default function EmployeeLeadsDashboard({ email, name }: { email: string,
             </div>
             
             <form onSubmit={handleSaveNew} className="flex-1 overflow-auto p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-gray-500 font-medium">Name</label>
                   <input required value={formData.name || ''} onChange={(e)=>setFormData({...formData, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-tpc-orange" />

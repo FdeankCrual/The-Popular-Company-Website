@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
-import Link from "next/link";
-import { LayoutDashboard, CheckSquare, LogOut, HelpCircle, BookOpen, Calendar } from "lucide-react";
+import EmployeeSidebar from "./components/EmployeeSidebar";
 
 export default async function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -10,33 +9,6 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   let roles: string[] = [];
   try { roles = JSON.parse(rolesStr); } catch(e) {}
 
-  const isSalesAgent = roles.includes("SALES AGENT");
-  const isCreative = roles.includes("CONTENT WRITER") || roles.includes("EDITOR") || roles.includes("VIDEOGRAPHER") || roles.includes("GRAPHIC DESIGNER") || roles.includes("PAGE MANAGER") || roles.includes("CONTENT MANAGER") || roles.includes("AI VIDEO CREATOR") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT");
-  
-  const navItems = [];
-  
-  if (isSalesAgent && !isCreative) {
-    navItems.push({ name: "Analytics Dashboard", href: "/employee", icon: LayoutDashboard });
-  } else {
-    navItems.push({ name: "My Tasks", href: "/employee", icon: LayoutDashboard });
-  }
-
-  // Only Admins and Content Writers get Client Research
-  const hasResearchAccess = roles.includes("CONTENT WRITER") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER");
-  if (hasResearchAccess) {
-    navItems.push({ name: "Client Research", href: "/employee/research", icon: BookOpen });
-  }
-
-  // Sales Agents and Admins get Leads
-  if (isSalesAgent || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER")) {
-    navItems.push({ name: "My Leads", href: "/employee/leads", icon: CheckSquare });
-  }
-
-  // Graphic Designers, Page Managers, and Content Managers get the Content Manager
-  if (roles.includes("GRAPHIC DESIGNER") || roles.includes("PAGE MANAGER") || roles.includes("CONTENT MANAGER") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER")) {
-    navItems.push({ name: "Content Manager", href: "/employee/content", icon: Calendar });
-  }
-
   return (
     <div className="admin-panel fixed inset-0 z-[10000] bg-tpc-black text-white flex flex-col md:flex-row overflow-hidden font-sans cursor-default">
       <style>{`
@@ -44,58 +16,10 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
         .admin-panel a, .admin-panel button, .admin-panel [role="button"] { cursor: pointer !important; }
       `}</style>
       
-      {/* SIDEBAR */}
-      <aside className="w-full md:w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col justify-between shrink-0 h-[60px] md:h-full z-20">
-        <div>
-          <div className="h-[60px] md:h-20 flex items-center px-6 border-b border-white/10">
-            <h1 className="font-black tracking-tighter uppercase text-xl">
-              TPC <span className="text-tpc-orange">Portal</span>
-            </h1>
-          </div>
-          
-          <nav className="hidden md:flex flex-col p-4 gap-2">
-            <div className="text-[10px] uppercase tracking-widest text-gray-500 font-mono mb-2 px-2">Menu</div>
-            {navItems.map(item => (
-              <Link 
-                key={item.name} 
-                href={item.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                <item.icon className="w-4 h-4" />
-                {item.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <div className="hidden md:block p-6 border-t border-white/10">
-          <div className="text-xs text-gray-400 font-mono break-all mb-4">
-            Logged in as:<br/>
-            <strong className="text-white">{email}</strong><br/>
-            <span className="text-tpc-orange">[{roles.join(", ")}]</span>
-          </div>
-          <Link href="/admin/login" className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 transition-colors uppercase tracking-widest font-bold">
-            <LogOut className="w-4 h-4" /> Disconnect
-          </Link>
-        </div>
-      </aside>
-
-      {/* MOBILE NAV (Bottom Bar) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 flex justify-around p-2 z-50">
-         {navItems.map(item => (
-            <Link 
-              key={item.name} 
-              href={item.href}
-              className="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-white"
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] uppercase font-bold">{item.name}</span>
-            </Link>
-          ))}
-      </nav>
+      <EmployeeSidebar email={email} roles={roles} />
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100vh-60px)] md:h-screen relative pb-20 md:pb-0">
+      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100vh-60px)] md:h-screen relative pb-0">
         <div className="max-w-[1600px] mx-auto">
           {children}
         </div>
