@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Loader2, Plus, ArrowUpDown, ArrowDown, ArrowUp, X, Filter, Copy, CheckSquare, Trash2, Calendar, FileText, Download, Check, Save, MessageSquare, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
@@ -17,7 +17,7 @@ const formatForDateTimeLocal = (dateString?: string) => {
     if (isNaN(d.getTime())) return dateString;
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  } catch(e) {
+  } catch (e) {
     return dateString;
   }
 };
@@ -34,16 +34,18 @@ export default function WorkbookPage() {
   // Advanced Table States
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [lastSelectedRowId, setLastSelectedRowId] = useState<string | null>(null);
-  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc'|'desc'|null }>({ key: '', direction: null });
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: '', direction: null });
   const [showFilters, setShowFilters] = useState(false);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [unsavedUpdates, setUnsavedUpdates] = useState<Map<string, any>>(new Map());
 
-  // Modals
   const [editingTask, setEditingTask] = useState<any>(null);
+  const [slashMenuOpen, setSlashMenuOpen] = useState(false);
   const [reviewTask, setReviewTask] = useState<any>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
+  const [ghostName, setGhostName] = useState("");
+  const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
 
   // Extracted unique values for dropdowns
   const clients = Array.from(new Set([...(config.clients || []), ...data.map(d => d.client)].filter(Boolean)));
@@ -56,9 +58,24 @@ export default function WorkbookPage() {
   ].filter(Boolean)));
   const months = Array.from(new Set([...(config.months || []), ...data.map(d => d.month)].filter(Boolean)));
 
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Debounced Auto-Save Engine
+  useEffect(() => {
+    if (unsavedUpdates.size > 0) {
+      if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        saveAllChanges();
+      }, 1500); // Save automatically 1.5s after the last edit
+    }
+    return () => {
+      if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
+    };
+  }, [unsavedUpdates]);
 
   async function fetchData() {
     try {
@@ -134,7 +151,7 @@ export default function WorkbookPage() {
 
   const isStageCompleted = (stage: 'script' | 'shoot' | 'edit' | 'final', status: string) => {
     const s = (status || "").toLowerCase();
-    
+
     const stages = [
       "ideation",
       "planning",
@@ -148,7 +165,7 @@ export default function WorkbookPage() {
       "completed",
       "posted"
     ];
-    
+
     let currentIndex = stages.indexOf(s);
     if (currentIndex === -1) {
       if (s.includes('reviewing script')) currentIndex = 3;
@@ -162,7 +179,7 @@ export default function WorkbookPage() {
     if (stage === 'shoot') return currentIndex >= 6; // Past Shooting (started Editing)
     if (stage === 'edit') return currentIndex >= 8; // Past Editing (started Reviewing)
     if (stage === 'final') return currentIndex >= 9; // Completed or Posted
-    
+
     return false;
   };
 
@@ -170,7 +187,7 @@ export default function WorkbookPage() {
     if (isStageCompleted(stage, status)) {
       return 'bg-green-500/20 text-green-500';
     }
-    
+
     if (dateStr) {
       const targetDate = new Date(dateStr);
       const now = new Date();
@@ -178,15 +195,16 @@ export default function WorkbookPage() {
         return 'bg-red-500/20 text-red-500 border border-red-500/30';
       }
     }
-    
+
     return 'bg-transparent text-gray-300 focus:bg-white/10';
   };
 
   // Handlers
-  const handleAddNewRow = async () => {
-    const newRow = { ...emptyForm, id: "proj_" + Math.random().toString(36).substring(2, 9), name: "Untitled Task" };
+  const handleAddNewRow = async (nameOverride?: string | React.MouseEvent) => {
+    const defaultName = typeof nameOverride === 'string' ? nameOverride : "Untitled Task";
+    const newRow = { ...emptyForm, id: "proj_" + Math.random().toString(36).substring(2, 9), name: defaultName };
     setData([...data, newRow]);
-    
+
     try {
       await fetch("/api/admin/data", {
         method: "POST",
@@ -203,14 +221,14 @@ export default function WorkbookPage() {
       let updated = { ...item, [field]: value };
       if (field === 'status') {
         const s = value.toLowerCase();
-        
+
         // Find users based on their roles
-        const getNamesByRole = (role: string) => 
+        const getNamesByRole = (role: string) =>
           users.filter(u => {
             try {
               const uRoles = typeof u.Roles === 'string' ? JSON.parse(u.Roles) : u.Roles;
               return (Array.isArray(uRoles) ? uRoles : []).includes(role);
-            } catch(e) { return false; }
+            } catch (e) { return false; }
           }).map(u => u.Name);
 
         const contentWriters = getNamesByRole("CONTENT WRITER");
@@ -239,9 +257,9 @@ export default function WorkbookPage() {
     // Check if we are doing a BULK UPDATE via Row Selection
     if (selectedRows.has(id) && selectedRows.size > 1) {
       const rowIdsToUpdate = Array.from(selectedRows);
-      
+
       // Optimistic update locally
-      setData(prev => prev.map(item => 
+      setData(prev => prev.map(item =>
         rowIdsToUpdate.includes(item.id) ? applyAutomation(item, field, value) : item
       ));
 
@@ -262,7 +280,7 @@ export default function WorkbookPage() {
       const newRow = applyAutomation(updatedRow, field, value);
 
       setData(prev => prev.map(item => item.id === id ? newRow : item));
-      
+
       setUnsavedUpdates(prev => {
         const next = new Map(prev);
         next.set(newRow.id, newRow);
@@ -271,31 +289,41 @@ export default function WorkbookPage() {
     }
   };
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const saveAllChanges = async () => {
     if (unsavedUpdates.size === 0) return;
     const updates = Array.from(unsavedUpdates.values());
+    const idsToClear = updates.map(u => u.id);
+    
+    setIsSaving(true);
     try {
       await fetch("/api/admin/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "bulkUpdateWorkbook", updates })
       });
-      setUnsavedUpdates(new Map());
+      setUnsavedUpdates(prev => {
+        const next = new Map(prev);
+        idsToClear.forEach(id => next.delete(id));
+        return next;
+      });
     } catch (err) {
       console.error("Failed to save all changes", err);
-      alert("Failed to save changes.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDeleteRow = async (id: string) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
-    
+
     const previousData = [...data];
     const index = data.findIndex(d => d.id === id);
     if (index === -1) return;
 
     setData(data.filter(item => item.id !== id));
-    
+
     try {
       const res = await fetch("/api/admin/data", {
         method: "POST",
@@ -311,13 +339,13 @@ export default function WorkbookPage() {
 
   const handleBulkDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedRows.size} tasks?`)) return;
-    
+
     const idsToDelete = Array.from(selectedRows);
     const indicesToDelete = idsToDelete.map(id => data.findIndex(d => d.id === id)).filter(i => i !== -1);
-    
+
     setData(prev => prev.filter(item => !idsToDelete.includes(item.id)));
     setSelectedRows(new Set());
-    
+
     try {
       await fetch("/api/admin/data", {
         method: "POST",
@@ -333,17 +361,17 @@ export default function WorkbookPage() {
   const handleBulkDuplicate = async () => {
     const idsToDuplicate = Array.from(selectedRows);
     const rowsToCopy = data.filter(d => idsToDuplicate.includes(d.id));
-    
+
     const newRows = rowsToCopy.map(row => ({
       ...row,
       id: "proj_" + Math.random().toString(36).substring(2, 9),
       name: row.name ? `${row.name} (Copy)` : "Untitled (Copy)"
     }));
-    
+
     setData(prev => [...prev, ...newRows]);
     // Optionally select the new rows:
     setSelectedRows(new Set(newRows.map(r => r.id)));
-    
+
     try {
       await fetch("/api/admin/data", {
         method: "POST",
@@ -383,15 +411,15 @@ export default function WorkbookPage() {
 
   const toggleRow = (id: string, checked: boolean, shiftKey: boolean = false) => {
     const next = new Set(selectedRows);
-    
+
     if (shiftKey && lastSelectedRowId) {
       const currentIndex = processedData.findIndex(r => r.id === id);
       const lastIndex = processedData.findIndex(r => r.id === lastSelectedRowId);
-      
+
       if (currentIndex !== -1 && lastIndex !== -1) {
         const start = Math.min(currentIndex, lastIndex);
         const end = Math.max(currentIndex, lastIndex);
-        
+
         for (let i = start; i <= end; i++) {
           if (checked) next.add(processedData[i].id);
           else next.delete(processedData[i].id);
@@ -401,7 +429,7 @@ export default function WorkbookPage() {
       if (checked) next.add(id);
       else next.delete(id);
     }
-    
+
     setSelectedRows(next);
     setLastSelectedRowId(id);
   };
@@ -410,7 +438,7 @@ export default function WorkbookPage() {
 
   return (
     <div className="flex flex-col h-full bg-[#191919] min-h-screen text-[#D4D4D4] font-sans relative">
-      
+
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between p-4 sm:p-8 md:p-12 pb-4 sm:pb-8 border-b border-white/10 shrink-0 gap-4">
         <div>
@@ -421,7 +449,7 @@ export default function WorkbookPage() {
             <p className="text-gray-500 font-mono text-xs md:text-sm uppercase tracking-widest">
               Production Pipeline Manager
             </p>
-            <button 
+            <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 w-max text-xs font-bold uppercase px-3 py-1.5 rounded transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
             >
@@ -429,8 +457,8 @@ export default function WorkbookPage() {
             </button>
           </div>
         </div>
-        <button 
-          onClick={handleAddNewRow} 
+        <button
+          onClick={handleAddNewRow}
           className="bg-tpc-orange text-black px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer w-full md:w-auto mt-2 md:mt-0"
         >
           <Plus className="w-4 h-4" /> New Task
@@ -439,13 +467,13 @@ export default function WorkbookPage() {
 
       {/* TABS */}
       <div className="flex border-b border-white/10 px-4 sm:px-8 md:px-12 pt-2 bg-[#191919]">
-        <button 
+        <button
           onClick={() => setActiveTab('Active')}
           className={`px-6 py-3 font-bold uppercase tracking-widest text-xs border-b-2 transition-colors ${activeTab === 'Active' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
         >
           Active Tasks
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('Archive')}
           className={`px-6 py-3 font-bold uppercase tracking-widest text-xs border-b-2 transition-colors ${activeTab === 'Archive' ? 'border-tpc-orange text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
         >
@@ -455,19 +483,19 @@ export default function WorkbookPage() {
 
       {/* VIEW TOGGLES */}
       <div className="flex px-4 sm:px-8 md:px-12 py-4 bg-[#191919] gap-4 border-b border-white/5">
-        <button 
+        <button
           onClick={() => setActiveView('Table')}
           className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'Table' ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
         >
           Table View
         </button>
-        <button 
+        <button
           onClick={() => setActiveView('Kanban')}
           className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'Kanban' ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
         >
           Kanban Board
         </button>
-        <button 
+        <button
           onClick={() => setActiveView('Calendar')}
           className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${activeView === 'Calendar' ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
         >
@@ -479,7 +507,7 @@ export default function WorkbookPage() {
       <div className="flex-1 overflow-auto bg-[#111]">
         {loading ? (
           <div className="flex items-center justify-center h-full text-gray-500 gap-2">
-            <Loader2 className="w-5 h-5 animate-spin"/> Loading Workbook...
+            <Loader2 className="w-5 h-5 animate-spin" /> Loading Workbook...
           </div>
         ) : activeView === 'Kanban' ? (
           <KanbanView data={processedData} handleInlineChange={handleInlineChange} onTaskClick={(task) => setEditingTask(task)} />
@@ -490,25 +518,25 @@ export default function WorkbookPage() {
             <thead className="sticky top-0 bg-[#111] z-20 text-gray-400 shadow-sm border-b border-white/10">
               <tr>
                 <th className="px-4 py-4 w-12 text-center border-r border-white/5">
-                  <input 
-                    type="checkbox" 
-                    checked={allSelected} 
-                    onChange={e => toggleAllRows(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={e => toggleAllRows(e.target.checked)}
                     className="accent-tpc-orange w-4 h-4 rounded cursor-pointer"
                   />
                 </th>
-                <th onClick={() => handleSort('name')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-64 cursor-pointer hover:bg-white/5 group border-r border-white/5">Name <SortIcon columnKey="name"/></th>
-                <th onClick={() => handleSort('client')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Client <SortIcon columnKey="client"/></th>
-                <th onClick={() => handleSort('status')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Status <SortIcon columnKey="status"/></th>
-                <th onClick={() => handleSort('assigned')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Assigned <SortIcon columnKey="assigned"/></th>
-                <th onClick={() => handleSort('docLink')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Link <SortIcon columnKey="docLink"/></th>
-                <th onClick={() => handleSort('driveA')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Drive Link <SortIcon columnKey="driveA"/></th>
-                <th onClick={() => handleSort('scriptDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Date <SortIcon columnKey="scriptDate"/></th>
-                <th onClick={() => handleSort('shootDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Shoot Date <SortIcon columnKey="shootDate"/></th>
-                <th onClick={() => handleSort('editDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Edit Date <SortIcon columnKey="editDate"/></th>
-                <th onClick={() => handleSort('finalDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Posting Date / Time <SortIcon columnKey="finalDate"/></th>
-                <th onClick={() => handleSort('platform')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform"/></th>
-                <th onClick={() => handleSort('month')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month"/></th>
+                <th onClick={() => handleSort('name')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-64 cursor-pointer hover:bg-white/5 group border-r border-white/5">Name <SortIcon columnKey="name" /></th>
+                <th onClick={() => handleSort('client')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Client <SortIcon columnKey="client" /></th>
+                <th onClick={() => handleSort('status')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Status <SortIcon columnKey="status" /></th>
+                <th onClick={() => handleSort('assigned')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Assigned <SortIcon columnKey="assigned" /></th>
+                <th onClick={() => handleSort('docLink')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Link <SortIcon columnKey="docLink" /></th>
+                <th onClick={() => handleSort('driveA')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Drive Link <SortIcon columnKey="driveA" /></th>
+                <th onClick={() => handleSort('scriptDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Date <SortIcon columnKey="scriptDate" /></th>
+                <th onClick={() => handleSort('shootDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Shoot Date <SortIcon columnKey="shootDate" /></th>
+                <th onClick={() => handleSort('editDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Edit Date <SortIcon columnKey="editDate" /></th>
+                <th onClick={() => handleSort('finalDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Posting Date / Time <SortIcon columnKey="finalDate" /></th>
+                <th onClick={() => handleSort('platform')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform" /></th>
+                <th onClick={() => handleSort('month')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month" /></th>
                 <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 border-r border-white/5">Support</th>
                 <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-12 text-center"></th>
               </tr>
@@ -516,18 +544,18 @@ export default function WorkbookPage() {
               {showFilters && (
                 <tr className="bg-[#151515] border-b border-white/10">
                   <th className="px-4 py-2 border-r border-white/5"></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter name..." value={columnFilters.name || ''} onChange={e => setColumnFilters(p => ({...p, name: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter client..." value={columnFilters.client || ''} onChange={e => setColumnFilters(p => ({...p, client: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter status..." value={columnFilters.status || ''} onChange={e => setColumnFilters(p => ({...p, status: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter assigned..." value={columnFilters.assigned || ''} onChange={e => setColumnFilters(p => ({...p, assigned: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter name..." value={columnFilters.name || ''} onChange={e => setColumnFilters(p => ({ ...p, name: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter client..." value={columnFilters.client || ''} onChange={e => setColumnFilters(p => ({ ...p, client: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter status..." value={columnFilters.status || ''} onChange={e => setColumnFilters(p => ({ ...p, status: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter assigned..." value={columnFilters.assigned || ''} onChange={e => setColumnFilters(p => ({ ...p, assigned: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"></th>
                   <th className="px-6 py-2 border-r border-white/5"></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.scriptDate || ''} onChange={e => setColumnFilters(p => ({...p, scriptDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.shootDate || ''} onChange={e => setColumnFilters(p => ({...p, shootDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.editDate || ''} onChange={e => setColumnFilters(p => ({...p, editDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.finalDate || ''} onChange={e => setColumnFilters(p => ({...p, finalDate: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter platform..." value={columnFilters.platform || ''} onChange={e => setColumnFilters(p => ({...p, platform: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({...p, month: e.target.value}))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.scriptDate || ''} onChange={e => setColumnFilters(p => ({ ...p, scriptDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.shootDate || ''} onChange={e => setColumnFilters(p => ({ ...p, shootDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.editDate || ''} onChange={e => setColumnFilters(p => ({ ...p, editDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.finalDate || ''} onChange={e => setColumnFilters(p => ({ ...p, finalDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter platform..." value={columnFilters.platform || ''} onChange={e => setColumnFilters(p => ({ ...p, platform: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({ ...p, month: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-6 py-2 border-r border-white/5"></th>
                   <th className="px-6 py-2"></th>
                 </tr>
@@ -540,19 +568,43 @@ export default function WorkbookPage() {
                 </tr>
               )}
               {processedData.map((row) => (
-                <tr key={row.id} className={`hover:bg-white/5 transition-colors group ${selectedRows.has(row.id) ? 'bg-tpc-orange/10 hover:bg-tpc-orange/20' : ''}`}>
+                <tr 
+                  key={row.id} 
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedRowId(row.id);
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (!draggedRowId || draggedRowId === row.id) return;
+                    
+                    const draggedIndex = data.findIndex(d => d.id === draggedRowId);
+                    const targetIndex = data.findIndex(d => d.id === row.id);
+                    if (draggedIndex === -1 || targetIndex === -1) return;
+
+                    const newData = [...data];
+                    const [draggedItem] = newData.splice(draggedIndex, 1);
+                    newData.splice(targetIndex, 0, draggedItem);
+                    setData(newData);
+                    setDraggedRowId(null);
+                  }}
+                  onDragEnd={() => setDraggedRowId(null)}
+                  className={`hover:bg-white/5 transition-colors group cursor-grab active:cursor-grabbing ${selectedRows.has(row.id) ? 'bg-tpc-orange/10 hover:bg-tpc-orange/20' : ''} ${draggedRowId === row.id ? 'opacity-30 border-2 border-tpc-orange bg-tpc-orange/5' : ''}`}
+                >
                   <td className="px-4 py-3 border-r border-white/5 text-center">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedRows.has(row.id)} 
-                      onChange={e => toggleRow(row.id, e.target.checked, (e.nativeEvent as any).shiftKey)} 
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.has(row.id)}
+                      onChange={e => toggleRow(row.id, e.target.checked, (e.nativeEvent as any).shiftKey)}
                       className="accent-tpc-orange w-4 h-4 rounded cursor-pointer opacity-50 group-hover:opacity-100 transition-opacity"
                     />
                   </td>
                   {/* Name */}
                   <td className="px-6 py-3 border-r border-white/5">
-                    <input 
-                      value={row.name || ''} 
+                    <input
+                      value={row.name || ''}
                       onChange={(e) => handleInlineChange(row.id, 'name', e.target.value)}
                       className="w-full bg-transparent border-none outline-none text-white font-medium focus:bg-white/10 p-1 rounded transition-colors"
                       placeholder="Task name"
@@ -560,8 +612,8 @@ export default function WorkbookPage() {
                   </td>
                   {/* Client - NotionDropdown */}
                   <td className="px-6 py-3 border-r border-white/5 w-48 relative">
-                    <NotionDropdown 
-                      value={row.client || ''} 
+                    <NotionDropdown
+                      value={row.client || ''}
                       options={clients as string[]}
                       onChange={(val) => handleInlineChange(row.id, 'client', val)}
                       placeholder="Select Client..."
@@ -569,8 +621,8 @@ export default function WorkbookPage() {
                   </td>
                   {/* Status - NotionDropdown */}
                   <td className="px-6 py-3 border-r border-white/5 w-32 relative">
-                    <NotionDropdown 
-                      value={row.status || ''} 
+                    <NotionDropdown
+                      value={row.status || ''}
                       options={statuses as string[]}
                       onChange={(val) => handleInlineChange(row.id, 'status', val)}
                       placeholder="Status"
@@ -589,7 +641,7 @@ export default function WorkbookPage() {
                   {/* Assigned - NotionMultiSelect */}
                   <td className="px-6 py-3 border-r border-white/5 w-48 relative">
                     <NotionMultiSelect
-                      value={row.assigned || ''} 
+                      value={row.assigned || ''}
                       options={assigned as string[]}
                       onChange={(val) => handleInlineChange(row.id, 'assigned', val)}
                       placeholder="Assign..."
@@ -599,7 +651,7 @@ export default function WorkbookPage() {
                   <td className="px-6 py-3 border-r border-white/5 w-48 relative">
                     <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.docLink ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'}`}>
                       <LinkIcon className={`w-3 h-3 shrink-0 ${row.docLink ? 'text-green-500' : 'text-gray-500'}`} />
-                      <input 
+                      <input
                         value={row.docLink || ''}
                         onChange={(e) => handleInlineChange(row.id, 'docLink', e.target.value)}
                         placeholder="Paste Script URL..."
@@ -616,7 +668,7 @@ export default function WorkbookPage() {
                   <td className="px-6 py-3 border-r border-white/5 w-48 relative">
                     <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.driveA ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'}`}>
                       <FileText className={`w-3 h-3 shrink-0 ${row.driveA ? 'text-green-500' : 'text-gray-500'}`} />
-                      <input 
+                      <input
                         value={row.driveA || ''}
                         onChange={(e) => handleInlineChange(row.id, 'driveA', e.target.value)}
                         placeholder="Paste Drive URL..."
@@ -631,41 +683,41 @@ export default function WorkbookPage() {
                   </td>
                   {/* Dates */}
                   <td className="px-6 py-3 border-r border-white/5">
-                    <input 
+                    <input
                       type="datetime-local"
-                      value={formatForDateTimeLocal(row.scriptDate)} 
+                      value={formatForDateTimeLocal(row.scriptDate)}
                       onChange={(e) => handleInlineChange(row.id, 'scriptDate', e.target.value)}
                       className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('script', row.status, row.scriptDate)}`}
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
-                    <input 
+                    <input
                       type="datetime-local"
-                      value={formatForDateTimeLocal(row.shootDate)} 
+                      value={formatForDateTimeLocal(row.shootDate)}
                       onChange={(e) => handleInlineChange(row.id, 'shootDate', e.target.value)}
                       className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('shoot', row.status, row.shootDate)}`}
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
-                    <input 
+                    <input
                       type="datetime-local"
-                      value={formatForDateTimeLocal(row.editDate)} 
+                      value={formatForDateTimeLocal(row.editDate)}
                       onChange={(e) => handleInlineChange(row.id, 'editDate', e.target.value)}
                       className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('edit', row.status, row.editDate)}`}
                     />
                   </td>
                   <td className="px-6 py-3 border-r border-white/5">
-                    <input 
+                    <input
                       type="datetime-local"
-                      value={formatForDateTimeLocal(row.finalDate)} 
+                      value={formatForDateTimeLocal(row.finalDate)}
                       onChange={(e) => handleInlineChange(row.id, 'finalDate', e.target.value)}
                       className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('final', row.status, row.finalDate)}`}
                     />
                   </td>
                   {/* Platform - NotionDropdown */}
                   <td className="px-6 py-3 border-r border-white/5 w-32 relative">
-                    <NotionDropdown 
-                      value={row.platform || ''} 
+                    <NotionDropdown
+                      value={row.platform || ''}
                       options={platforms as string[]}
                       onChange={(val) => handleInlineChange(row.id, 'platform', val)}
                       placeholder="Platform"
@@ -673,8 +725,8 @@ export default function WorkbookPage() {
                   </td>
                   {/* Month - NotionDropdown */}
                   <td className="px-6 py-3 border-r border-white/5 w-32 relative">
-                    <NotionDropdown 
-                      value={row.month || ''} 
+                    <NotionDropdown
+                      value={row.month || ''}
                       options={months as string[]}
                       onChange={(val) => handleInlineChange(row.id, 'month', val)}
                       placeholder="Month"
@@ -682,7 +734,7 @@ export default function WorkbookPage() {
                   </td>
                   {/* Support Hub */}
                   <td className="px-6 py-3 border-r border-white/5 align-middle">
-                    <button 
+                    <button
                       onClick={() => setActiveQueryTask(row)}
                       className="bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded transition-colors w-full relative flex items-center justify-center gap-2"
                     >
@@ -695,25 +747,43 @@ export default function WorkbookPage() {
                   {/* Actions */}
                   <td className="px-6 py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
-                     {(row.status || "").toLowerCase().includes("review") && (
-                       <button onClick={() => setReviewTask(row)} className="px-3 py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
-                         Review
-                       </button>
-                     )}
-                     <button onClick={() => handleDeleteRow(row.id)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100">
+                      {(row.status || "").toLowerCase().includes("review") && (
+                        <button onClick={() => setReviewTask(row)} className="px-3 py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
+                          Review
+                        </button>
+                      )}
+                      <button onClick={() => handleDeleteRow(row.id)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100">
                         <Trash2 className="w-4 h-4" />
-                     </button>
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              
-              {/* Add New Row Button inline */}
-              <tr>
-                <td colSpan={12} className="px-6 py-4">
-                  <button onClick={handleAddNewRow} className="text-gray-500 hover:text-white flex items-center gap-2 font-medium transition-colors text-sm">
-                    <Plus className="w-4 h-4" /> Add new row
-                  </button>
+
+              {/* GHOST ROW (Instant Add) */}
+              <tr className="hover:bg-white/5 transition-colors group opacity-50 focus-within:opacity-100">
+                <td className="px-4 py-3 border-r border-white/5 text-center">
+                  <Plus className="w-4 h-4 mx-auto text-gray-500 group-focus-within:text-tpc-orange" />
+                </td>
+                <td className="px-6 py-3 border-r border-white/5" colSpan={13}>
+                  <input
+                    value={ghostName}
+                    onChange={(e) => setGhostName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && ghostName.trim()) {
+                        handleAddNewRow(ghostName);
+                        setGhostName("");
+                      }
+                    }}
+                    onBlur={() => {
+                      if (ghostName.trim()) {
+                        handleAddNewRow(ghostName);
+                        setGhostName("");
+                      }
+                    }}
+                    placeholder="Click to add a new task... (Press Enter to save)"
+                    className="w-full bg-transparent border-none outline-none text-white font-medium focus:bg-white/10 p-1 rounded transition-colors"
+                  />
                 </td>
               </tr>
             </tbody>
@@ -733,14 +803,14 @@ export default function WorkbookPage() {
           <div className="h-6 w-[1px] bg-gray-200"></div>
           <p className="text-xs text-gray-500 font-medium hidden md:block">Edit any dropdown above to update all selected rows instantly.</p>
           <div className="flex items-center gap-2 ml-auto md:ml-4">
-            <button 
-              onClick={handleBulkDuplicate} 
+            <button
+              onClick={handleBulkDuplicate}
               className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors uppercase tracking-widest border border-gray-200"
             >
               <Copy className="w-3 h-3" /> Duplicate
             </button>
-            <button 
-              onClick={handleBulkDelete} 
+            <button
+              onClick={handleBulkDelete}
               className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors uppercase tracking-widest border border-red-200"
             >
               <Trash2 className="w-3 h-3" /> Delete
@@ -749,57 +819,61 @@ export default function WorkbookPage() {
         </div>
       )}
 
-      {/* FLOATING SAVE CHANGES BUTTON */}
-      {unsavedUpdates.size > 0 && (
-        <button 
-          onClick={saveAllChanges}
-          className="fixed bottom-8 right-8 bg-tpc-orange text-black p-4 rounded-full shadow-[0_0_20px_rgba(255,102,0,0.3)] flex items-center justify-center z-[100] hover:scale-110 active:scale-95 transition-all group animate-in slide-in-from-bottom-8"
-          title={`Save ${unsavedUpdates.size} changes`}
-        >
-          <div className="relative">
-            <Save className="w-6 h-6 group-hover:animate-pulse" />
-            <span className="absolute -top-3 -right-3 bg-white text-black text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-tpc-orange shadow-lg">
-              {unsavedUpdates.size}
-            </span>
-          </div>
-        </button>
+      {/* FLOATING SAVE INDICATOR */}
+      {(unsavedUpdates.size > 0 || isSaving) && (
+        <div className="fixed bottom-8 right-8 bg-black/80 backdrop-blur border border-white/10 text-gray-300 px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 z-[100] animate-in slide-in-from-bottom-8">
+          {isSaving ? (
+            <>
+              <Loader2 className="w-4 h-4 text-tpc-orange animate-spin" />
+              <span className="text-xs font-bold uppercase tracking-widest">Saving...</span>
+            </>
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+              <span className="text-xs font-bold uppercase tracking-widest">{unsavedUpdates.size} Unsaved</span>
+            </>
+          )}
+        </div>
       )}
 
-      {/* EDIT MODAL (for Kanban/Calendar views) */}
+      {/* EDIT MODAL (for Kanban/Calendar views - SIDE PEEK) */}
       {editingTask && (
-        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg p-8 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <button onClick={() => setEditingTask(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-xl font-bold uppercase tracking-widest mb-6 text-tpc-orange flex items-center gap-2">
-              Edit Task
-            </h3>
+        <div className="fixed inset-0 z-[20000] flex justify-end bg-black/50 backdrop-blur-sm">
+          <div className="bg-[#111] border-l border-white/10 w-full max-w-md h-full relative shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
             
-            <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-2">
+            <div className="p-6 md:p-8 border-b border-white/10 flex justify-between items-center shrink-0">
+              <h3 className="text-xl font-bold uppercase tracking-widest text-tpc-orange flex items-center gap-2">
+                Edit Task
+              </h3>
+              <button onClick={() => setEditingTask(null)} className="text-gray-500 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 md:p-8 flex-1 overflow-y-auto space-y-6 pr-2">
               <div>
                 <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Task Name</label>
-                <input 
+                <input
                   value={editingTask.name || ''}
-                  onChange={(e) => setEditingTask({...editingTask, name: e.target.value})}
+                  onChange={(e) => setEditingTask({ ...editingTask, name: e.target.value })}
                   className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Client</label>
-                  <input 
+                  <input
                     value={editingTask.client || ''}
-                    onChange={(e) => setEditingTask({...editingTask, client: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, client: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Status</label>
-                  <select 
+                  <select
                     value={editingTask.status || ''}
-                    onChange={(e) => setEditingTask({...editingTask, status: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, status: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
                   >
                     {statuses.map(s => <option key={s as string} value={s as string}>{s as string}</option>)}
@@ -810,18 +884,18 @@ export default function WorkbookPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Assigned To</label>
-                  <input 
+                  <input
                     value={editingTask.assigned || ''}
-                    onChange={(e) => setEditingTask({...editingTask, assigned: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, assigned: e.target.value })}
                     placeholder="Comma separated names"
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Platform</label>
-                  <select 
+                  <select
                     value={editingTask.platform || ''}
-                    onChange={(e) => setEditingTask({...editingTask, platform: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, platform: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
                   >
                     {platforms.map(p => <option key={p as string} value={p as string}>{p as string}</option>)}
@@ -832,9 +906,9 @@ export default function WorkbookPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Month</label>
-                  <select 
+                  <select
                     value={editingTask.month || ''}
-                    onChange={(e) => setEditingTask({...editingTask, month: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, month: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
                   >
                     {months.map(m => <option key={m as string} value={m as string}>{m as string}</option>)}
@@ -842,20 +916,20 @@ export default function WorkbookPage() {
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Script Link</label>
-                  <input 
+                  <input
                     value={editingTask.docLink || ''}
-                    onChange={(e) => setEditingTask({...editingTask, docLink: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, docLink: e.target.value })}
                     placeholder="https://..."
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Drive Link</label>
-                <input 
+                <input
                   value={editingTask.driveA || ''}
-                  onChange={(e) => setEditingTask({...editingTask, driveA: e.target.value})}
+                  onChange={(e) => setEditingTask({ ...editingTask, driveA: e.target.value })}
                   placeholder="https://..."
                   className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                 />
@@ -864,19 +938,19 @@ export default function WorkbookPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Script Date</label>
-                  <input 
+                  <input
                     type="datetime-local"
                     value={formatForDateTimeLocal(editingTask.scriptDate)}
-                    onChange={(e) => setEditingTask({...editingTask, scriptDate: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, scriptDate: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Shoot Date</label>
-                  <input 
+                  <input
                     type="datetime-local"
                     value={formatForDateTimeLocal(editingTask.shootDate)}
-                    onChange={(e) => setEditingTask({...editingTask, shootDate: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, shootDate: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
@@ -885,31 +959,70 @@ export default function WorkbookPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Edit Date</label>
-                  <input 
+                  <input
                     type="datetime-local"
                     value={formatForDateTimeLocal(editingTask.editDate)}
-                    onChange={(e) => setEditingTask({...editingTask, editDate: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, editDate: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Final Date</label>
-                  <input 
+                  <input
                     type="datetime-local"
                     value={formatForDateTimeLocal(editingTask.finalDate)}
-                    onChange={(e) => setEditingTask({...editingTask, finalDate: e.target.value})}
+                    onChange={(e) => setEditingTask({ ...editingTask, finalDate: e.target.value })}
                     className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange"
                   />
                 </div>
               </div>
 
+              <div className="relative">
+                <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Notes / Description</label>
+                <textarea
+                  value={editingTask.desc || ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditingTask({ ...editingTask, desc: val });
+                    if (val.endsWith('/')) setSlashMenuOpen(true);
+                    else setSlashMenuOpen(false);
+                  }}
+                  rows={4}
+                  placeholder="Type '/' for quick commands..."
+                  className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange resize-none"
+                />
+                {slashMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-2 w-48 bg-[#191919] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-[21000] animate-in slide-in-from-bottom-2">
+                    <button 
+                      onClick={() => {
+                        const today = new Date().toISOString().split('T')[0];
+                        setEditingTask({...editingTask, desc: editingTask.desc.slice(0, -1) + today + ' '});
+                        setSlashMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white flex gap-2 items-center transition-colors"
+                    >
+                      <Calendar className="w-3 h-3 text-tpc-orange" /> Insert Today's Date
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setEditingTask({...editingTask, desc: editingTask.desc.slice(0, -1) + '@[Assignee] '});
+                        setSlashMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white flex gap-2 items-center transition-colors"
+                    >
+                      <MessageSquare className="w-3 h-3 text-tpc-orange" /> Ping Assignee
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {editingTask.reelCaption && (
                 <div className="mt-4 bg-white/5 border border-white/10 p-4 rounded-lg">
                   <label className="flex items-center gap-3 cursor-pointer group">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={editingTask.captionApproved === 'true'}
-                      onChange={(e) => setEditingTask({...editingTask, captionApproved: e.target.checked ? 'true' : 'false'})}
+                      onChange={(e) => setEditingTask({ ...editingTask, captionApproved: e.target.checked ? 'true' : 'false' })}
                       className="w-5 h-5 accent-green-500 rounded cursor-pointer"
                     />
                     <div>
@@ -922,21 +1035,21 @@ export default function WorkbookPage() {
                   </div>
                 </div>
               )}
-              
+
             </div>
 
-            <div className="flex gap-4">
-              <button 
+            <div className="p-6 md:p-8 border-t border-white/10 flex gap-4 shrink-0 bg-[#0a0a0a]">
+              <button
                 onClick={() => {
                   // Propagate all changes
                   Object.keys(editingTask).forEach(key => {
                     handleInlineChange(editingTask.id, key, editingTask[key]);
                   });
                   setEditingTask(null);
-                }} 
-                className="w-full bg-tpc-orange hover:bg-white text-black font-bold uppercase tracking-widest py-3 rounded-xl transition-colors text-sm"
+                }}
+                className="w-full bg-tpc-orange hover:bg-white text-black font-bold uppercase tracking-widest py-4 rounded-xl transition-colors text-sm shadow-xl"
               >
-                Save Changes
+                Done
               </button>
             </div>
           </div>
@@ -953,42 +1066,42 @@ export default function WorkbookPage() {
             <h3 className="text-xl font-bold uppercase tracking-widest mb-6 text-yellow-500 flex items-center gap-2">
               Review Task
             </h3>
-            
+
             <p className="text-gray-400 mb-4 text-sm">Review the uploaded files from the Google Drive Folder before approving.</p>
             {reviewTask.driveA ? (
-               <a href={reviewTask.driveA} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl mb-6 transition-colors">
-                 Open Google Drive Folder
-               </a>
+              <a href={reviewTask.driveA} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 rounded-xl mb-6 transition-colors">
+                Open Google Drive Folder
+              </a>
             ) : (
-               <p className="text-red-400 text-xs italic mb-6">No Drive Folder provided by Admin.</p>
+              <p className="text-red-400 text-xs italic mb-6">No Drive Folder provided by Admin.</p>
             )}
 
             <div className="space-y-4 mb-8">
               <div>
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Admin Note (Required for Fixes)</label>
-                <textarea 
-                  value={reviewNote} 
-                  onChange={e => setReviewNote(e.target.value)} 
-                  className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white h-24 resize-none" 
-                  placeholder="Explain what needs to be fixed..." 
+                <textarea
+                  value={reviewNote}
+                  onChange={e => setReviewNote(e.target.value)}
+                  className="w-full bg-black border border-white/10 p-3 rounded-xl mt-1 text-white h-24 resize-none"
+                  placeholder="Explain what needs to be fixed..."
                 />
               </div>
             </div>
 
             <div className="flex gap-4">
-              <button 
+              <button
                 onClick={() => {
                   if (!reviewNote.trim()) return alert("You must provide an admin note for fixes.");
                   handleInlineChange(reviewTask.id, 'adminNote', reviewNote);
                   handleInlineChange(reviewTask.id, 'status', 'Fixes Required');
                   setReviewTask(null);
                   setReviewNote("");
-                }} 
+                }}
                 className="flex-1 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-black font-bold uppercase tracking-widest p-4 rounded-xl transition-colors text-xs"
               >
                 Needs Fixes
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const s = reviewTask.status?.toLowerCase() || "";
                   let nextStatus = "Completed";
@@ -998,7 +1111,7 @@ export default function WorkbookPage() {
                   handleInlineChange(reviewTask.id, 'status', nextStatus);
                   setReviewTask(null);
                   setReviewNote("");
-                }} 
+                }}
                 className="flex-1 bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-black font-bold uppercase tracking-widest p-4 rounded-xl transition-colors text-xs"
               >
                 Approve & Advance
@@ -1014,9 +1127,9 @@ export default function WorkbookPage() {
           <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl">
             <div className="flex justify-between items-center p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">💬 Task Support Hub</h3>
-              <button onClick={() => setActiveQueryTask(null)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
+              <button onClick={() => setActiveQueryTask(null)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
-            
+
             <div className="p-6 space-y-6">
               <div className="bg-[#111] border border-white/5 rounded-xl p-4">
                 <label className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-2 flex items-center justify-between">
@@ -1031,22 +1144,22 @@ export default function WorkbookPage() {
                 <label className="text-[10px] uppercase tracking-widest text-green-500 font-bold mb-2 flex items-center justify-between">
                   Your Reply / Action
                 </label>
-                <textarea 
-                  rows={5} 
+                <textarea
+                  rows={5}
                   placeholder="Type your reply to the employee here..."
-                  value={activeQueryTask.adminReply || ""} 
-                  onChange={(e) => setActiveQueryTask({...activeQueryTask, adminReply: e.target.value})} 
-                  className="w-full bg-black/50 border border-white/10 rounded-lg p-4 text-white focus:outline-none focus:border-green-500 text-sm resize-none" 
+                  value={activeQueryTask.adminReply || ""}
+                  onChange={(e) => setActiveQueryTask({ ...activeQueryTask, adminReply: e.target.value })}
+                  className="w-full bg-black/50 border border-white/10 rounded-lg p-4 text-white focus:outline-none focus:border-green-500 text-sm resize-none"
                 />
               </div>
 
               <div className="flex justify-end gap-4 pt-2">
                 <button type="button" onClick={() => setActiveQueryTask(null)} className="px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">Close</button>
-                <button 
+                <button
                   onClick={async () => {
                     handleInlineChange(activeQueryTask.id, 'adminReply', activeQueryTask.adminReply);
                     setActiveQueryTask(null);
-                    saveAllChanges(); 
+                    saveAllChanges();
                   }}
                   className="bg-green-500 text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2 cursor-pointer text-sm"
                 >

@@ -1,8 +1,7 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Header from "../components/Header";
-import Cursor from "../Cursor";
 import Image from "next/image";
 import { ArrowDown, Code, PenTool, TrendingUp, Zap, Target, Globe } from "lucide-react";
 
@@ -22,6 +21,8 @@ const RevealText = ({ children }: { children: string }) => {
   );
 };
 
+
+
 export default function About() {
   const container = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -31,7 +32,6 @@ export default function About() {
 
   return (
     <main ref={container} className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black overflow-x-hidden">
-      <Cursor />
       <Header />
 
       {/* 1. HERO: THE STATEMENT */}
@@ -79,47 +79,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* 2. MASONRY VIBE GRID */}
-      <section className="py-20 px-6 md:px-12">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="md:col-span-7 bg-white/5 border border-white/10 rounded-3xl overflow-hidden relative group h-[300px] md:h-full"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-tpc-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white/20 font-mono uppercase tracking-widest">[Culture / Office Image 1]</span>
-            </div>
-          </motion.div>
-          <div className="md:col-span-5 grid grid-rows-2 gap-6 h-[600px] md:h-full">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden relative group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-tr from-tpc-orange/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white/20 font-mono uppercase tracking-widest">[Team Image 2]</span>
-              </div>
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="bg-tpc-orange text-black rounded-3xl overflow-hidden relative group flex flex-col justify-center p-10"
-            >
-              <Globe className="w-12 h-12 mb-6 opacity-50" />
-              <h3 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-none mb-4">Udaipur Based.</h3>
-              <h3 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-none text-black/50">Global Reach.</h3>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+
 
       {/* 3. THE MANIFESTO */}
       <section className="py-40 px-6 md:px-12 border-t border-white/5 bg-white/[0.02]">

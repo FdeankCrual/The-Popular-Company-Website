@@ -12,7 +12,6 @@ export default function TrackRecordPage() {
   
   return (
     <main ref={containerRef} className="bg-tpc-black text-white selection:bg-tpc-orange selection:text-black">
-      <Cursor />
       <Header />
 
       {/* 1. HERO SECTION */}
