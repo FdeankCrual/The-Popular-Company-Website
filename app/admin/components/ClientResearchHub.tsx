@@ -549,15 +549,15 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       <div className={`flex-1 flex-col h-full overflow-hidden bg-[#151515] min-w-0 ${selectedFile ? 'flex' : 'hidden md:flex'}`}>
         {selectedClient ? (
           <>
-            <div className="h-20 md:h-16 py-2 md:py-0 border-b border-white/10 flex items-center justify-between px-4 md:px-6 bg-[#111] shrink-0">
-              <div className="flex flex-col justify-center">
+            <div className="py-3 md:h-16 md:py-0 border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 bg-[#111] shrink-0 gap-3 md:gap-0 overflow-y-auto">
+              <div className="flex flex-col justify-center w-full md:w-auto">
                 <button 
                   onClick={() => setSelectedFile(null)}
-                  className="md:hidden flex items-center gap-1 text-[10px] uppercase font-bold text-tpc-orange mb-1 -ml-1 py-1"
+                  className="md:hidden flex items-center gap-1.5 text-xs uppercase font-black text-tpc-orange bg-tpc-orange/10 px-3 py-2 rounded-lg mb-3 w-fit hover:bg-tpc-orange/20 transition-colors"
                 >
-                  <ChevronLeft className="w-3 h-3" /> Back to Files
+                  <ChevronLeft className="w-4 h-4" /> Back to Vault & Files
                 </button>
-                <h1 className="text-sm font-bold text-white truncate max-w-[180px] md:max-w-md">
+                <h1 className="text-base md:text-sm font-bold text-white truncate max-w-full md:max-w-md">
                   {selectedFile ? selectedFile : "No file selected"}
                 </h1>
                 <span className="text-[10px] text-gray-500 font-mono hidden md:block mt-1">
@@ -565,33 +565,33 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
                 </span>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between w-full md:w-auto gap-4 mt-2 md:mt-0">
                 {saving && (
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-2">
                     <Loader2 className="w-3 h-3 animate-spin" /> Saving...
                   </span>
                 )}
 
-                <div className="flex bg-black/50 border border-white/10 rounded p-1">
+                <div className="flex bg-black/50 border border-white/10 rounded p-1 w-full md:w-auto justify-between md:justify-start">
                   <button
                     onClick={() => setViewMode('reading')}
-                    className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'reading' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                    className={`flex-1 md:flex-none px-3 py-2 md:py-1.5 rounded flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'reading' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                   >
-                    <BookOpen className="w-3 h-3" /> Read
+                    <BookOpen className="w-3 h-3 md:w-3 md:h-3" /> Read
                   </button>
                   {canEdit && (
                     <button
                       onClick={() => setViewMode('editing')}
-                      className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'editing' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                      className={`flex-1 md:flex-none px-3 py-2 md:py-1.5 rounded flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'editing' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                     >
-                      <Edit3 className="w-3 h-3" /> Edit
+                      <Edit3 className="w-3 h-3 md:w-3 md:h-3" /> Edit
                     </button>
                   )}
                   <button
                     onClick={() => setViewMode('graph')}
-                    className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'graph' ? 'bg-tpc-orange text-black' : 'text-gray-500 hover:text-gray-300'}`}
+                    className={`flex-1 md:flex-none px-3 py-2 md:py-1.5 rounded flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${viewMode === 'graph' ? 'bg-tpc-orange text-black' : 'text-gray-500 hover:text-gray-300'}`}
                   >
-                    <Network className="w-3 h-3" /> Graph
+                    <Network className="w-3 h-3 md:w-3 md:h-3" /> Graph
                   </button>
                 </div>
               </div>
