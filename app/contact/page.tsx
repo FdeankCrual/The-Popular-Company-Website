@@ -60,11 +60,11 @@ export default function ContactPage() {
   const services = ["Social Media", "Ads / Performance", "Video Production", "Branding", "Web / Tech", "Other"];
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black">
+    <main className="bg-tpc-black min-h-dvh text-white selection:bg-tpc-orange selection:text-black">
       <Cursor />
       <Header />
 
-      <section className="min-h-screen flex flex-col md:flex-row pt-32 pb-20 px-6 md:px-12 gap-12 md:gap-20">
+      <section className="min-h-dvh flex flex-col md:flex-row pt-32 pb-20 px-6 md:px-12 gap-12 md:gap-20">
         
         {/* --- LEFT SIDE: THE PITCH --- */}
         <div className="md:w-1/2 flex flex-col justify-between">

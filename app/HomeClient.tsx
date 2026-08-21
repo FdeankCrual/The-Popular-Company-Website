@@ -47,11 +47,11 @@ export default function HomeClient({
   const titleStart = titleWords.join(" ");
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white overflow-x-clip selection:bg-tpc-orange selection:text-black">
+    <main className="bg-tpc-black min-h-dvh text-white overflow-x-clip selection:bg-tpc-orange selection:text-black">
       <Header />
 
       {/* 1. HERO */}
-      <section className="min-h-screen flex flex-col justify-center px-4 md:px-12 pt-24 md:pt-20 relative">
+      <section className="min-h-dvh flex flex-col justify-center px-4 md:px-12 pt-24 md:pt-20 relative">
         <motion.div style={{ y }} className="z-10 mt-10 md:mt-20">
           <motion.h1
             initial={{ y: 50, opacity: 0 }}

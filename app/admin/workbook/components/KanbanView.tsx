@@ -64,7 +64,7 @@ export function KanbanView({
   });
 
   return (
-    <div className="flex h-[calc(100vh-200px)] min-w-full gap-4 p-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory bg-[#111] overscroll-x-contain">
+    <div className="flex h-[calc(100dvh-200px)] min-w-full gap-4 p-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory bg-[#111] overscroll-x-contain">
       {activeStages.map((stage) => (
         <div 
           key={stage} 

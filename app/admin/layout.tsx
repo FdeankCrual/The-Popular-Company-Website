@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <CommandPalette />
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100vh-60px)] md:h-screen relative pb-0">
+      <main className="flex-1 overflow-y-auto bg-tpc-black h-dvh relative pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
         <div className="max-w-[1600px] mx-auto">
           {children}
         </div>

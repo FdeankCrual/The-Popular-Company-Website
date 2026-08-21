@@ -46,7 +46,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black">
+    <main className="bg-tpc-black min-h-dvh text-white selection:bg-tpc-orange selection:text-black">
       <Cursor />
       <Header />
 

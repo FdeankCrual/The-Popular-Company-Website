@@ -91,14 +91,14 @@ export default function ContentManager({ email, name, roles }: { email: string, 
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
+      <div className="flex justify-center items-center h-full min-h-dvh text-gray-500 bg-[#191919]">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)] md:h-screen bg-[#151515] text-[#D4D4D4] overflow-hidden">
+    <div className="flex flex-col h-[calc(100dvh-60px)] md:h-dvh bg-[#151515] text-[#D4D4D4] overflow-hidden">
       
       {/* MAIN PANE */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">

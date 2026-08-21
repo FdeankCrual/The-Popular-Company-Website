@@ -92,7 +92,7 @@ export default function MyTasksClient({ initialName }: { initialName: string }) 
   };
 
   return (
-    <div className="flex-1 bg-tpc-black min-h-screen flex flex-col relative overflow-hidden">
+    <div className="flex-1 bg-tpc-black min-h-dvh flex flex-col relative overflow-hidden">
       <div className="p-6 md:p-10 border-b border-white/10 shrink-0">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>

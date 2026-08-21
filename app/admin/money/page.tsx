@@ -126,7 +126,7 @@ export default function MoneyManagementPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-tpc-black text-tpc-orange">
+      <div className="flex flex-col items-center justify-center h-dvh bg-tpc-black text-tpc-orange">
         <Loader2 className="w-10 h-10 animate-spin" />
         <span className="mt-4 font-bold uppercase tracking-widest text-sm">Loading Vault...</span>
       </div>
@@ -134,7 +134,7 @@ export default function MoneyManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-tpc-black text-white font-sans p-4 sm:p-8 md:p-12 pb-32">
+    <div className="min-h-dvh bg-tpc-black text-white font-sans p-4 sm:p-8 md:p-12 pb-32">
       
       {/* Floating Save Button */}
       {unsaved && (

@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-tpc-black flex items-center justify-center text-white selection:bg-tpc-orange selection:text-black px-6">
+    <main className="min-h-dvh bg-tpc-black flex items-center justify-center text-white selection:bg-tpc-orange selection:text-black px-6">
       <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-[2rem] p-8 md:p-12 relative overflow-hidden">
         {/* Glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-tpc-orange/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />

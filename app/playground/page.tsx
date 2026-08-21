@@ -208,7 +208,7 @@ export default function Playground() {
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black pb-20 relative overflow-hidden">
+    <main className="bg-tpc-black min-h-dvh text-white selection:bg-tpc-orange selection:text-black pb-20 relative overflow-hidden">
       <Cursor />
       <Header />
 

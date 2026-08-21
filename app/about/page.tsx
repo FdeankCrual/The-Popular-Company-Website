@@ -31,11 +31,11 @@ export default function About() {
   });
 
   return (
-    <main ref={container} className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black overflow-x-hidden">
+    <main ref={container} className="bg-tpc-black min-h-dvh text-white selection:bg-tpc-orange selection:text-black overflow-x-hidden">
       <Header />
 
       {/* 1. HERO: THE STATEMENT */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-32 relative">
+      <section className="min-h-dvh flex flex-col justify-center px-6 md:px-12 pt-32 relative">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-tpc-orange/5 rounded-full blur-[150px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
         
         {/* Date Tag */}

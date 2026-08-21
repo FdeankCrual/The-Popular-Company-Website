@@ -64,7 +64,7 @@ export default function AuditPage() {
   };
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white font-sans selection:bg-tpc-orange selection:text-black">
+    <main className="bg-tpc-black min-h-dvh text-white font-sans selection:bg-tpc-orange selection:text-black">
       <Header />
       
       <div className="max-w-[1200px] mx-auto px-6 pt-40 pb-20">

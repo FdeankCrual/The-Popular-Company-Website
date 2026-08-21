@@ -271,7 +271,7 @@ export default function AdminAgentLeadsPage() {
   const allSelected = processedData.length > 0 && selectedRows.size === processedData.length;
 
   return (
-    <div className="flex flex-col h-full bg-[#191919] min-h-screen text-[#D4D4D4] font-sans relative">
+    <div className="flex flex-col h-full bg-[#191919] min-h-dvh text-[#D4D4D4] font-sans relative">
       <div className="flex flex-col md:flex-row md:items-end justify-between p-4 sm:p-8 md:p-12 pb-4 sm:pb-8 border-b border-white/10 shrink-0 gap-4">
         <div>
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2 text-white">

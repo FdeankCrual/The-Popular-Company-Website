@@ -100,7 +100,7 @@ export default function WebPortfolioCMS() {
   };
 
   return (
-    <div className="p-8 md:p-12 min-h-screen">
+    <div className="p-8 md:p-12 min-h-dvh">
       <div className="flex justify-between items-end mb-10">
         <div>
           <h2 className="text-3xl font-black uppercase tracking-tighter mb-2 text-white">

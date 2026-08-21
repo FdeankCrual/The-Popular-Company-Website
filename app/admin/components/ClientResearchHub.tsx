@@ -144,9 +144,11 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   useEffect(() => {
     if (selectedClient && clientFiles.length > 0 && !selectedFile) {
-      // Auto-select first file
-      const firstFile = clientFiles.find(f => f.filePath.endsWith('.md'));
-      if (firstFile) setSelectedFile(firstFile.filePath);
+      // Auto-select first file only if on desktop
+      if (window.innerWidth >= 768) {
+        const firstFile = clientFiles.find(f => f.filePath.endsWith('.md'));
+        if (firstFile) setSelectedFile(firstFile.filePath);
+      }
     }
   }, [selectedClient, clientFiles, selectedFile]);
 
@@ -471,14 +473,14 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
+      <div className="flex justify-center items-center h-full min-h-dvh text-gray-500 bg-[#191919]">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-60px)] md:h-screen bg-[#191919] text-[#D4D4D4] overflow-hidden relative">
+    <div className="flex flex-col md:flex-row h-[calc(100dvh-60px)] md:h-dvh bg-[#191919] text-[#D4D4D4] overflow-hidden relative">
 
       {/* SIDEBAR: Vault/Client Selector & File Tree */}
       <div className={`w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex-col shrink-0 h-full ${selectedFile ? 'hidden md:flex' : 'flex'}`}>

@@ -37,7 +37,7 @@ export default function SalesDashboard({ email, name }: { email: string, name: s
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
+      <div className="flex justify-center items-center h-full min-h-dvh text-gray-500 bg-[#191919]">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
@@ -51,7 +51,7 @@ export default function SalesDashboard({ email, name }: { email: string, name: s
   const conversionRate = totalLeads > 0 ? Math.round((wonLeads.length / totalLeads) * 100) : 0;
 
   return (
-    <div className="p-4 sm:p-8 md:p-12 text-[#D4D4D4] bg-[#191919] min-h-screen pb-24 md:pb-12">
+    <div className="p-4 sm:p-8 md:p-12 text-[#D4D4D4] bg-[#191919] min-h-dvh pb-24 md:pb-12">
       <div className="mb-8 md:mb-10">
         <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-2 text-white">
           Sales <span className="text-tpc-orange">Analytics</span>

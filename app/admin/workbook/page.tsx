@@ -437,7 +437,7 @@ export default function WorkbookPage() {
   const allSelected = processedData.length > 0 && selectedRows.size === processedData.length;
 
   return (
-    <div className="flex flex-col h-full bg-[#191919] min-h-screen text-[#D4D4D4] font-sans relative">
+    <div className="flex flex-col h-full bg-[#191919] min-h-dvh text-[#D4D4D4] font-sans relative">
 
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between p-3 md:p-12 pb-3 md:pb-8 border-b border-white/10 shrink-0 gap-3">

@@ -92,7 +92,7 @@ export default function EmployeeLeadsDashboard({ email, name }: { email: string,
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full min-h-screen text-gray-500 bg-[#191919]">
+      <div className="flex justify-center items-center h-full min-h-dvh text-gray-500 bg-[#191919]">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
@@ -102,7 +102,7 @@ export default function EmployeeLeadsDashboard({ email, name }: { email: string,
   const closedLeads = leads.filter(l => l.status === "Converted" || l.status === "Rejected");
 
   return (
-    <div className="p-4 sm:p-8 md:p-12 text-[#D4D4D4] bg-[#191919] min-h-screen pb-24 md:pb-12">
+    <div className="p-4 sm:p-8 md:p-12 text-[#D4D4D4] bg-[#191919] min-h-dvh pb-24 md:pb-12">
       <div className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-2 text-white">

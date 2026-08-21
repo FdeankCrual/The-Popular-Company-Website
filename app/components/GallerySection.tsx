@@ -224,7 +224,7 @@ export default function GallerySection({ onBack, projects: initialProjects }: Ga
       <div style={{ height: "800vh" }}>
         
         {/* Sticky Viewport */}
-        <div className="sticky top-0 w-full h-screen overflow-hidden flex items-center">
+        <div className="sticky top-0 w-full h-dvh overflow-hidden flex items-center">
         
         {/* HUD */}
         <div className="absolute top-0 left-0 right-0 h-24 flex items-center justify-between px-10 z-50 pointer-events-none">

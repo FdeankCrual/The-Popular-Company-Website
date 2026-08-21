@@ -21,7 +21,7 @@ export default function BlogClient({ blogs }: { blogs: Blog[] }) {
   });
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black">
+    <main className="bg-tpc-black min-h-dvh text-white selection:bg-tpc-orange selection:text-black">
       <Cursor />
       <Header />
 

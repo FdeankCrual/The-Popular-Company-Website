@@ -19,7 +19,7 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
       <EmployeeSidebar email={email} roles={roles} />
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100vh-60px)] md:h-screen relative pb-0">
+      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100dvh-60px)] md:h-dvh relative pb-0">
         <div className="max-w-[1600px] mx-auto">
           {children}
         </div>

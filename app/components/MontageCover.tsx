@@ -17,7 +17,7 @@ export default function MontageCover({ onEnterGallery }: MontageCoverProps) {
   };
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ height: "100vh" }}>
+    <div className="relative w-full overflow-hidden" style={{ height: "100dvh" }}>
       {/* Background video */}
       <video
         src="/reels/main.mp4"

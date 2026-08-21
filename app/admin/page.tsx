@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-screen text-tpc-orange gap-4 bg-tpc-black">
+      <div className="flex flex-col items-center justify-center h-full min-h-dvh text-tpc-orange gap-4 bg-tpc-black">
         <Loader2 className="w-10 h-10 animate-spin"/> 
         <span className="font-bold uppercase tracking-widest text-sm">Aggregating Data...</span>
       </div>
@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="p-4 sm:p-8 md:p-12 min-h-screen bg-tpc-black text-[#D4D4D4] font-sans selection:bg-tpc-orange selection:text-black overflow-x-hidden">
+    <div className="p-4 sm:p-8 md:p-12 min-h-dvh bg-tpc-black text-[#D4D4D4] font-sans selection:bg-tpc-orange selection:text-black overflow-x-hidden">
       
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-6">

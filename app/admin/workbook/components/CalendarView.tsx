@@ -37,7 +37,7 @@ export function CalendarView({ data, onTaskClick }: { data: any[], onTaskClick?:
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-250px)] bg-[#111] p-4 md:p-8 overflow-y-auto">
+    <div className="flex flex-col h-[calc(100dvh-250px)] bg-[#111] p-4 md:p-8 overflow-y-auto">
       
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-8">

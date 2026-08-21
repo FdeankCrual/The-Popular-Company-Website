@@ -15,7 +15,7 @@ export default function TrackRecordPage() {
       <Header />
 
       {/* 1. HERO SECTION */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-32 pb-20">
+      <section className="min-h-dvh flex flex-col justify-center px-6 md:px-12 pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div 
             initial={{ opacity: 0, x: -50 }}

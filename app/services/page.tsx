@@ -49,12 +49,12 @@ export default function ServicesMasterPage() {
   const containerRef = useRef(null);
 
   return (
-    <main className="bg-tpc-black min-h-screen text-white selection:bg-tpc-orange selection:text-black" ref={containerRef}>
+    <main className="bg-tpc-black min-h-dvh text-white selection:bg-tpc-orange selection:text-black" ref={containerRef}>
       <Cursor />
       <Header />
 
       {/* SUPER HERO SECTION */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-32 pb-20 max-w-[1400px] mx-auto">
+      <section className="min-h-dvh flex flex-col justify-center px-6 md:px-12 pt-32 pb-20 max-w-[1400px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ export default function ServicesMasterPage() {
           <section
             key={service.id}
             id={service.id}
-            className={`min-h-screen py-32 px-6 md:px-12 relative ${service.theme === 'light' ? 'bg-white text-black' : 'bg-tpc-black text-white border-t border-white/10'
+            className={`min-h-dvh py-32 px-6 md:px-12 relative ${service.theme === 'light' ? 'bg-white text-black' : 'bg-tpc-black text-white border-t border-white/10'
               }`}
           >
             <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-16 lg:gap-32 h-full">

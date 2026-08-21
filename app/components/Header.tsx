@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Home, Briefcase, Layers, Menu } from "lucide-react";
 
 export default function Header() {
   const [isActive, setIsActive] = useState(false);
@@ -49,7 +49,7 @@ export default function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20, pointerEvents: "none" }}
             transition={{ duration: 0.3 }}
-            className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-8 flex justify-between items-center text-white mix-blend-difference pointer-events-auto"
+            className="hidden md:flex fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-8 justify-between items-center text-white mix-blend-difference pointer-events-auto"
           >
             {/* Big Logo */}
             <Link href="/" className="hover:scale-105 transition-transform">
@@ -80,7 +80,7 @@ export default function Header() {
             animate={{ y: 0 }}
             exit={{ y: -100 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="fixed top-6 left-0 right-0 z-50 flex justify-center pointer-events-none"
+            className="hidden md:flex fixed top-6 left-0 right-0 z-50 justify-center pointer-events-none"
           >
             <div className="flex items-center gap-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full p-2 pl-4 pr-2 shadow-2xl pointer-events-auto">
               
@@ -122,6 +122,29 @@ export default function Header() {
         )}
       </AnimatePresence>
 
+      {/* =======================================
+          MOBILE BOTTOM NAVIGATION (Fixed)
+         ======================================= */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] pointer-events-auto bg-tpc-black/90 backdrop-blur-md border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex justify-around items-center px-4 py-3 h-[60px]">
+          <Link href="/" className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] uppercase font-bold tracking-wider">Home</span>
+          </Link>
+          <Link href="/work" className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
+            <Briefcase className="w-5 h-5" />
+            <span className="text-[10px] uppercase font-bold tracking-wider">Work</span>
+          </Link>
+          <Link href="/services" className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
+            <Layers className="w-5 h-5" />
+            <span className="text-[10px] uppercase font-bold tracking-wider">Services</span>
+          </Link>
+          <button onClick={() => setIsActive(true)} className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] uppercase font-bold tracking-wider">Menu</span>
+          </button>
+        </div>
+      </div>
 
       {/* =======================================
           FULL SCREEN MENU OVERLAY

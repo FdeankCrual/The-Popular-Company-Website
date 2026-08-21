@@ -97,7 +97,7 @@ export default function EmployeesPage() {
   };
 
   return (
-    <div className="p-8 md:p-12 min-h-screen bg-[#191919] text-[#D4D4D4]">
+    <div className="p-8 md:p-12 min-h-dvh bg-[#191919] text-[#D4D4D4]">
       <div className="flex justify-between items-end mb-10">
         <div>
           <h2 className="text-3xl font-black uppercase tracking-tighter mb-2 text-white">
