@@ -148,7 +148,7 @@ export default function ContentPage() {
           <div className="flex items-center justify-center h-full min-h-[400px] text-gray-500 gap-2"><Loader2 className="w-4 h-4 animate-spin"/> Loading Content...</div>
         ) : (
           <div className="overflow-auto flex-1">
-            <table className="w-full text-left text-sm whitespace-nowrap">
+            <table className="w-full text-left text-sm whitespace-nowrap hidden md:table">
               <thead className="sticky top-0 bg-[#111] z-10 border-b border-white/10 text-gray-400">
                 <tr>
                   <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px]">Title</th>
@@ -193,6 +193,37 @@ export default function ContentPage() {
                 ))}
               </tbody>
             </table>
+
+            {/* MOBILE CARD VIEW */}
+            <div className="md:hidden flex flex-col gap-2 p-4">
+               {posts.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">No blog posts found.</div>
+               ) : null}
+               {posts.map((post, i) => (
+                  <div key={post.id || i} onClick={() => handleOpenEdit(post)} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 cursor-pointer">
+                     <div className="flex justify-between items-start gap-4">
+                        <h3 className="font-bold text-white text-base leading-tight flex-1">{post.title}</h3>
+                        <button onClick={(e) => handleDelete(e, i)} className="text-gray-500 hover:text-red-500 p-1 shrink-0 bg-white/5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                     </div>
+                     <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="text-gray-400">{post.date}</span>
+                        <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                        <span className="text-tpc-orange uppercase font-bold tracking-widest">{post.category}</span>
+                     </div>
+                     <div className="flex items-center gap-2 mt-1">
+                        <select 
+                          value={post.status || 'Draft'}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => handleInlineStatusChange(e, post)}
+                          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer outline-none appearance-none flex-1 border border-white/10 ${post.status?.toLowerCase() === 'published' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}
+                        >
+                          <option value="Draft" className="bg-[#222] text-white">Draft</option>
+                          <option value="Published" className="bg-[#222] text-white">Published</option>
+                        </select>
+                     </div>
+                  </div>
+               ))}
+            </div>
           </div>
         )}
       </div>
@@ -201,13 +232,13 @@ export default function ContentPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center p-4">
           <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-5xl flex flex-col max-h-[95vh]">
-            <div className="flex justify-between items-center p-6 border-b border-white/10 shrink-0">
+            <div className="flex justify-between items-center p-4 md:p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white">{formData.title ? 'Edit Post' : 'New Post'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
             </div>
             
             <form onSubmit={handleSave} className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-6">
+              <div className="flex-1 overflow-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
               
               {/* LEFT: Metadata */}
               <div className="w-full md:w-1/3 space-y-6 shrink-0">
@@ -247,7 +278,7 @@ export default function ContentPage() {
               </div>
 
               {/* RIGHT: Content Editor */}
-              <div className="w-full md:w-2/3 flex flex-col h-full min-h-[500px]">
+              <div className="w-full md:w-2/3 flex flex-col h-full min-h-[300px] md:min-h-[500px]">
                  <div className="flex justify-between items-end mb-2">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-medium">Rich Text Content</label>
                  </div>
@@ -256,7 +287,7 @@ export default function ContentPage() {
                      theme="snow" 
                      value={formData.content || ''} 
                      onChange={(content) => setFormData({...formData, content})}
-                     className="flex-1 overflow-y-auto prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-white prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-tpc-orange prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-blockquote:border-tpc-orange prose-blockquote:bg-white/5 prose-blockquote:p-6 prose-blockquote:rounded-r-lg"
+                     className="flex-1 overflow-y-auto prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-white prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-tpc-orange prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-blockquote:border-tpc-orange prose-blockquote:bg-white/5 prose-blockquote:p-4 md:prose-blockquote:p-6 prose-blockquote:rounded-r-lg"
                      modules={{
                        toolbar: [
                          [{ 'header': [1, 2, 3, false] }],
@@ -271,7 +302,8 @@ export default function ContentPage() {
                  <style>{`
                    .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid rgba(255,255,255,0.1); background: #111; padding: 12px; }
                    .ql-container.ql-snow { border: none; font-family: inherit; font-size: inherit; }
-                   .ql-editor { min-height: 400px; padding: 24px; }
+                   .ql-editor { min-height: 250px; padding: 16px; }
+                   @media (min-width: 768px) { .ql-editor { min-height: 400px; padding: 24px; } }
                    .ql-stroke { stroke: #aaa !important; }
                    .ql-fill { fill: #aaa !important; }
                    .ql-picker { color: #aaa !important; }

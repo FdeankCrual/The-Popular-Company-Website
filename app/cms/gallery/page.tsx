@@ -140,12 +140,12 @@ export default function GalleryCMS() {
                   ) : (
                      item.src && <img src={`/${item.src}`} className="w-full h-full object-cover relative z-10" alt="" />
                   )}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center gap-4">
-                    <button onClick={() => openEdit(item)} className="bg-white text-black p-3 rounded-full hover:bg-gray-200 transition-colors">
-                      <Edit2 className="w-5 h-5" />
+                  <div className="absolute inset-0 bg-transparent md:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20 flex items-start justify-end p-2 md:items-center md:justify-center gap-2 md:gap-4 pointer-events-none md:pointer-events-auto">
+                    <button onClick={() => openEdit(item)} className="pointer-events-auto bg-white/90 backdrop-blur text-black p-2 md:p-3 rounded-full hover:bg-white transition-colors">
+                      <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
-                    <button onClick={() => handleDelete(item.id)} className="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition-colors">
-                      <Trash2 className="w-5 h-5" />
+                    <button onClick={() => handleDelete(item.id)} className="pointer-events-auto bg-red-500/90 backdrop-blur text-white p-2 md:p-3 rounded-full hover:bg-red-600 transition-colors">
+                      <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                   </div>
                 </div>
@@ -173,9 +173,9 @@ export default function GalleryCMS() {
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white">
+        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#111] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-500 hover:text-white">
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-2xl font-black uppercase tracking-tighter mb-8 text-white">

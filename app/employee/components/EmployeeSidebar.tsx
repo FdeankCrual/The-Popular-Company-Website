@@ -39,13 +39,14 @@ export default function EmployeeSidebar({ email, roles }: EmployeeSidebarProps) 
 
   return (
     <>
-      {/* MOBILE TOP BAR */}
-      <div className="md:hidden flex items-center justify-between px-6 h-[60px] bg-[#0a0a0a] border-b border-white/10 shrink-0 z-50 relative">
-        <h1 className="font-black tracking-tighter uppercase text-xl">
-          TPC <span className="text-tpc-orange">Portal</span>
-        </h1>
-        <button onClick={() => setIsOpen(!isOpen)} className="text-white p-2">
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      <div className="md:hidden fixed bottom-4 left-0 right-0 z-[60] pointer-events-none pb-[env(safe-area-inset-bottom)] flex justify-center">
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="pointer-events-auto flex items-center gap-2 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl hover:text-tpc-orange hover:border-tpc-orange/50 active:scale-95 transition-all"
+        >
+          {isOpen ? <X className="w-5 h-5 text-tpc-orange" /> : <Menu className="w-5 h-5" />}
+          <span className="text-xs uppercase font-bold tracking-widest">Menu</span>
         </button>
       </div>
 

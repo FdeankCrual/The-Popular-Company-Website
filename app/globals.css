@@ -53,6 +53,13 @@ body {
   }
 }
 
+/* Ensure inputs and textareas are always selectable and have a cursor */
+input, textarea, [contenteditable] {
+  cursor: text !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
 /* ... Keep your Blog Styles below ... */
 .prose h2 { font-size: 2rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: white; }
 .prose h3 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--color-tpc-orange); }

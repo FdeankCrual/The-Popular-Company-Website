@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Loader2, Plus, ArrowUpDown, ArrowDown, ArrowUp, X, Filter, Copy, CheckSquare, Trash2, Calendar, FileText, Download, Check, Save, MessageSquare, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Loader2, Plus, ArrowUpDown, ArrowDown, ArrowUp, X, Filter, Copy, CheckSquare, Trash2, Calendar, FileText, Download, Check, Save, MessageSquare, ExternalLink, Link as LinkIcon, GripVertical } from "lucide-react";
 import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
 import { KanbanView } from "./components/KanbanView";
@@ -46,6 +46,7 @@ export default function WorkbookPage() {
   const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
   const [ghostName, setGhostName] = useState("");
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
+  const [draggableRow, setDraggableRow] = useState<string | null>(null);
 
   // Extracted unique values for dropdowns
   const clients = Array.from(new Set([...(config.clients || []), ...data.map(d => d.client)].filter(Boolean)));
@@ -570,7 +571,7 @@ export default function WorkbookPage() {
               {processedData.map((row) => (
                 <tr 
                   key={row.id} 
-                  draggable
+                  draggable={draggedRowId === row.id || draggableRow === row.id}
                   onDragStart={(e) => {
                     setDraggedRowId(row.id);
                     e.dataTransfer.effectAllowed = "move";
@@ -589,11 +590,23 @@ export default function WorkbookPage() {
                     newData.splice(targetIndex, 0, draggedItem);
                     setData(newData);
                     setDraggedRowId(null);
+                    setDraggableRow(null);
                   }}
-                  onDragEnd={() => setDraggedRowId(null)}
-                  className={`hover:bg-white/5 transition-colors group cursor-grab active:cursor-grabbing ${selectedRows.has(row.id) ? 'bg-tpc-orange/10 hover:bg-tpc-orange/20' : ''} ${draggedRowId === row.id ? 'opacity-30 border-2 border-tpc-orange bg-tpc-orange/5' : ''}`}
+                  onDragEnd={() => {
+                    setDraggedRowId(null);
+                    setDraggableRow(null);
+                  }}
+                  className={`hover:bg-white/5 transition-colors group ${selectedRows.has(row.id) ? 'bg-tpc-orange/10 hover:bg-tpc-orange/20' : ''} ${draggedRowId === row.id ? 'opacity-30 border-2 border-tpc-orange bg-tpc-orange/5' : ''}`}
                 >
-                  <td className="px-4 py-3 border-r border-white/5 text-center">
+                  <td className="px-4 py-3 border-r border-white/5 text-center flex items-center justify-center gap-2">
+                    <div 
+                      onMouseDown={() => setDraggableRow(row.id)}
+                      onMouseUp={() => setDraggableRow(null)}
+                      onMouseLeave={() => setDraggableRow(null)}
+                      className="cursor-grab active:cursor-grabbing text-gray-600 hover:text-white p-1"
+                    >
+                      <GripVertical className="w-4 h-4" />
+                    </div>
                     <input
                       type="checkbox"
                       checked={selectedRows.has(row.id)}

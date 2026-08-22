@@ -29,29 +29,14 @@ export default function AdminSidebar({ email, roles }: AdminSidebarProps) {
   return (
     <>
       {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] pointer-events-auto bg-[#0a0a0a]/95 backdrop-blur-md border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex justify-around items-center px-2 py-3 h-[60px]">
-          <Link href="/admin" onClick={() => setIsOpen(false)} className={`flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all w-[64px] ${pathname === '/admin' ? 'text-tpc-orange' : 'text-gray-400'}`}>
-            <LayoutDashboard className="w-5 h-5" />
-            <span className="text-[9px] uppercase font-bold tracking-wider">Dash</span>
-          </Link>
-          <Link href="/admin/my-tasks" onClick={() => setIsOpen(false)} className={`flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all w-[64px] ${pathname?.startsWith('/admin/my-tasks') ? 'text-tpc-orange' : 'text-gray-400'}`}>
-            <CheckSquare className="w-5 h-5" />
-            <span className="text-[9px] uppercase font-bold tracking-wider">Tasks</span>
-          </Link>
-          <Link href="/admin/leads" onClick={() => setIsOpen(false)} className={`flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all w-[64px] ${pathname?.startsWith('/admin/leads') ? 'text-tpc-orange' : 'text-gray-400'}`}>
-            <Globe className="w-5 h-5" />
-            <span className="text-[9px] uppercase font-bold tracking-wider">Leads</span>
-          </Link>
-          <Link href="/cms" onClick={() => setIsOpen(false)} className={`flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all w-[64px] ${pathname?.startsWith('/cms') ? 'text-tpc-orange' : 'text-gray-400'}`}>
-            <FileText className="w-5 h-5" />
-            <span className="text-[9px] uppercase font-bold tracking-wider">CMS</span>
-          </Link>
-          <button onClick={() => setIsOpen(!isOpen)} className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-gray-400 w-[64px]">
-            {isOpen ? <X className="w-5 h-5 text-tpc-orange" /> : <Menu className="w-5 h-5" />}
-            <span className="text-[9px] uppercase font-bold tracking-wider">Menu</span>
-          </button>
-        </div>
+      <div className="md:hidden fixed bottom-4 left-0 right-0 z-[60] pointer-events-none pb-[env(safe-area-inset-bottom)] flex justify-center">
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="pointer-events-auto flex items-center gap-2 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl hover:text-tpc-orange hover:border-tpc-orange/50 active:scale-95 transition-all"
+        >
+          {isOpen ? <X className="w-5 h-5 text-tpc-orange" /> : <Menu className="w-5 h-5" />}
+          <span className="text-xs uppercase font-bold tracking-widest">Menu</span>
+        </button>
       </div>
 
       {/* MOBILE DRAWER OVERLAY */}

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Play } from "lucide-react";
+import { CheckCircle2, Clock, Play, GripHorizontal } from "lucide-react";
 
 const STAGES = ["Ideation", "Scripting", "Shooting", "Editing", "Review", "Completed", "Posted"];
 
@@ -63,6 +64,8 @@ export function KanbanView({
     }
   });
 
+  const [draggableTask, setDraggableTask] = useState<string | null>(null);
+
   return (
     <div className="flex h-[calc(100dvh-200px)] min-w-full gap-4 p-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory bg-[#111] overscroll-x-contain">
       {activeStages.map((stage) => (
@@ -84,11 +87,21 @@ export function KanbanView({
               <motion.div
                 layoutId={task.id}
                 key={task.id}
-                draggable
+                draggable={draggableTask === task.id}
                 onDragStart={(e: any) => handleDragStart(e, task.id)}
+                onDragEnd={() => setDraggableTask(null)}
                 onClick={() => onTaskClick?.(task)}
-                className="bg-[#252525] p-4 rounded-lg border border-white/10 hover:border-tpc-orange/50 transition-colors cursor-grab active:cursor-grabbing shadow-lg"
+                className={`bg-[#252525] p-4 rounded-lg border hover:border-tpc-orange/50 transition-colors shadow-lg ${draggableTask === task.id ? 'border-tpc-orange bg-[#2a2a2a]' : 'border-white/10'}`}
               >
+                <div 
+                  onMouseDown={(e) => { e.stopPropagation(); setDraggableTask(task.id); }}
+                  onMouseUp={() => setDraggableTask(null)}
+                  onMouseLeave={() => setDraggableTask(null)}
+                  className="flex justify-center mb-3 cursor-grab active:cursor-grabbing hover:bg-white/5 rounded p-1 -mt-2 -mx-2 transition-colors text-gray-600 hover:text-white"
+                >
+                  <GripHorizontal className="w-4 h-4" />
+                </div>
+                
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-mono text-tpc-orange uppercase tracking-widest bg-tpc-orange/10 px-2 py-0.5 rounded">
                     {task.client || "No Client"}

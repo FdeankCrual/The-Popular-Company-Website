@@ -14,12 +14,17 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
       <style>{`
         .admin-panel, .admin-panel * { cursor: auto !important; }
         .admin-panel a, .admin-panel button, .admin-panel [role="button"] { cursor: pointer !important; }
+        .admin-panel input, .admin-panel textarea, .admin-panel [contenteditable] { 
+          cursor: text !important; 
+          user-select: text !important; 
+          -webkit-user-select: text !important;
+        }
       `}</style>
       
       <EmployeeSidebar email={email} roles={roles} />
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100dvh-60px)] md:h-dvh relative pb-0">
+      <main className="flex-1 overflow-y-auto bg-tpc-black h-[calc(100dvh-60px)] md:h-dvh relative pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0">
         <div className="max-w-[1600px] mx-auto">
           {children}
         </div>

@@ -125,25 +125,14 @@ export default function Header() {
       {/* =======================================
           MOBILE BOTTOM NAVIGATION (Fixed)
          ======================================= */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] pointer-events-auto bg-tpc-black/90 backdrop-blur-md border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex justify-around items-center px-4 py-3 h-[60px]">
-          <Link href="/" className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
-            <Home className="w-5 h-5" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Home</span>
-          </Link>
-          <Link href="/work" className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
-            <Briefcase className="w-5 h-5" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Work</span>
-          </Link>
-          <Link href="/services" className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
-            <Layers className="w-5 h-5" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Services</span>
-          </Link>
-          <button onClick={() => setIsActive(true)} className="flex flex-col items-center gap-1 hover:text-tpc-orange active:scale-95 transition-all text-white w-[64px]">
-            <Menu className="w-5 h-5" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Menu</span>
-          </button>
-        </div>
+      <div className="md:hidden fixed bottom-4 left-0 right-0 z-[55] pointer-events-none pb-[env(safe-area-inset-bottom)] flex justify-center">
+        <button 
+          onClick={() => setIsActive(true)} 
+          className="pointer-events-auto flex items-center gap-2 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl hover:text-tpc-orange hover:border-tpc-orange/50 active:scale-95 transition-all"
+        >
+          <Menu className="w-5 h-5" />
+          <span className="text-xs uppercase font-bold tracking-widest">Menu</span>
+        </button>
       </div>
 
       {/* =======================================
