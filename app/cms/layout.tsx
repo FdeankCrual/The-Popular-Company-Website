@@ -15,7 +15,7 @@ export default async function CMSLayout({ children }: { children: React.ReactNod
       <CMSSidebar name={name} isContentWriterOnly={isContentWriterOnly} />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 overflow-y-auto bg-[#191919] pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0 relative z-30 h-dvh">
+      <main className="flex-1 overflow-y-auto bg-[#191919] pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0 min-h-0">
         {children}
       </main>
 
