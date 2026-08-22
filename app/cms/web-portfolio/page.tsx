@@ -125,7 +125,7 @@ export default function WebPortfolioCMS() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {items.map((item, i) => (
-            <div key={i} className="bg-[#111] border border-white/10 rounded-2xl p-4 group relative overflow-hidden flex flex-col">
+            <div key={item.id} className="group bg-white/5 border border-white/10 rounded-2xl p-4 transition-all hover:border-tpc-orange/50 hover:shadow-2xl hover:shadow-tpc-orange/10 flex flex-col">
               <div className="aspect-video bg-black rounded-xl mb-4 relative overflow-hidden flex items-center justify-center border border-white/5">
                 <Monitor className="w-8 h-8 text-gray-700 absolute" />
                 {item.image && <img src={item.image.startsWith('http') || item.image.startsWith('/') ? item.image : `/${item.image}`} className="w-full h-full object-cover object-top relative z-10" alt="" />}
@@ -155,9 +155,9 @@ export default function WebPortfolioCMS() {
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4">
-          <div className="bg-[#111] md:border border-white/10 rounded-none md:rounded-3xl p-6 md:p-8 max-w-none md:max-w-lg w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-y-auto relative flex flex-col pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-            <button onClick={() => { setIsModalOpen(false); setEditingId(null); }} className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 md:top-6 md:right-6 text-gray-500 hover:text-white bg-black/50 md:bg-transparent p-2 md:p-0 rounded-full z-10">
+        <div className="fixed inset-0 z-[20000] flex items-center justify-center p-0 md:p-6 bg-black/90 backdrop-blur-sm">
+          <div className="bg-[#111] md:border border-white/10 rounded-none md:rounded-3xl p-6 md:p-8 max-w-lg w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-y-auto relative flex flex-col pt-16 md:pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+            <button onClick={() => { setIsModalOpen(false); setEditingId(null); }} className="absolute top-4 md:top-6 right-4 md:top-6 md:right-6 text-gray-500 hover:text-white bg-black/50 md:bg-transparent p-2 md:p-0 rounded-full z-10">
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-2xl font-black uppercase tracking-tighter mb-8 text-white">

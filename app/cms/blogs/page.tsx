@@ -145,7 +145,7 @@ export default function ContentPage() {
 
       <div className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden flex-1 flex flex-col">
         {loading ? (
-          <div className="flex items-center justify-center h-full min-h-[400px] text-gray-500 gap-2"><Loader2 className="w-4 h-4 animate-spin"/> Loading Content...</div>
+          <div className="flex items-center justify-center h-full min-h-[200px] md:min-h-[300px] md:h-[400px] text-gray-500 gap-2"><Loader2 className="w-4 h-4 animate-spin"/> Loading Content...</div>
         ) : (
           <div className="overflow-auto flex-1">
             <table className="w-full text-left text-sm whitespace-nowrap hidden md:table">
@@ -231,7 +231,7 @@ export default function ContentPage() {
       {/* EDIT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center md:p-4">
-          <div className="bg-[#191919] md:border border-white/10 rounded-none md:rounded-2xl w-full h-[100dvh] md:h-auto max-w-5xl flex flex-col md:max-h-[95vh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          <div className="bg-[#191919] md:border border-white/10 rounded-none md:rounded-2xl w-full h-[100dvh] md:h-auto max-w-5xl flex flex-col md:max-h-[95vh] pt-12 md:pt-0 pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-between items-center p-4 md:p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white">{formData.title ? 'Edit Post' : 'New Post'}</h3>
               <button type="button" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
@@ -278,11 +278,11 @@ export default function ContentPage() {
               </div>
 
               {/* RIGHT: Content Editor */}
-              <div className="w-full md:w-2/3 flex flex-col flex-1 min-h-[400px] md:h-full md:min-h-[500px]">
+              <div className="w-full md:w-2/3 flex flex-col flex-1 min-h-[200px] md:min-h-[300px] md:h-[400px] md:h-full md:min-h-[500px]">
                  <div className="flex justify-between items-end mb-2">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-medium">Rich Text Content</label>
                  </div>
-                 <div className="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden flex flex-col text-white min-h-[300px]">
+                 <div className="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden flex flex-col text-white min-h-[200px] md:min-h-[300px]">
                    <ReactQuill 
                      theme="snow" 
                      value={formData.content || ''} 

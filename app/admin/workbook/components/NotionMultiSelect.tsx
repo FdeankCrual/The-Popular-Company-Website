@@ -52,17 +52,19 @@ export function NotionMultiSelect({
     <div className="relative w-full" ref={dropdownRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full min-h-[32px] flex items-center justify-start flex-wrap gap-1 p-1 hover:bg-white/5 rounded cursor-pointer transition-colors"
+        className="w-full min-h-[32px] flex items-center justify-between p-1 px-2 hover:bg-white/5 rounded cursor-pointer transition-colors group"
       >
         {selectedValues.length > 0 ? (
-          selectedValues.map(val => (
-            <span key={val} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-white/10 text-gray-200">
-              {val}
-              <button onClick={(e) => removeValue(e, val)} className="hover:text-red-400 text-gray-400 focus:outline-none">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          ))
+          <div className="flex flex-nowrap overflow-hidden gap-1 p-1 pr-6 w-full mask-image-[linear-gradient(to_right,white_80%,transparent_100%)]">
+            {selectedValues.map(val => (
+              <span key={val} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-white/10 text-gray-200 shrink-0">
+                {val}
+                <button onClick={(e) => removeValue(e, val)} className="hover:text-red-400 text-gray-400 focus:outline-none">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
         ) : (
           <span className="text-gray-500 text-sm px-1">{placeholder}</span>
         )}

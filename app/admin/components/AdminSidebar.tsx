@@ -28,14 +28,22 @@ export default function AdminSidebar({ email, roles }: AdminSidebarProps) {
 
   return (
     <>
-      {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-4 left-0 right-0 z-[60] pointer-events-none pb-[env(safe-area-inset-bottom)] flex justify-center">
+      <div className="md:hidden fixed bottom-6 right-4 z-[60] pb-[env(safe-area-inset-bottom)]">
         <button 
           onClick={() => setIsOpen(!isOpen)} 
-          className="pointer-events-auto flex items-center gap-2 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl hover:text-tpc-orange hover:border-tpc-orange/50 active:scale-95 transition-all"
+          className={`group relative w-14 h-14 flex items-center justify-center rounded-2xl shadow-2xl transition-all duration-300 active:scale-95 ${isOpen ? 'bg-white border-white text-black' : 'bg-black/60 backdrop-blur-2xl border-white/20 text-white'} border`}
         >
-          {isOpen ? <X className="w-5 h-5 text-tpc-orange" /> : <Menu className="w-5 h-5" />}
-          <span className="text-xs uppercase font-bold tracking-widest">Menu</span>
+          <div className="relative z-10 flex flex-col items-center justify-center w-6 h-6">
+            {isOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <div className="flex flex-col gap-1.5 w-5">
+                 <div className="h-[2px] bg-current rounded-full w-4/5 self-end transition-all duration-300 group-active:w-full"></div>
+                 <div className="h-[2px] bg-current rounded-full w-full transition-all duration-300"></div>
+                 <div className="h-[2px] bg-current rounded-full w-4/5 self-start transition-all duration-300 group-active:w-full"></div>
+              </div>
+            )}
+          </div>
         </button>
       </div>
 

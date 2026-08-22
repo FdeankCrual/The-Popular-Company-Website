@@ -806,19 +806,19 @@ export default function WorkbookPage() {
 
       {/* FLOATING BULK ACTIONS BAR */}
       {selectedRows.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-6 z-50 animate-in slide-in-from-bottom-10 border border-black/10">
+        <div className="fixed top-[env(safe-area-inset-top)] mt-4 md:mt-0 md:top-auto md:bottom-8 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 bg-white text-black px-4 md:px-6 py-2.5 md:py-3 rounded-2xl shadow-2xl flex items-center justify-between md:justify-center gap-2 md:gap-6 z-50 animate-in slide-in-from-bottom-10 border border-black/10">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-tpc-orange text-white flex items-center justify-center font-bold text-xs">
+            <div className="w-6 h-6 rounded-full bg-tpc-orange text-white flex items-center justify-center font-bold text-xs shrink-0">
               {selectedRows.size}
             </div>
-            <span className="font-bold text-sm uppercase tracking-widest text-gray-500">Selected</span>
+            <span className="font-bold text-[10px] md:text-sm uppercase tracking-widest text-gray-500 shrink-0">Selected</span>
           </div>
-          <div className="h-6 w-[1px] bg-gray-200"></div>
+          <div className="h-6 w-[1px] bg-gray-200 hidden md:block"></div>
           <p className="text-xs text-gray-500 font-medium hidden md:block">Edit any dropdown above to update all selected rows instantly.</p>
           <div className="flex items-center gap-2 ml-auto md:ml-4">
             <button
               onClick={handleBulkDuplicate}
-              className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors uppercase tracking-widest border border-gray-200"
+              className="flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold hover:bg-gray-200 transition-colors uppercase tracking-widest border border-gray-200 shrink-0"
             >
               <Copy className="w-3 h-3" /> Duplicate
             </button>
@@ -834,7 +834,7 @@ export default function WorkbookPage() {
 
       {/* FLOATING SAVE INDICATOR */}
       {(unsavedUpdates.size > 0 || isSaving) && (
-        <div className="fixed bottom-8 right-8 bg-black/80 backdrop-blur border border-white/10 text-gray-300 px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 z-[100] animate-in slide-in-from-bottom-8">
+        <div className="fixed top-6 md:top-auto md:bottom-8 right-4 md:right-8 bg-black/80 backdrop-blur border border-white/10 text-gray-300 px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 z-[100] animate-in slide-in-from-bottom-8">
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 text-tpc-orange animate-spin" />
