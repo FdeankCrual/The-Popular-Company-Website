@@ -36,8 +36,6 @@ body {
 /* Mobile Table & Scroll Container Optimizations */
 [class*="overflow-auto"], [class*="overflow-x-auto"], [class*="overflow-y-auto"] {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  overscroll-behavior-x: contain;
 }
 
 /* iOS Safari Zoom Prevention for Inputs */

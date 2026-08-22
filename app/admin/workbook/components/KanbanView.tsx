@@ -87,7 +87,7 @@ export function KanbanView({
               <motion.div
                 layoutId={task.id}
                 key={task.id}
-                draggable={draggableTask === task.id}
+                draggable={draggableTask === task.id ? true : undefined}
                 onDragStart={(e: any) => handleDragStart(e, task.id)}
                 onDragEnd={() => setDraggableTask(null)}
                 onClick={() => onTaskClick?.(task)}

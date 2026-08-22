@@ -571,7 +571,7 @@ export default function WorkbookPage() {
               {processedData.map((row) => (
                 <tr 
                   key={row.id} 
-                  draggable={draggedRowId === row.id || draggableRow === row.id}
+                  draggable={(draggedRowId === row.id || draggableRow === row.id) ? true : undefined}
                   onDragStart={(e) => {
                     setDraggedRowId(row.id);
                     e.dataTransfer.effectAllowed = "move";
