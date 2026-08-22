@@ -230,11 +230,11 @@ export default function ContentPage() {
 
       {/* EDIT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-5xl flex flex-col max-h-[95vh]">
+        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center md:p-4">
+          <div className="bg-[#191919] md:border border-white/10 rounded-none md:rounded-2xl w-full h-[100dvh] md:h-auto max-w-5xl flex flex-col md:max-h-[95vh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-between items-center p-4 md:p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white">{formData.title ? 'Edit Post' : 'New Post'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
             </div>
             
             <form onSubmit={handleSave} className="flex-1 flex flex-col min-h-0">
@@ -278,11 +278,11 @@ export default function ContentPage() {
               </div>
 
               {/* RIGHT: Content Editor */}
-              <div className="w-full md:w-2/3 flex flex-col h-full min-h-[300px] md:min-h-[500px]">
+              <div className="w-full md:w-2/3 flex flex-col flex-1 min-h-[400px] md:h-full md:min-h-[500px]">
                  <div className="flex justify-between items-end mb-2">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-medium">Rich Text Content</label>
                  </div>
-                 <div className="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden flex flex-col text-white">
+                 <div className="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden flex flex-col text-white min-h-[300px]">
                    <ReactQuill 
                      theme="snow" 
                      value={formData.content || ''} 
@@ -300,7 +300,9 @@ export default function ContentPage() {
                    />
                  </div>
                  <style>{`
-                   .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid rgba(255,255,255,0.1); background: #111; padding: 12px; }
+                   .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid rgba(255,255,255,0.1); background: #111; padding: 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+                   .ql-toolbar.ql-snow::-webkit-scrollbar { display: none; }
+                   .ql-toolbar.ql-snow .ql-formats { display: inline-block; margin-right: 15px; }
                    .ql-container.ql-snow { border: none; font-family: inherit; font-size: inherit; }
                    .ql-editor { min-height: 250px; padding: 16px; }
                    @media (min-width: 768px) { .ql-editor { min-height: 400px; padding: 24px; } }
@@ -315,9 +317,9 @@ export default function ContentPage() {
 
               </div>
 
-              <div className="p-6 flex justify-end gap-4 w-full bg-[#191919] border-t border-white/10 shrink-0 rounded-b-2xl">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer">Cancel</button>
-                <button disabled={isSaving} type="submit" className="bg-tpc-orange text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer">
+              <div className="p-4 md:p-6 flex justify-end gap-4 w-full bg-[#191919] border-t border-white/10 shrink-0 md:rounded-b-2xl">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 md:px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer">Cancel</button>
+                <button disabled={isSaving} type="submit" className="bg-tpc-orange text-black px-6 md:px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer">
                   {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : null} Save to Sheets
                 </button>
               </div>

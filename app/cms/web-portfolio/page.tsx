@@ -155,9 +155,9 @@ export default function WebPortfolioCMS() {
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => { setIsModalOpen(false); setEditingId(null); }} className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-500 hover:text-white">
+        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4">
+          <div className="bg-[#111] md:border border-white/10 rounded-none md:rounded-3xl p-6 md:p-8 max-w-none md:max-w-lg w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-y-auto relative flex flex-col pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+            <button onClick={() => { setIsModalOpen(false); setEditingId(null); }} className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 md:top-6 md:right-6 text-gray-500 hover:text-white bg-black/50 md:bg-transparent p-2 md:p-0 rounded-full z-10">
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-2xl font-black uppercase tracking-tighter mb-8 text-white">

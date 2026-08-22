@@ -518,7 +518,7 @@ export default function WorkbookPage() {
           <table className="w-max min-w-full text-left text-sm whitespace-nowrap border-collapse pb-32">
             <thead className="sticky top-0 bg-[#111] z-20 text-gray-400 shadow-sm border-b border-white/10">
               <tr>
-                <th className="px-4 py-4 w-12 text-center border-r border-white/5">
+                <th className="px-2 md:px-4 py-2 md:py-4 w-8 md:w-12 text-center border-r border-white/5">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -526,39 +526,39 @@ export default function WorkbookPage() {
                     className="accent-tpc-orange w-4 h-4 rounded cursor-pointer"
                   />
                 </th>
-                <th onClick={() => handleSort('name')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-64 cursor-pointer hover:bg-white/5 group border-r border-white/5">Name <SortIcon columnKey="name" /></th>
-                <th onClick={() => handleSort('client')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Client <SortIcon columnKey="client" /></th>
-                <th onClick={() => handleSort('status')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Status <SortIcon columnKey="status" /></th>
-                <th onClick={() => handleSort('assigned')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Assigned <SortIcon columnKey="assigned" /></th>
-                <th onClick={() => handleSort('docLink')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Link <SortIcon columnKey="docLink" /></th>
-                <th onClick={() => handleSort('driveA')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Drive Link <SortIcon columnKey="driveA" /></th>
-                <th onClick={() => handleSort('scriptDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Date <SortIcon columnKey="scriptDate" /></th>
-                <th onClick={() => handleSort('shootDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Shoot Date <SortIcon columnKey="shootDate" /></th>
-                <th onClick={() => handleSort('editDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Edit Date <SortIcon columnKey="editDate" /></th>
-                <th onClick={() => handleSort('finalDate')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Posting Date / Time <SortIcon columnKey="finalDate" /></th>
-                <th onClick={() => handleSort('platform')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform" /></th>
-                <th onClick={() => handleSort('month')} className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month" /></th>
-                <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-32 border-r border-white/5">Support</th>
-                <th className="px-6 py-4 font-medium uppercase tracking-widest text-[10px] w-12 text-center"></th>
+                <th onClick={() => handleSort('name')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-40 md:w-64 cursor-pointer hover:bg-white/5 group border-r border-white/5">Name <SortIcon columnKey="name" /></th>
+                <th onClick={() => handleSort('client')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 md:w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Client <SortIcon columnKey="client" /></th>
+                <th onClick={() => handleSort('status')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Status <SortIcon columnKey="status" /></th>
+                <th onClick={() => handleSort('assigned')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 md:w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Assigned <SortIcon columnKey="assigned" /></th>
+                <th onClick={() => handleSort('docLink')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 md:w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Link <SortIcon columnKey="docLink" /></th>
+                <th onClick={() => handleSort('driveA')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 md:w-48 cursor-pointer hover:bg-white/5 group border-r border-white/5">Drive Link <SortIcon columnKey="driveA" /></th>
+                <th onClick={() => handleSort('scriptDate')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Script Date <SortIcon columnKey="scriptDate" /></th>
+                <th onClick={() => handleSort('shootDate')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Shoot Date <SortIcon columnKey="shootDate" /></th>
+                <th onClick={() => handleSort('editDate')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Edit Date <SortIcon columnKey="editDate" /></th>
+                <th onClick={() => handleSort('finalDate')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Posting Date / Time <SortIcon columnKey="finalDate" /></th>
+                <th onClick={() => handleSort('platform')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform" /></th>
+                <th onClick={() => handleSort('month')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month" /></th>
+                <th className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 border-r border-white/5">Support</th>
+                <th className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-8 md:w-12 text-center"></th>
               </tr>
               {/* FILTER ROW */}
               {showFilters && (
                 <tr className="bg-[#151515] border-b border-white/10">
-                  <th className="px-4 py-2 border-r border-white/5"></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter name..." value={columnFilters.name || ''} onChange={e => setColumnFilters(p => ({ ...p, name: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter client..." value={columnFilters.client || ''} onChange={e => setColumnFilters(p => ({ ...p, client: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter status..." value={columnFilters.status || ''} onChange={e => setColumnFilters(p => ({ ...p, status: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter assigned..." value={columnFilters.assigned || ''} onChange={e => setColumnFilters(p => ({ ...p, assigned: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"></th>
-                  <th className="px-6 py-2 border-r border-white/5"></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.scriptDate || ''} onChange={e => setColumnFilters(p => ({ ...p, scriptDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.shootDate || ''} onChange={e => setColumnFilters(p => ({ ...p, shootDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.editDate || ''} onChange={e => setColumnFilters(p => ({ ...p, editDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.finalDate || ''} onChange={e => setColumnFilters(p => ({ ...p, finalDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter platform..." value={columnFilters.platform || ''} onChange={e => setColumnFilters(p => ({ ...p, platform: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({ ...p, month: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
-                  <th className="px-6 py-2 border-r border-white/5"></th>
-                  <th className="px-6 py-2"></th>
+                  <th className="px-2 md:px-4 py-1 md:py-2 border-r border-white/5"></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter name..." value={columnFilters.name || ''} onChange={e => setColumnFilters(p => ({ ...p, name: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter client..." value={columnFilters.client || ''} onChange={e => setColumnFilters(p => ({ ...p, client: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter status..." value={columnFilters.status || ''} onChange={e => setColumnFilters(p => ({ ...p, status: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter assigned..." value={columnFilters.assigned || ''} onChange={e => setColumnFilters(p => ({ ...p, assigned: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.scriptDate || ''} onChange={e => setColumnFilters(p => ({ ...p, scriptDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.shootDate || ''} onChange={e => setColumnFilters(p => ({ ...p, shootDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.editDate || ''} onChange={e => setColumnFilters(p => ({ ...p, editDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.finalDate || ''} onChange={e => setColumnFilters(p => ({ ...p, finalDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter platform..." value={columnFilters.platform || ''} onChange={e => setColumnFilters(p => ({ ...p, platform: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({ ...p, month: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2"></th>
                 </tr>
               )}
             </thead>
@@ -598,7 +598,7 @@ export default function WorkbookPage() {
                   }}
                   className={`hover:bg-white/5 transition-colors group ${selectedRows.has(row.id) ? 'bg-tpc-orange/10 hover:bg-tpc-orange/20' : ''} ${draggedRowId === row.id ? 'opacity-30 border-2 border-tpc-orange bg-tpc-orange/5' : ''}`}
                 >
-                  <td className="px-4 py-3 border-r border-white/5 text-center flex items-center justify-center gap-2">
+                  <td className="px-2 md:px-4 py-1.5 md:py-3 border-r border-white/5 text-center flex items-center justify-center gap-2">
                     <div 
                       onMouseDown={() => setDraggableRow(row.id)}
                       onMouseUp={() => setDraggableRow(null)}
@@ -615,16 +615,16 @@ export default function WorkbookPage() {
                     />
                   </td>
                   {/* Name */}
-                  <td className="px-6 py-3 border-r border-white/5">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
                     <input
                       value={row.name || ''}
                       onChange={(e) => handleInlineChange(row.id, 'name', e.target.value)}
-                      className="w-full bg-transparent border-none outline-none text-white font-medium focus:bg-white/10 p-1 rounded transition-colors"
+                      className="w-full bg-transparent border-none outline-none text-white font-medium focus:bg-white/10 p-0 md:p-1 text-[11px] md:text-sm rounded transition-colors"
                       placeholder="Task name"
                     />
                   </td>
                   {/* Client - NotionDropdown */}
-                  <td className="px-6 py-3 border-r border-white/5 w-48 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative">
                     <NotionDropdown
                       value={row.client || ''}
                       options={clients as string[]}
@@ -633,7 +633,7 @@ export default function WorkbookPage() {
                     />
                   </td>
                   {/* Status - NotionDropdown */}
-                  <td className="px-6 py-3 border-r border-white/5 w-32 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 relative">
                     <NotionDropdown
                       value={row.status || ''}
                       options={statuses as string[]}
@@ -652,7 +652,7 @@ export default function WorkbookPage() {
                     />
                   </td>
                   {/* Assigned - NotionMultiSelect */}
-                  <td className="px-6 py-3 border-r border-white/5 w-48 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative">
                     <NotionMultiSelect
                       value={row.assigned || ''}
                       options={assigned as string[]}
@@ -661,7 +661,7 @@ export default function WorkbookPage() {
                     />
                   </td>
                   {/* Script Link */}
-                  <td className="px-6 py-3 border-r border-white/5 w-48 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative">
                     <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.docLink ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'}`}>
                       <LinkIcon className={`w-3 h-3 shrink-0 ${row.docLink ? 'text-green-500' : 'text-gray-500'}`} />
                       <input
@@ -678,7 +678,7 @@ export default function WorkbookPage() {
                     </div>
                   </td>
                   {/* Drive Link */}
-                  <td className="px-6 py-3 border-r border-white/5 w-48 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative">
                     <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.driveA ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'}`}>
                       <FileText className={`w-3 h-3 shrink-0 ${row.driveA ? 'text-green-500' : 'text-gray-500'}`} />
                       <input
@@ -695,40 +695,40 @@ export default function WorkbookPage() {
                     </div>
                   </td>
                   {/* Dates */}
-                  <td className="px-6 py-3 border-r border-white/5">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
                     <input
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.scriptDate)}
                       onChange={(e) => handleInlineChange(row.id, 'scriptDate', e.target.value)}
-                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('script', row.status, row.scriptDate)}`}
+                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('script', row.status, row.scriptDate)}`}
                     />
                   </td>
-                  <td className="px-6 py-3 border-r border-white/5">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
                     <input
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.shootDate)}
                       onChange={(e) => handleInlineChange(row.id, 'shootDate', e.target.value)}
-                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('shoot', row.status, row.shootDate)}`}
+                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('shoot', row.status, row.shootDate)}`}
                     />
                   </td>
-                  <td className="px-6 py-3 border-r border-white/5">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
                     <input
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.editDate)}
                       onChange={(e) => handleInlineChange(row.id, 'editDate', e.target.value)}
-                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('edit', row.status, row.editDate)}`}
+                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('edit', row.status, row.editDate)}`}
                     />
                   </td>
-                  <td className="px-6 py-3 border-r border-white/5">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
                     <input
                       type="datetime-local"
                       value={formatForDateTimeLocal(row.finalDate)}
                       onChange={(e) => handleInlineChange(row.id, 'finalDate', e.target.value)}
-                      className={`w-full border-none outline-none p-1 rounded transition-colors [color-scheme:dark] text-xs cursor-pointer ${getDateClass('final', row.status, row.finalDate)}`}
+                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('final', row.status, row.finalDate)}`}
                     />
                   </td>
                   {/* Platform - NotionDropdown */}
-                  <td className="px-6 py-3 border-r border-white/5 w-32 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 relative">
                     <NotionDropdown
                       value={row.platform || ''}
                       options={platforms as string[]}
@@ -737,7 +737,7 @@ export default function WorkbookPage() {
                     />
                   </td>
                   {/* Month - NotionDropdown */}
-                  <td className="px-6 py-3 border-r border-white/5 w-32 relative">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 relative">
                     <NotionDropdown
                       value={row.month || ''}
                       options={months as string[]}
@@ -746,10 +746,10 @@ export default function WorkbookPage() {
                     />
                   </td>
                   {/* Support Hub */}
-                  <td className="px-6 py-3 border-r border-white/5 align-middle">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 align-middle">
                     <button
                       onClick={() => setActiveQueryTask(row)}
-                      className="bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded transition-colors w-full relative flex items-center justify-center gap-2"
+                      className="bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5 rounded transition-colors w-full relative flex items-center justify-center gap-1 md:gap-2"
                     >
                       <MessageSquare className="w-3 h-3" /> Hub
                       {(row.employeeQuery && row.employeeQuery.trim() !== "") && (
@@ -758,14 +758,14 @@ export default function WorkbookPage() {
                     </button>
                   </td>
                   {/* Actions */}
-                  <td className="px-6 py-3 text-center">
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
                       {(row.status || "").toLowerCase().includes("review") && (
-                        <button onClick={() => setReviewTask(row)} className="px-3 py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
+                        <button onClick={() => setReviewTask(row)} className="px-2 py-0.5 md:px-3 md:py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
                           Review
                         </button>
                       )}
-                      <button onClick={() => handleDeleteRow(row.id)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100">
+                      <button onClick={() => handleDeleteRow(row.id)} className="p-1 md:p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -775,10 +775,10 @@ export default function WorkbookPage() {
 
               {/* GHOST ROW (Instant Add) */}
               <tr className="hover:bg-white/5 transition-colors group opacity-50 focus-within:opacity-100">
-                <td className="px-4 py-3 border-r border-white/5 text-center">
+                <td className="px-2 md:px-4 py-1.5 md:py-3 border-r border-white/5 text-center">
                   <Plus className="w-4 h-4 mx-auto text-gray-500 group-focus-within:text-tpc-orange" />
                 </td>
-                <td className="px-6 py-3 border-r border-white/5" colSpan={13}>
+                <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5" colSpan={13}>
                   <input
                     value={ghostName}
                     onChange={(e) => setGhostName(e.target.value)}
@@ -795,7 +795,7 @@ export default function WorkbookPage() {
                       }
                     }}
                     placeholder="Click to add a new task... (Press Enter to save)"
-                    className="w-full bg-transparent border-none outline-none text-white font-medium focus:bg-white/10 p-1 rounded transition-colors"
+                    className="w-full bg-transparent border-none outline-none text-white font-medium focus:bg-white/10 p-0 md:p-1 text-[11px] md:text-sm rounded transition-colors"
                   />
                 </td>
               </tr>
@@ -1005,7 +1005,7 @@ export default function WorkbookPage() {
                   className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange resize-none"
                 />
                 {slashMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-2 w-48 bg-[#191919] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-[21000] animate-in slide-in-from-bottom-2">
+                  <div className="absolute bottom-full left-0 mb-2 w-24 md:w-32 md:w-48 bg-[#191919] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-[21000] animate-in slide-in-from-bottom-2">
                     <button 
                       onClick={() => {
                         const today = new Date().toISOString().split('T')[0];
@@ -1167,7 +1167,7 @@ export default function WorkbookPage() {
               </div>
 
               <div className="flex justify-end gap-4 pt-2">
-                <button type="button" onClick={() => setActiveQueryTask(null)} className="px-6 py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">Close</button>
+                <button type="button" onClick={() => setActiveQueryTask(null)} className="px-3 md:px-6 py-1.5 md:py-3 rounded-xl font-bold text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">Close</button>
                 <button
                   onClick={async () => {
                     handleInlineChange(activeQueryTask.id, 'adminReply', activeQueryTask.adminReply);
