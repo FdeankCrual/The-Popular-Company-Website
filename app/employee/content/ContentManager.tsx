@@ -1,19 +1,25 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, Calendar, KanbanSquare, Share2, MessageSquare, X, FileText, Link as LinkIcon, CheckCircle, Copy, Check } from "lucide-react";
+import { Loader2, Calendar, KanbanSquare, Share2, MessageSquare, X, FileText, Link as LinkIcon, CheckCircle, Copy, Check, BarChart2 } from "lucide-react";
 import { CalendarView } from "../../admin/workbook/components/CalendarView";
 import { KanbanView } from "../../admin/workbook/components/KanbanView";
+import AnalyticsDashboard from "../../admin/components/analytics/AnalyticsDashboard";
+import { AdvancedAnalyticsReport } from "../../admin/types/analytics";
 
 export default function ContentManager({ email, name, roles }: { email: string, name: string, roles: string[] }) {
   const [tasks, setTasks] = useState<any[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<Record<string, AdvancedAnalyticsReport[]>>({});
   const [loading, setLoading] = useState(true);
   const [activeClient, setActiveClient] = useState<string | null>(null);
   const [activeMonth, setActiveMonth] = useState(() => new Date().toLocaleString('default', { month: 'long' }));
-  const [activeView, setActiveView] = useState<'Calendar' | 'List'>('List');
+  const [activeYear, setActiveYear] = useState(() => new Date().getFullYear().toString());
+  const [activeView, setActiveView] = useState<'Calendar' | 'List' | 'Analytics'>('List');
   const [updating, setUpdating] = useState<string | null>(null);
   const [activeActionTask, setActiveActionTask] = useState<any>(null);
   const [copyStatus, setCopyStatus] = useState(false);
+
+  const [configClients, setConfigClients] = useState<string[]>([]);
 
   useEffect(() => {
     fetchTasks();
@@ -21,11 +27,38 @@ export default function ContentManager({ email, name, roles }: { email: string, 
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch("/api/admin/data?action=getWorkbook");
+      const [res, configRes, researchRes] = await Promise.all([
+        fetch("/api/admin/data?action=getWorkbook"),
+        fetch("/api/admin/data?action=getConfig"),
+        fetch("/api/admin/data?action=getClientResearch")
+      ]);
+
+      if (configRes.ok) {
+        const configData = await configRes.json();
+        setConfigClients(configData.workbook_settings?.clients || []);
+      }
+
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
           setTasks(data);
+        }
+      }
+
+      if (researchRes.ok) {
+        const rawData = await researchRes.json();
+        if (Array.isArray(rawData)) {
+          const parsedAnalytics: Record<string, AdvancedAnalyticsReport[]> = {};
+          rawData.forEach(item => {
+            if (item.filePath === '_AdvancedAnalytics.json' && item.markdownContent) {
+              try {
+                parsedAnalytics[item.clientName] = JSON.parse(item.markdownContent);
+              } catch (e) {
+                console.error("Failed to parse advanced analytics for", item.clientName);
+              }
+            }
+          });
+          setAnalyticsData(parsedAnalytics);
         }
       }
     } catch (e) {
@@ -58,6 +91,9 @@ export default function ContentManager({ email, name, roles }: { email: string, 
   };
 
   const clients = useMemo(() => {
+    if (configClients.length > 0) {
+      return [...configClients].sort();
+    }
     const uniqueClients = new Set<string>();
     tasks.forEach(t => {
       if (t.client && t.client.trim() !== "") {
@@ -65,7 +101,7 @@ export default function ContentManager({ email, name, roles }: { email: string, 
       }
     });
     return Array.from(uniqueClients).sort();
-  }, [tasks]);
+  }, [tasks, configClients]);
 
   const filteredTasks = useMemo(() => {
     if (!activeClient) return [];
@@ -73,21 +109,23 @@ export default function ContentManager({ email, name, roles }: { email: string, 
     return tasks.filter(t => {
       if (t.client !== activeClient) return false;
       
-      if (activeMonth !== "All") {
+      if (activeMonth !== "All" || activeYear !== "All") {
         const dates = [t.scriptDate, t.shootDate, t.editDate, t.finalDate].filter(Boolean);
         if (dates.length > 0) {
-          const matchesMonth = dates.some(d => {
+          const matches = dates.some(d => {
             try {
               const dateObj = new Date(d);
-              return dateObj.toLocaleString('default', { month: 'long' }) === activeMonth;
+              const mMatch = activeMonth === "All" || dateObj.toLocaleString('default', { month: 'long' }) === activeMonth;
+              const yMatch = activeYear === "All" || dateObj.getFullYear().toString() === activeYear;
+              return mMatch && yMatch;
             } catch(e) { return false; }
           });
-          if (!matchesMonth) return false;
+          if (!matches) return false;
         }
       }
       return true;
     });
-  }, [tasks, activeClient, activeMonth]);
+  }, [tasks, activeClient, activeMonth, activeYear]);
 
   if (loading) {
     return (
@@ -132,6 +170,20 @@ export default function ContentManager({ email, name, roles }: { email: string, 
                 ))}
               </select>
             </div>
+
+            <div className="min-w-[150px]">
+              <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Select Year</h2>
+              <select 
+                value={activeYear}
+                onChange={e => setActiveYear(e.target.value)}
+                className="w-full bg-black/50 border border-white/10 p-2 text-sm text-white focus:outline-none focus:border-tpc-orange transition-colors rounded"
+              >
+                <option value="All">All Years</option>
+                {["2026", "2027", "2028", "2029", "2030"].map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
             
             {activeClient && (
               <div className="hidden md:block">
@@ -159,6 +211,12 @@ export default function ContentManager({ email, name, roles }: { email: string, 
               >
                 <FileText className="w-3 h-3" /> List View
               </button>
+              <button 
+                onClick={() => setActiveView('Analytics')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${activeView === 'Analytics' ? 'bg-tpc-orange text-black' : 'text-gray-400 hover:text-white'}`}
+              >
+                <BarChart2 className="w-3 h-3" /> Analytics
+              </button>
             </div>
           )}
         </div>
@@ -166,7 +224,18 @@ export default function ContentManager({ email, name, roles }: { email: string, 
         {activeClient ? (
           <>
             <div className="flex-1 overflow-hidden relative">
-              {activeView === 'Calendar' ? (
+              {activeView === 'Analytics' ? (
+                <div className="h-full overflow-hidden">
+                  <AnalyticsDashboard 
+                    reports={analyticsData[activeClient] || []} 
+                    clientName={activeClient} 
+                    onNewReport={() => {}} 
+                    onEditReport={() => {}} 
+                    onDeleteReport={() => {}} 
+                    canEdit={false} 
+                  />
+                </div>
+              ) : activeView === 'Calendar' ? (
                 <CalendarView data={filteredTasks} onTaskClick={setActiveActionTask} />
               ) : (
                 <div className="h-full overflow-y-auto p-4 md:p-8 space-y-8">

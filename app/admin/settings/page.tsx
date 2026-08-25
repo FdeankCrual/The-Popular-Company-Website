@@ -14,6 +14,7 @@ export default function SettingsPage() {
     status: [] as string[],
     platforms: [] as string[],
     months: [] as string[],
+    years: [] as string[],
     webCategories: [] as string[],
     galleryCategories: [] as string[]
   });
@@ -24,6 +25,7 @@ export default function SettingsPage() {
     status: "",
     platforms: "",
     months: "",
+    years: "",
     webCategories: "",
     galleryCategories: ""
   });
@@ -45,6 +47,7 @@ export default function SettingsPage() {
           status: data.workbook_settings.status || [],
           platforms: data.workbook_settings.platforms || [],
           months: data.workbook_settings.months || [],
+          years: data.workbook_settings.years || [],
           webCategories: data.workbook_settings.webCategories || ["Creative Portfolio", "E-Commerce", "Corporate"],
           galleryCategories: data.workbook_settings.galleryCategories || ["Reels", "Ads", "Podcast"]
         });
@@ -176,6 +179,7 @@ export default function SettingsPage() {
         {renderSection("Status Options", "status", "Add status...")}
         {renderSection("Platforms", "platforms", "Add platform...")}
         {renderSection("Delivery Months", "months", "Add month...")}
+        {renderSection("Years", "years", "Add year...")}
         {renderSection("Web Portfolio Categories", "webCategories", "Add category...")}
         {renderSection("Gallery Categories", "galleryCategories", "Add category...")}
       </div>

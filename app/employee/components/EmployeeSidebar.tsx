@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, LogOut, BookOpen, Calendar, Menu, X } from "lucide-react";
+import { LayoutDashboard, CheckSquare, LogOut, BookOpen, Calendar, Menu, X, FileSpreadsheet, Target } from "lucide-react";
 
 interface EmployeeSidebarProps {
   email: string;
@@ -27,6 +27,7 @@ export default function EmployeeSidebar({ email, roles }: EmployeeSidebarProps) 
   const hasResearchAccess = roles.includes("CONTENT WRITER") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER");
   if (hasResearchAccess) {
     navItems.push({ name: "Client Research", href: "/employee/research", icon: BookOpen });
+    navItems.push({ name: "Content Strategy", href: "/employee/strategy", icon: Target });
   }
 
   if (isSalesAgent || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER")) {
@@ -35,6 +36,10 @@ export default function EmployeeSidebar({ email, roles }: EmployeeSidebarProps) 
 
   if (roles.includes("GRAPHIC DESIGNER") || roles.includes("PAGE MANAGER") || roles.includes("CONTENT MANAGER") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER")) {
     navItems.push({ name: "Content Manager", href: "/employee/content", icon: Calendar });
+  }
+
+  if (roles.includes("PAGE MANAGER") || roles.includes("ADMIN") || roles.includes("ADMIN_CONTENT") || roles.includes("FOUNDER") || roles.includes("CONTENT WRITER")) {
+    navItems.push({ name: "Analytics", href: "/employee/analytics", icon: FileSpreadsheet });
   }
 
   return (

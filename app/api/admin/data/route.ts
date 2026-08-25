@@ -55,6 +55,8 @@ export async function POST(request: Request) {
         // @ts-ignore
         if (act.includes("clientresearch")) revalidateTag("getClientResearch", "max");
         // @ts-ignore
+        if (act.includes("analytics")) revalidateTag("getAnalytics", "max");
+        // @ts-ignore
         if (act.includes("lead")) revalidateTag("getLeads", "max");
         // @ts-ignore
         if (act.includes("user")) revalidateTag("getUsers", "max");

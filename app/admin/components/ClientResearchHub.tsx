@@ -39,6 +39,8 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   const [showNewModal, setShowNewModal] = useState<'file' | 'folder' | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [newItemParent, setNewItemParent] = useState("");
+  const [newItemMonth, setNewItemMonth] = useState("");
+  const [newItemYear, setNewItemYear] = useState("2026");
 
   const [itemToDelete, setItemToDelete] = useState<{ path: string, type: 'file' | 'folder' } | null>(null);
 
@@ -73,12 +75,24 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   const fetchData = async () => {
     try {
-      const resRes = await fetch("/api/admin/data?action=getClientResearch");
+      const [resRes, configRes] = await Promise.all([
+        fetch("/api/admin/data?action=getClientResearch"),
+        fetch("/api/admin/data?action=getConfig")
+      ]);
+      
+      let configClients: string[] = [];
+      if (configRes.ok) {
+        const configData = await configRes.json();
+        configClients = configData.workbook_settings?.clients || [];
+      }
+
       if (resRes.ok) {
         const rData = await resRes.json();
         if (Array.isArray(rData)) {
           setResearchData(rData);
-          const uniqueClients = Array.from(new Set(rData.map(r => r.clientName).filter(Boolean))).sort() as string[];
+          const uniqueClients = configClients.length > 0 
+            ? [...configClients].sort() 
+            : Array.from(new Set(rData.map(r => r.clientName).filter(Boolean))).sort() as string[];
           setClients(uniqueClients);
           if (uniqueClients.length > 0 && !selectedClient) {
             setSelectedClient(uniqueClients[0]);
@@ -94,7 +108,12 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   const clientFiles = useMemo(() => {
     if (!selectedClient) return [];
-    return researchData.filter(r => r.clientName === selectedClient && r.filePath);
+    return researchData.filter(r => 
+      r.clientName === selectedClient && 
+      r.filePath && 
+      !r.filePath.endsWith('.json') && 
+      !r.filePath.startsWith('_')
+    );
   }, [researchData, selectedClient]);
 
   // Build Tree
@@ -219,7 +238,18 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
 
   const handleCreateNew = async () => {
     if (!newItemName.trim() || !selectedClient) return;
-    let path = newItemParent ? `${newItemParent}/${newItemName.trim()}` : newItemName.trim();
+    
+    // If a month and year are selected and we are creating at the root, wrap it in a folder
+    let pathPrefix = newItemParent;
+    const dateFolder = (newItemMonth && newItemYear) ? `${newItemMonth} ${newItemYear}` : null;
+    
+    if (!newItemParent && dateFolder) {
+      pathPrefix = dateFolder;
+    } else if (newItemParent && dateFolder && !newItemParent.startsWith(dateFolder)) {
+      pathPrefix = `${dateFolder}/${newItemParent}`;
+    }
+
+    let path = pathPrefix ? `${pathPrefix}/${newItemName.trim()}` : newItemName.trim();
 
     if (showNewModal === 'file' && !path.endsWith('.md')) {
       path += '.md';
@@ -240,6 +270,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
     setShowNewModal(null);
     setNewItemName("");
     setNewItemParent("");
+    setNewItemMonth("");
   };
 
   const toggleFolder = (path: string) => {
@@ -661,15 +692,42 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
             {newItemParent && (
               <p className="text-[10px] text-gray-400 font-mono mb-4">In: {newItemParent}</p>
             )}
-            <input
-              autoFocus
-              type="text"
-              placeholder="Name..."
-              value={newItemName}
-              onChange={e => setNewItemName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleCreateNew()}
-              className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-tpc-orange mb-4"
-            />
+            
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex gap-2">
+                <select
+                  value={newItemMonth}
+                  onChange={e => setNewItemMonth(e.target.value)}
+                  className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-tpc-orange"
+                >
+                  <option value="">No Month</option>
+                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                
+                <select
+                  value={newItemYear}
+                  onChange={e => setNewItemYear(e.target.value)}
+                  disabled={!newItemMonth}
+                  className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-tpc-orange disabled:opacity-50"
+                >
+                  {["2026", "2027", "2028", "2029", "2030"].map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+
+              <input
+                autoFocus
+                type="text"
+                placeholder="Name..."
+                value={newItemName}
+                onChange={e => setNewItemName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleCreateNew()}
+                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-tpc-orange"
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <button onClick={() => setShowNewModal(null)} className="px-4 py-2 rounded text-xs font-bold text-gray-400 hover:text-white">Cancel</button>
               <button onClick={handleCreateNew} className="px-4 py-2 rounded text-xs font-bold bg-tpc-orange text-black">Create</button>

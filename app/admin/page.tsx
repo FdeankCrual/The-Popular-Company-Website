@@ -38,7 +38,7 @@ export default function AdminDashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const employeesList = Array.from(new Set(workbook.flatMap(w => w.assigned ? w.assigned.split(',').map((s:string) => s.trim()) : []))).filter(Boolean);
+  const employeesList = Array.from(new Set(workbook.flatMap(w => w.assigned ? w.assigned.split(',').map((s: string) => s.trim()) : []))).filter(Boolean);
   const clientsList = Array.from(new Set(workbook.map(w => w.client))).filter(Boolean);
 
   const filteredWorkbook = workbook.filter(w => {
@@ -54,7 +54,7 @@ export default function AdminDashboardPage() {
 
   // Pipeline Bottleneck Analysis
   const stages = {
-    "Planning": 0,
+    "Ideation": 0,
     "Scripting": 0,
     "Shooting": 0,
     "Editing": 0,
@@ -63,12 +63,12 @@ export default function AdminDashboardPage() {
 
   activeTasks.forEach(w => {
     const s = (w.status || "").toLowerCase();
-    if (s.includes('ideation') || s.includes('planning')) stages["Planning"]++;
+    if (s.includes('ideation')) stages["Ideation"]++;
     else if (s.includes('script')) stages["Scripting"]++;
     else if (s.includes('shoot')) stages["Shooting"]++;
     else if (s.includes('edit')) stages["Editing"]++;
     else if (s.includes('review') || s === "fixes required") stages["Review"]++;
-    else stages["Planning"]++; // Default fallback
+    else stages["Ideation"]++; // Default fallback
   });
 
   const maxStageCount = Math.max(...Object.values(stages), 1);
@@ -78,7 +78,7 @@ export default function AdminDashboardPage() {
   filteredWorkbook.forEach(w => {
     if (!w.assigned) return;
     const isComp = w.status?.toLowerCase() === 'completed' || w.status?.toLowerCase() === 'posted';
-    w.assigned.split(',').map((s:string) => s.trim()).forEach((emp:string) => {
+    w.assigned.split(',').map((s: string) => s.trim()).forEach((emp: string) => {
       if (!emp) return;
       if (!employeeStats[emp]) employeeStats[emp] = { active: 0, completed: 0 };
       if (isComp) employeeStats[emp].completed++;
@@ -124,19 +124,19 @@ export default function AdminDashboardPage() {
   // 2. SLA Tracker (Critical Path)
   const isStageCompleted = (stage: 'script' | 'shoot' | 'edit' | 'final', status: string) => {
     const s = (status || "").toLowerCase();
-    const stagesList = ["ideation", "planning", "scripting", "reviewing script", "shooting", "reviewing shoot", "editing", "reviewing edit", "under review", "completed", "posted"];
+    const stagesList = ["ideation", "scripting", "reviewing script", "shooting", "reviewing shoot", "editing", "reviewing edit", "under review", "completed", "posted"];
     let currentIndex = stagesList.indexOf(s);
     if (currentIndex === -1) {
-      if (s.includes('reviewing script')) currentIndex = 3;
-      else if (s.includes('reviewing shoot')) currentIndex = 5;
-      else if (s.includes('reviewing edit')) currentIndex = 7;
-      else if (s.includes('review')) currentIndex = 8;
+      if (s.includes('reviewing script')) currentIndex = 2;
+      else if (s.includes('reviewing shoot')) currentIndex = 4;
+      else if (s.includes('reviewing edit')) currentIndex = 6;
+      else if (s.includes('review')) currentIndex = 7;
       else currentIndex = 0;
     }
-    if (stage === 'script') return currentIndex >= 4;
-    if (stage === 'shoot') return currentIndex >= 6;
-    if (stage === 'edit') return currentIndex >= 8;
-    if (stage === 'final') return currentIndex >= 9;
+    if (stage === 'script') return currentIndex >= 3;
+    if (stage === 'shoot') return currentIndex >= 5;
+    if (stage === 'edit') return currentIndex >= 7;
+    if (stage === 'final') return currentIndex >= 8;
     return false;
   };
 
@@ -154,16 +154,16 @@ export default function AdminDashboardPage() {
         urgentTasksRaw.push({ ...task, urgentReason: `DUE 24H: ${stageName}`, isOverdue: false });
       }
     };
-    
+
     checkDeadline(task.scriptDate, "Scripting", isStageCompleted('script', task.status));
     checkDeadline(task.shootDate, "Shooting", isStageCompleted('shoot', task.status));
     checkDeadline(task.editDate, "Editing", isStageCompleted('edit', task.status));
     checkDeadline(task.finalDate, "Final Output", isStageCompleted('final', task.status));
   });
-  
+
   // Deduplicate by ID
   const uniqueUrgentTasks = Array.from(new Map(urgentTasksRaw.map(item => [item.id, item])).values());
-  
+
   // 3. Monthly Volume Trend
   const monthlyStats: Record<string, number> = {};
   filteredWorkbook.forEach(w => {
@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-dvh text-tpc-orange gap-4 bg-tpc-black">
-        <Loader2 className="w-10 h-10 animate-spin"/> 
+        <Loader2 className="w-10 h-10 animate-spin" />
         <span className="font-bold uppercase tracking-widest text-sm">Aggregating Data...</span>
       </div>
     );
@@ -188,7 +188,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="p-4 sm:p-8 md:p-12 min-h-dvh bg-tpc-black text-[#D4D4D4] font-sans selection:bg-tpc-orange selection:text-black overflow-x-hidden">
-      
+
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-6">
         <div>
@@ -200,7 +200,7 @@ export default function AdminDashboardPage() {
             Company Performance & Bottleneck Analysis
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <select value={filterEmployee} onChange={e => setFilterEmployee(e.target.value)} className="w-full sm:w-auto bg-white/5 border border-white/10 text-white rounded-xl px-5 py-3 text-sm font-bold uppercase tracking-widest outline-none focus:border-tpc-orange transition-all cursor-pointer hover:bg-white/10">
             <option value="All" className="bg-tpc-black">All Agents</option>
@@ -289,7 +289,7 @@ export default function AdminDashboardPage() {
 
       {/* Advanced Insights Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
-        
+
         {/* PIPELINE FUNNEL */}
         <div className="xl:col-span-2 bg-gradient-to-b from-[#111] to-[#0a0a0a] border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col justify-between">
           <div>
@@ -298,7 +298,7 @@ export default function AdminDashboardPage() {
             </h3>
             <p className="text-sm text-gray-500 mb-8 font-medium">Real-time breakdown of active tasks across production stages.</p>
           </div>
-          
+
           <div className="flex-1 flex flex-col justify-end">
             <div className="space-y-6">
               {Object.entries(stages).map(([stageName, count]) => (
@@ -308,7 +308,7 @@ export default function AdminDashboardPage() {
                     <span className="font-black text-lg text-white leading-none">{count}</span>
                   </div>
                   <div className="w-full bg-white/5 h-4 rounded-full overflow-hidden flex">
-                    <div 
+                    <div
                       className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(255,255,255,0.1)] ${count === maxStageCount && count > 0 ? 'bg-tpc-orange' : 'bg-white/20'}`}
                       style={{ width: `${maxStageCount > 0 ? (count / maxStageCount) * 100 : 0}%` }}
                     />
@@ -325,7 +325,7 @@ export default function AdminDashboardPage() {
             <Target className="w-6 h-6 text-green-500" /> Leaderboard
           </h3>
           <p className="text-sm text-gray-500 mb-8 font-medium">Top active and completed workloads.</p>
-          
+
           <div className="space-y-6 flex-1">
             {topEmployees.length === 0 ? (
               <p className="text-gray-600 text-sm italic">No employee data found.</p>
@@ -351,7 +351,7 @@ export default function AdminDashboardPage() {
 
       {/* BOTTOM METRICS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* LEAD CONVERSION & PIPELINE */}
         <div className="bg-[#111] border border-white/10 rounded-3xl p-8 shadow-2xl">
           <h3 className="text-lg font-black uppercase tracking-tighter mb-6 text-white flex items-center gap-2">
@@ -404,7 +404,7 @@ export default function AdminDashboardPage() {
                     <span className="font-bold text-purple-400 text-xs">{count} tasks</span>
                   </div>
                   <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="bg-purple-500 h-full rounded-full transition-all duration-1000"
                       style={{ width: `${(count / maxMonthTasks) * 100}%` }}
                     />
@@ -418,7 +418,7 @@ export default function AdminDashboardPage() {
         {/* CLIENT DISTRIBUTION */}
         <div className="bg-[#111] border border-white/10 rounded-3xl p-8 shadow-2xl">
           <h3 className="text-lg font-black uppercase tracking-tighter mb-6 text-white flex items-center gap-2">
-             <Users className="w-5 h-5 text-gray-400" /> Top Clients
+            <Users className="w-5 h-5 text-gray-400" /> Top Clients
           </h3>
           <div className="space-y-5">
             {topClients.length === 0 ? (
@@ -431,7 +431,7 @@ export default function AdminDashboardPage() {
                     <span className="font-bold text-gray-500 text-xs">{count}</span>
                   </div>
                   <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="bg-gray-500 h-full rounded-full transition-all duration-1000"
                       style={{ width: `${(count / maxClientTasks) * 100}%` }}
                     />

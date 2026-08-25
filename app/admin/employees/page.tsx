@@ -20,10 +20,10 @@ const AVAILABLE_ROLES = [
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({ Name: "", Email: "", Password: "", Roles: [] as string[], City: "" });
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function EmployeesPage() {
     e.preventDefault();
     const action = editingId ? "updateEmployee" : "addEmployee";
     const payload = { ...formData, ID: editingId || "emp_" + Math.random().toString(36).substr(2, 9) };
-    
+
     try {
       await fetch("/api/admin/data", {
         method: "POST",
@@ -107,7 +107,7 @@ export default function EmployeesPage() {
             Employee Directory & Roles
           </p>
         </div>
-        <button 
+        <button
           onClick={openNew}
           className="bg-tpc-orange text-black px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-colors"
         >
@@ -133,7 +133,7 @@ export default function EmployeesPage() {
                   <button onClick={() => handleDelete(emp.ID)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"><Trash2 className="w-4 h-4 text-red-500" /></button>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 {emp.City && (
                   <div className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-2">
@@ -170,21 +170,21 @@ export default function EmployeesPage() {
             <div className="space-y-4 md:space-y-6">
               <div>
                 <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500">Agent Name</label>
-                <input required value={formData.Name} onChange={e => setFormData({...formData, Name: e.target.value})} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors font-bold text-sm" />
+                <input required value={formData.Name} onChange={e => setFormData({ ...formData, Name: e.target.value })} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors font-bold text-sm" />
               </div>
               <div>
                 <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500">Email Login</label>
-                <input required type="email" value={formData.Email} onChange={e => setFormData({...formData, Email: e.target.value})} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors text-sm" />
+                <input required type="email" value={formData.Email} onChange={e => setFormData({ ...formData, Email: e.target.value })} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors text-sm" />
               </div>
               <div>
                 <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1.5"><Key className="w-3 h-3" /> Passcode</label>
-                <input required type="text" value={formData.Password} onChange={e => setFormData({...formData, Password: e.target.value})} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors text-sm" />
+                <input required type="text" value={formData.Password} onChange={e => setFormData({ ...formData, Password: e.target.value })} className="w-full bg-black border border-white/10 p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none focus:border-tpc-orange transition-colors text-sm" />
               </div>
 
               {formData.Roles.includes("SALES AGENT") && (
                 <div className="animate-in slide-in-from-top-2">
                   <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-tpc-orange">Operating City</label>
-                  <input required value={formData.City} onChange={e => setFormData({...formData, City: e.target.value})} placeholder="e.g. New York, London..." className="w-full bg-black border border-tpc-orange/30 focus:border-tpc-orange p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none transition-colors text-sm" />
+                  <input required value={formData.City} onChange={e => setFormData({ ...formData, City: e.target.value })} placeholder="e.g. New York, London..." className="w-full bg-black border border-tpc-orange/30 focus:border-tpc-orange p-3 md:p-4 rounded-xl mt-1 md:mt-2 text-white outline-none transition-colors text-sm" />
                 </div>
               )}
 
@@ -194,9 +194,9 @@ export default function EmployeesPage() {
                   {AVAILABLE_ROLES.map(role => {
                     const active = formData.Roles.includes(role);
                     return (
-                      <button 
-                        type="button" 
-                        key={role} 
+                      <button
+                        type="button"
+                        key={role}
                         onClick={() => toggleRole(role)}
                         className={`p-2.5 md:p-3 rounded-lg md:rounded-xl border text-[10px] md:text-xs font-bold uppercase tracking-widest text-left transition-colors ${active ? (role.includes('ADMIN') ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-tpc-orange/20 border-tpc-orange/50 text-tpc-orange') : 'bg-black border-white/10 text-gray-500 hover:border-white/30'}`}
                       >

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, CheckSquare, Wallet, Globe, BookOpen, Menu, X } from "lucide-react";
+import { LayoutDashboard, Settings, Users, FileText, Database, LogOut, UserCircle, CheckSquare, Wallet, Globe, BookOpen, Menu, X, FileSpreadsheet, Presentation, Target } from "lucide-react";
 
 interface AdminSidebarProps {
   email: string;
@@ -17,8 +17,11 @@ export default function AdminSidebar({ email, roles }: AdminSidebarProps) {
     { name: "My Tasks", href: "/admin/my-tasks", icon: CheckSquare },
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Money", href: "/admin/money", icon: Wallet },
+    { name: "Planning", href: "/admin/planning", icon: Presentation },
     { name: "Workbook", href: "/admin/workbook", icon: Database },
     { name: "Client Research", href: "/admin/research", icon: BookOpen },
+    { name: "Content Strategy", href: "/admin/strategy", icon: Target },
+    { name: "Analytics", href: "/admin/analytics", icon: FileSpreadsheet },
     { name: "Website Leads", href: "/admin/leads", icon: Globe },
     { name: "Agent Leads", href: "/admin/agent-leads", icon: Users },
     { name: "Content", href: "/cms", icon: FileText },

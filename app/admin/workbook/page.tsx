@@ -8,7 +8,7 @@ import { KanbanView } from "./components/KanbanView";
 import { CalendarView } from "./components/CalendarView";
 
 const initialData: any[] = [];
-const emptyForm = { id: "", name: "", client: "", status: "Planning", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", desc: "", captionApproved: "false" };
+const emptyForm = { id: "", name: "", client: "", status: "Ideation", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", year: "", desc: "", captionApproved: "false" };
 
 const formatForDateTimeLocal = (dateString?: string) => {
   if (!dateString) return "";
@@ -27,7 +27,7 @@ export default function WorkbookPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'Active' | 'Archive'>('Active');
   const [activeView, setActiveView] = useState<'Table' | 'Kanban' | 'Calendar'>('Table');
-  const [config, setConfig] = useState<any>({ clients: [], assigned: [], status: [], platforms: [], months: [] });
+  const [config, setConfig] = useState<any>({ clients: [], assigned: [], status: [], platforms: [], months: [], years: [] });
   const [employees, setEmployees] = useState<string[]>([]);
   const [users, setUsers] = useState<any[]>([]);
 
@@ -49,7 +49,9 @@ export default function WorkbookPage() {
   const [draggableRow, setDraggableRow] = useState<string | null>(null);
 
   // Extracted unique values for dropdowns
-  const clients = Array.from(new Set([...(config.clients || []), ...data.map(d => d.client)].filter(Boolean)));
+  const clients = (config.clients && config.clients.length > 0)
+    ? [...config.clients]
+    : Array.from(new Set(data.map(d => d.client).filter(Boolean)));
   const statuses = Array.from(new Set([...(config.status || []), ...data.map(d => d.status)].filter(Boolean)));
   const platforms = Array.from(new Set([...(config.platforms || []), ...data.map(d => d.platform)].filter(Boolean)));
   const assigned = Array.from(new Set([
@@ -58,6 +60,7 @@ export default function WorkbookPage() {
     ...data.flatMap(d => d.assigned ? d.assigned.split(',').map((s: string) => s.trim()) : [])
   ].filter(Boolean)));
   const months = Array.from(new Set([...(config.months || []), ...data.map(d => d.month)].filter(Boolean)));
+  const years = Array.from(new Set([...(config.years || []), ...data.map(d => d.year)].filter(Boolean)));
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -155,7 +158,6 @@ export default function WorkbookPage() {
 
     const stages = [
       "ideation",
-      "planning",
       "scripting",
       "reviewing script",
       "shooting",
@@ -169,17 +171,17 @@ export default function WorkbookPage() {
 
     let currentIndex = stages.indexOf(s);
     if (currentIndex === -1) {
-      if (s.includes('reviewing script')) currentIndex = 3;
-      else if (s.includes('reviewing shoot')) currentIndex = 5;
-      else if (s.includes('reviewing edit')) currentIndex = 7;
-      else if (s.includes('review')) currentIndex = 8;
+      if (s.includes('reviewing script')) currentIndex = 2;
+      else if (s.includes('reviewing shoot')) currentIndex = 4;
+      else if (s.includes('reviewing edit')) currentIndex = 6;
+      else if (s.includes('review')) currentIndex = 7;
       else currentIndex = 0;
     }
 
-    if (stage === 'script') return currentIndex >= 4; // Past Scripting (started Shooting)
-    if (stage === 'shoot') return currentIndex >= 6; // Past Shooting (started Editing)
-    if (stage === 'edit') return currentIndex >= 8; // Past Editing (started Reviewing)
-    if (stage === 'final') return currentIndex >= 9; // Completed or Posted
+    if (stage === 'script') return currentIndex >= 3; // Past Scripting (started Shooting)
+    if (stage === 'shoot') return currentIndex >= 5; // Past Shooting (started Editing)
+    if (stage === 'edit') return currentIndex >= 7; // Past Editing (started Reviewing)
+    if (stage === 'final') return currentIndex >= 8; // Completed or Posted
 
     return false;
   };
@@ -296,7 +298,7 @@ export default function WorkbookPage() {
     if (unsavedUpdates.size === 0) return;
     const updates = Array.from(unsavedUpdates.values());
     const idsToClear = updates.map(u => u.id);
-    
+
     setIsSaving(true);
     try {
       await fetch("/api/admin/data", {
@@ -538,6 +540,7 @@ export default function WorkbookPage() {
                 <th onClick={() => handleSort('finalDate')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Posting Date / Time <SortIcon columnKey="finalDate" /></th>
                 <th onClick={() => handleSort('platform')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Platform <SortIcon columnKey="platform" /></th>
                 <th onClick={() => handleSort('month')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Month <SortIcon columnKey="month" /></th>
+                <th onClick={() => handleSort('year')} className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 cursor-pointer hover:bg-white/5 group border-r border-white/5">Year <SortIcon columnKey="year" /></th>
                 <th className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-24 md:w-32 border-r border-white/5">Support</th>
                 <th className="px-3 md:px-6 py-2 md:py-4 font-medium uppercase tracking-widest text-[10px] w-8 md:w-12 text-center"></th>
               </tr>
@@ -557,8 +560,9 @@ export default function WorkbookPage() {
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter..." value={columnFilters.finalDate || ''} onChange={e => setColumnFilters(p => ({ ...p, finalDate: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter platform..." value={columnFilters.platform || ''} onChange={e => setColumnFilters(p => ({ ...p, platform: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({ ...p, month: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter year..." value={columnFilters.year || ''} onChange={e => setColumnFilters(p => ({ ...p, year: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"></th>
-                  <th className="px-3 md:px-6 py-1 md:py-2"></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 sticky right-0 bg-black/80 border-l border-white/10 z-20"></th>
                 </tr>
               )}
             </thead>
@@ -569,8 +573,8 @@ export default function WorkbookPage() {
                 </tr>
               )}
               {processedData.map((row) => (
-                <tr 
-                  key={row.id} 
+                <tr
+                  key={row.id}
                   draggable={(draggedRowId === row.id || draggableRow === row.id) ? true : undefined}
                   onDragStart={(e) => {
                     setDraggedRowId(row.id);
@@ -580,7 +584,7 @@ export default function WorkbookPage() {
                   onDrop={(e) => {
                     e.preventDefault();
                     if (!draggedRowId || draggedRowId === row.id) return;
-                    
+
                     const draggedIndex = data.findIndex(d => d.id === draggedRowId);
                     const targetIndex = data.findIndex(d => d.id === row.id);
                     if (draggedIndex === -1 || targetIndex === -1) return;
@@ -599,7 +603,7 @@ export default function WorkbookPage() {
                   className={`hover:bg-white/5 transition-colors group ${selectedRows.has(row.id) ? 'bg-tpc-orange/10 hover:bg-tpc-orange/20' : ''} ${draggedRowId === row.id ? 'opacity-30 border-2 border-tpc-orange bg-tpc-orange/5' : ''}`}
                 >
                   <td className="px-2 md:px-4 py-1.5 md:py-3 border-r border-white/5 text-center flex items-center justify-center gap-2">
-                    <div 
+                    <div
                       onMouseDown={() => setDraggableRow(row.id)}
                       onMouseUp={() => setDraggableRow(null)}
                       onMouseLeave={() => setDraggableRow(null)}
@@ -745,6 +749,15 @@ export default function WorkbookPage() {
                       placeholder="Month"
                     />
                   </td>
+                  {/* Year - NotionDropdown */}
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 relative">
+                    <NotionDropdown
+                      value={row.year || ''}
+                      options={years as string[]}
+                      onChange={(val) => handleInlineChange(row.id, 'year', val)}
+                      placeholder="Year"
+                    />
+                  </td>
                   {/* Support Hub */}
                   <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 align-middle">
                     <button
@@ -853,7 +866,7 @@ export default function WorkbookPage() {
       {editingTask && (
         <div className="fixed inset-0 z-[20000] flex justify-end bg-black/50 backdrop-blur-sm">
           <div className="bg-[#111] border-l border-white/10 w-full md:w-[600px] md:max-w-[600px] h-full relative shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-            
+
             <div className="p-6 md:p-8 border-b border-white/10 flex justify-between items-center shrink-0">
               <h3 className="text-xl font-bold uppercase tracking-widest text-tpc-orange flex items-center gap-2">
                 Edit Task
@@ -922,11 +935,26 @@ export default function WorkbookPage() {
                   <select
                     value={editingTask.month || ''}
                     onChange={(e) => setEditingTask({ ...editingTask, month: e.target.value })}
-                    className="w-full bg-black border border-white/10 p-3 rounded-lg text-white text-sm outline-none focus:border-tpc-orange appearance-none"
+                    className="w-full bg-[#151515] border border-white/10 rounded px-4 py-2.5 text-sm text-white focus:border-tpc-orange outline-none transition-colors"
                   >
+                    <option value="">Select Month</option>
                     {months.map(m => <option key={m as string} value={m as string}>{m as string}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Year</label>
+                  <select
+                    value={editingTask.year || ''}
+                    onChange={(e) => setEditingTask({ ...editingTask, year: e.target.value })}
+                    className="w-full bg-[#151515] border border-white/10 rounded px-4 py-2.5 text-sm text-white focus:border-tpc-orange outline-none transition-colors"
+                  >
+                    <option value="">Select Year</option>
+                    {years.map(y => <option key={y as string} value={y as string}>{y as string}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">Script Link</label>
                   <input
@@ -1006,19 +1034,19 @@ export default function WorkbookPage() {
                 />
                 {slashMenuOpen && (
                   <div className="absolute bottom-full left-0 mb-2 w-24 md:w-32 md:w-48 bg-[#191919] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-[21000] animate-in slide-in-from-bottom-2">
-                    <button 
+                    <button
                       onClick={() => {
                         const today = new Date().toISOString().split('T')[0];
-                        setEditingTask({...editingTask, desc: editingTask.desc.slice(0, -1) + today + ' '});
+                        setEditingTask({ ...editingTask, desc: editingTask.desc.slice(0, -1) + today + ' ' });
                         setSlashMenuOpen(false);
                       }}
                       className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white flex gap-2 items-center transition-colors"
                     >
                       <Calendar className="w-3 h-3 text-tpc-orange" /> Insert Today's Date
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
-                        setEditingTask({...editingTask, desc: editingTask.desc.slice(0, -1) + '@[Assignee] '});
+                        setEditingTask({ ...editingTask, desc: editingTask.desc.slice(0, -1) + '@[Assignee] ' });
                         setSlashMenuOpen(false);
                       }}
                       className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white flex gap-2 items-center transition-colors"
