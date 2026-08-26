@@ -61,12 +61,12 @@ export default function StrategyDashboard({ initialRoles }: { initialRoles?: str
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100dvh-60px)] md:h-dvh bg-[#191919] text-[#D4D4D4] overflow-hidden relative">
+    <div className="flex flex-col md:flex-row h-full bg-[#191919] text-[#D4D4D4] overflow-hidden relative min-h-0">
 
       {/* SIDEBAR: Vault/Client Selector */}
       <div className={`w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex-col shrink-0 h-full ${selectedClient ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>
+        <div className="p-2 md:p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
+          <h2 className="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>
           <select
             value={selectedClient || ""}
             onChange={e => setSelectedClient(e.target.value)}
@@ -85,12 +85,12 @@ export default function StrategyDashboard({ initialRoles }: { initialRoles?: str
       <div className={`flex-1 flex-col h-full overflow-hidden bg-[#151515] min-w-0 ${selectedClient ? 'flex' : 'hidden md:flex'}`}>
         {selectedClient ? (
           <>
-            <div className="md:hidden py-3 px-4 border-b border-white/10 bg-[#111]">
+            <div className="md:hidden p-2 border-b border-white/10 bg-[#111]">
               <button 
                 onClick={() => setSelectedClient(null)}
-                className="flex items-center gap-1.5 text-xs uppercase font-black text-tpc-orange bg-tpc-orange/10 px-3 py-2 rounded-lg w-fit hover:bg-tpc-orange/20 transition-colors"
+                className="flex items-center gap-1 text-[10px] uppercase font-black text-tpc-orange bg-tpc-orange/10 px-2 py-1.5 rounded w-fit hover:bg-tpc-orange/20 transition-colors"
               >
-                <ChevronLeft className="w-4 h-4" /> Switch Vault
+                <ChevronLeft className="w-3 h-3" /> Switch Vault
               </button>
             </div>
             <MonthlyStrategyHub 

@@ -133,8 +133,8 @@ export default function MonthlyReportForm({ clientName, initialData, configYears
   };
 
   return (
-    <div className="bg-[#111] border border-white/10 rounded-2xl flex flex-col h-full overflow-hidden">
-      <div className="p-4 border-b border-white/10 bg-[#0a0a0a] flex justify-between items-center shrink-0">
+    <div className="bg-[#111] border border-white/10 md:rounded-2xl flex flex-col flex-1 h-full overflow-hidden min-h-0">
+      <div className="p-4 border-b border-white/10 bg-[#0a0a0a] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
         <div className="flex items-center gap-3">
           <button onClick={onCancel} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
           <div>
@@ -142,11 +142,11 @@ export default function MonthlyReportForm({ clientName, initialData, configYears
             <div className="text-[10px] text-tpc-orange font-mono">Status: {data.status}</div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => handleSave("Draft")} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+        <div className="flex gap-2 w-full md:w-auto">
+          <button onClick={() => handleSave("Draft")} className="flex-1 md:flex-none justify-center px-4 py-3 md:py-2 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-bold uppercase tracking-widest flex items-center gap-2">
             <Save className="w-4 h-4" /> Save Draft
           </button>
-          <button onClick={() => handleSave("Submitted")} className="px-4 py-2 bg-tpc-orange hover:bg-white text-black rounded text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+          <button onClick={() => handleSave("Submitted")} className="flex-1 md:flex-none justify-center px-4 py-3 md:py-2 bg-tpc-orange hover:bg-white text-black rounded text-xs font-bold uppercase tracking-widest flex items-center gap-2">
             Submit Report
           </button>
         </div>

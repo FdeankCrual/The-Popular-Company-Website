@@ -516,8 +516,8 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       {/* SIDEBAR: Vault/Client Selector & File Tree */}
       <div className={`w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex-col shrink-0 h-full ${selectedFile ? 'hidden md:flex' : 'flex'}`}>
         {/* Vault Selector */}
-        <div className="p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>
+        <div className="p-2 md:p-4 border-b border-white/10 shrink-0 bg-[#0a0a0a]">
+          <h2 className="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Active Vault</h2>
           <select
             value={selectedClient || ""}
             onChange={e => {
@@ -582,13 +582,13 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
       <div className={`flex-1 flex-col h-full overflow-hidden bg-[#151515] min-w-0 ${selectedFile ? 'flex' : 'hidden md:flex'}`}>
         {selectedClient ? (
           <>
-            <div className="py-3 md:h-16 md:py-0 border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 bg-[#111] shrink-0 gap-3 md:gap-0 overflow-y-auto">
+            <div className="py-2 md:py-0 border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-3 md:px-6 bg-[#111] shrink-0 gap-2 md:gap-0 overflow-y-auto">
               <div className="flex flex-col justify-center w-full md:w-auto">
                 <button 
                   onClick={() => setSelectedFile(null)}
-                  className="md:hidden flex items-center gap-1.5 text-xs uppercase font-black text-tpc-orange bg-tpc-orange/10 px-3 py-2 rounded-lg mb-3 w-fit hover:bg-tpc-orange/20 transition-colors"
+                  className="md:hidden flex items-center gap-1 text-[10px] uppercase font-black text-tpc-orange bg-tpc-orange/10 px-2 py-1.5 rounded mb-1 w-fit hover:bg-tpc-orange/20 transition-colors"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Back to Vault & Files
+                  <ChevronLeft className="w-3 h-3" /> Back
                 </button>
                 <h1 className="text-base md:text-sm font-bold text-white truncate max-w-full md:max-w-md">
                   {selectedFile ? selectedFile : "No file selected"}

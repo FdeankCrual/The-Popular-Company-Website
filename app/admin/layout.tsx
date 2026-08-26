@@ -28,8 +28,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <CommandPalette />
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto bg-tpc-black pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0 min-h-0">
-        <div className="max-w-[1600px] mx-auto">
+      <main className="flex-1 flex flex-col bg-tpc-black pt-[calc(64px+env(safe-area-inset-top))] md:pt-0 min-h-0">
+        <div className="max-w-[1600px] w-full mx-auto flex-1 flex flex-col min-h-0">
           {children}
         </div>
       </main>

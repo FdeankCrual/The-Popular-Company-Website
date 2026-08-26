@@ -123,9 +123,9 @@ export default function MonthlyStrategyHub({ clientName, canEdit, researchFiles 
   }
 
   return (
-    <div className="h-full overflow-y-auto p-8 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-4 border-b border-white/10">
-        <div className="min-w-0 w-full sm:w-auto">
+    <div className="h-full overflow-y-auto p-4 md:p-8 max-w-6xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-8 pb-4 border-b border-white/10">
+        <div className="hidden md:block min-w-0 w-full sm:w-auto">
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight uppercase truncate">{clientName} Strategy Reports</h2>
           <p className="text-xs sm:text-sm text-gray-500 mt-1 uppercase tracking-widest truncate">Executive Content Research & Planning</p>
         </div>

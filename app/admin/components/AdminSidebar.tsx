@@ -31,16 +31,20 @@ export default function AdminSidebar({ email, roles }: AdminSidebarProps) {
 
   return (
     <>
-      <div className="md:hidden fixed bottom-6 right-4 z-[60] pb-[env(safe-area-inset-bottom)]">
+      {/* MOBILE HEADER */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/10 z-[60] flex items-center justify-between px-4 pt-[env(safe-area-inset-top)]">
+        <h1 className="font-black tracking-tighter uppercase text-lg text-white">
+          TPC <span className="text-tpc-orange">Admin</span>
+        </h1>
         <button 
           onClick={() => setIsOpen(!isOpen)} 
-          className={`group relative w-14 h-14 flex items-center justify-center rounded-2xl shadow-2xl transition-all duration-300 active:scale-95 ${isOpen ? 'bg-white border-white text-black' : 'bg-black/60 backdrop-blur-2xl border-white/20 text-white'} border`}
+          className={`group relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 active:scale-95 ${isOpen ? 'bg-white text-black' : 'bg-white/10 text-white'}`}
         >
-          <div className="relative z-10 flex flex-col items-center justify-center w-6 h-6">
+          <div className="relative z-10 flex flex-col items-center justify-center w-5 h-5">
             {isOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             ) : (
-              <div className="flex flex-col gap-1.5 w-5">
+              <div className="flex flex-col gap-1 w-4">
                  <div className="h-[2px] bg-current rounded-full w-4/5 self-end transition-all duration-300 group-active:w-full"></div>
                  <div className="h-[2px] bg-current rounded-full w-full transition-all duration-300"></div>
                  <div className="h-[2px] bg-current rounded-full w-4/5 self-start transition-all duration-300 group-active:w-full"></div>

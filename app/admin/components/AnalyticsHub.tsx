@@ -144,9 +144,9 @@ export default function AnalyticsHub({ initialRoles }: { initialRoles?: string[]
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-60px)] md:h-dvh bg-[#191919] text-[#D4D4D4]">
+    <div className="flex flex-col h-full bg-[#191919] text-[#D4D4D4]">
       {/* HEADER */}
-      <div className="p-4 md:p-8 border-b border-white/10 shrink-0">
+      <div className="hidden md:block p-4 md:p-8 border-b border-white/10 shrink-0">
         <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter mb-2 text-white flex items-center gap-3">
           <FileSpreadsheet className="w-6 h-6 md:w-8 md:h-8 text-tpc-orange" />
           Analytics Hub
@@ -156,12 +156,12 @@ export default function AnalyticsHub({ initialRoles }: { initialRoles?: string[]
         </p>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
         {/* SIDEBAR (Only visible on Dashboard to maximize space for forms) */}
         {currentView === "Dashboard" && (
-          <div className="w-64 bg-[#111] border-r border-white/10 flex flex-col shrink-0">
-            <div className="p-4 border-b border-white/10 bg-[#0a0a0a]">
-              <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Select Client</h2>
+          <div className="w-full md:w-64 bg-[#111] border-b md:border-b-0 md:border-r border-white/10 flex flex-col shrink-0">
+            <div className="p-2 md:p-4 border-b border-white/10 bg-[#0a0a0a] flex items-center gap-3">
+              <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hidden md:block">Select Client</h2>
               <select
                 value={selectedClient || ""}
                 onChange={e => setSelectedClient(e.target.value)}
@@ -171,7 +171,7 @@ export default function AnalyticsHub({ initialRoles }: { initialRoles?: string[]
                 {clients.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className="hidden md:block flex-1 overflow-y-auto p-2">
               {clients.map(c => (
                 <button
                   key={c}
@@ -186,7 +186,7 @@ export default function AnalyticsHub({ initialRoles }: { initialRoles?: string[]
         )}
 
         {/* MAIN CONTENT AREA */}
-        <div className="flex-1 flex flex-col bg-[#151515] min-w-0">
+        <div className="flex-1 flex flex-col bg-[#151515] min-w-0 min-h-0">
           {!selectedClient ? (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
               <FileSpreadsheet className="w-16 h-16 mb-4 opacity-20" />

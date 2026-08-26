@@ -173,10 +173,10 @@ export default function PlanningHub({ initialRoles }: { initialRoles?: string[] 
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-60px)] md:h-dvh bg-[#191919] text-[#D4D4D4]">
+    <div className="flex flex-col h-full bg-[#191919] text-[#D4D4D4] min-h-0">
       {/* HEADER */}
-      <div className="p-4 md:p-6 border-b border-white/10 shrink-0 bg-[#0a0a0a] flex justify-between items-center">
-        <div>
+      <div className="p-2 md:p-6 border-b border-white/10 shrink-0 bg-[#0a0a0a] flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-0">
+        <div className="hidden md:block">
           <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter mb-1 text-white flex items-center gap-3">
             <Target className="w-6 h-6 md:w-8 md:h-8 text-tpc-orange" />
             Planning Hub
@@ -186,11 +186,11 @@ export default function PlanningHub({ initialRoles }: { initialRoles?: string[] 
           </p>
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex gap-2 w-full md:w-auto">
           <select
             value={selectedClient || ""}
             onChange={e => setSelectedClient(e.target.value)}
-            className="bg-black/50 border border-white/10 rounded-lg p-2 text-sm text-white font-bold focus:outline-none focus:border-tpc-orange"
+            className="flex-1 bg-black/50 border border-white/10 rounded p-1.5 md:p-2 text-[10px] md:text-sm text-white font-bold focus:outline-none focus:border-tpc-orange"
           >
             <option value="" disabled>Select Client</option>
             {clients.map(c => <option key={c} value={c}>{c}</option>)}
@@ -204,7 +204,7 @@ export default function PlanningHub({ initialRoles }: { initialRoles?: string[] 
               setSelectedYear(y);
             }}
             disabled={!selectedClient || months.length === 0}
-            className="bg-black/50 border border-white/10 rounded-lg p-2 text-sm text-tpc-orange font-bold focus:outline-none focus:border-tpc-orange disabled:opacity-50"
+            className="flex-1 bg-black/50 border border-white/10 rounded p-1.5 md:p-2 text-[10px] md:text-sm text-tpc-orange font-bold focus:outline-none focus:border-tpc-orange disabled:opacity-50"
           >
             <option value="||" disabled>Select Period</option>
             {months.map(m => <option key={`${m.month}||${m.year}`} value={`${m.month}||${m.year}`}>{m.month} {m.year}</option>)}

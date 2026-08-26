@@ -153,17 +153,17 @@ export default function AnalyticsDashboard({ reports, clientName, onNewReport, o
       
       {/* Header & Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-4">
-        <div>
+        <div className="hidden md:block">
           <h2 className="text-xl font-bold text-white uppercase tracking-widest">{clientName} Dashboard</h2>
           <p className="text-xs text-gray-500 uppercase tracking-widest">{filteredReports.length} Reports Total</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto">
             <select 
               value={selectedMonth} 
               onChange={e => setSelectedMonth(e.target.value)}
-              className="bg-black/50 border border-white/10 p-2 text-xs uppercase font-bold tracking-widest text-white rounded focus:outline-none focus:border-tpc-orange"
+              className="flex-1 sm:flex-none bg-black/50 border border-white/10 p-2 text-xs uppercase font-bold tracking-widest text-white rounded focus:outline-none focus:border-tpc-orange"
             >
               <option value="All">All Months</option>
               {allMonths.map(m => <option key={m} value={m}>{m}</option>)}
@@ -171,7 +171,7 @@ export default function AnalyticsDashboard({ reports, clientName, onNewReport, o
             <select 
               value={selectedYear} 
               onChange={e => setSelectedYear(e.target.value)}
-              className="bg-black/50 border border-white/10 p-2 text-xs uppercase font-bold tracking-widest text-white rounded focus:outline-none focus:border-tpc-orange"
+              className="flex-1 sm:flex-none bg-black/50 border border-white/10 p-2 text-xs uppercase font-bold tracking-widest text-white rounded focus:outline-none focus:border-tpc-orange"
             >
               <option value="All">All Years</option>
               {allYears.map(y => <option key={y} value={y}>{y}</option>)}
@@ -179,11 +179,11 @@ export default function AnalyticsDashboard({ reports, clientName, onNewReport, o
           </div>
 
           {canEdit && (
-            <div className="flex gap-2">
-              <button onClick={() => onNewReport("Weekly")} className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-bold uppercase tracking-widest flex items-center gap-1 transition-colors">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button onClick={() => onNewReport("Weekly")} className="flex-1 sm:flex-none justify-center px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-1 transition-colors">
                 <Plus className="w-3 h-3" /> Weekly
               </button>
-              <button onClick={() => onNewReport("Monthly")} className="px-3 py-2 bg-tpc-orange hover:bg-white text-black rounded text-xs font-bold uppercase tracking-widest flex items-center gap-1 transition-colors">
+              <button onClick={() => onNewReport("Monthly")} className="flex-1 sm:flex-none justify-center px-3 py-2 bg-tpc-orange hover:bg-white text-black rounded text-[10px] sm:text-xs font-bold uppercase tracking-widest flex items-center gap-1 transition-colors">
                 <Plus className="w-3 h-3" /> Monthly
               </button>
             </div>
