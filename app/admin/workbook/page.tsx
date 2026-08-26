@@ -443,29 +443,30 @@ export default function WorkbookPage() {
     <div className="flex flex-col h-full bg-[#191919] min-h-dvh text-[#D4D4D4] font-sans relative">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between p-3 md:p-12 pb-3 md:pb-8 border-b border-white/10 shrink-0 gap-3">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-end justify-between p-2 md:p-12 pb-2 md:pb-8 border-b border-white/10 shrink-0 gap-2">
+        <div className="hidden md:block">
           <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter mb-1 md:mb-2 text-white">
             Live <span className="text-tpc-orange">Workbook</span>
           </h2>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <p className="text-gray-500 font-mono text-[10px] md:text-sm uppercase tracking-widest leading-tight">
-              Production Pipeline Manager
-            </p>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 w-max text-[10px] md:text-xs font-bold uppercase px-2 py-1 md:px-3 md:py-1.5 rounded transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
-            >
-              <Filter className="w-3 h-3" /> Filters
-            </button>
-          </div>
+          <p className="text-gray-500 font-mono text-[10px] md:text-sm uppercase tracking-widest leading-tight">
+            Production Pipeline Manager
+          </p>
         </div>
-        <button
-          onClick={handleAddNewRow}
-          className="bg-tpc-orange text-black px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer w-full md:w-auto mt-1 md:mt-0"
-        >
-          <Plus className="w-4 h-4" /> New Task
-        </button>
+        
+        <div className="flex gap-2 w-full md:w-auto">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex-1 md:flex-none justify-center flex items-center gap-1.5 text-[10px] md:text-xs font-bold uppercase px-3 py-2.5 md:py-1.5 rounded-lg transition-colors ${showFilters ? 'bg-tpc-orange text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+          >
+            <Filter className="w-3 h-3" /> Filters
+          </button>
+          <button
+            onClick={handleAddNewRow}
+            className="flex-1 md:flex-none bg-tpc-orange text-black px-4 py-2.5 md:px-6 md:py-3 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> New Task
+          </button>
+        </div>
       </div>
 
       {/* TABS */}
@@ -562,7 +563,7 @@ export default function WorkbookPage() {
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter month..." value={columnFilters.month || ''} onChange={e => setColumnFilters(p => ({ ...p, month: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"><input placeholder="Filter year..." value={columnFilters.year || ''} onChange={e => setColumnFilters(p => ({ ...p, year: e.target.value }))} className="w-full bg-black/50 border border-white/10 p-1.5 px-3 text-xs rounded text-white focus:border-tpc-orange outline-none" /></th>
                   <th className="px-3 md:px-6 py-1 md:py-2 border-r border-white/5"></th>
-                  <th className="px-3 md:px-6 py-1 md:py-2 sticky right-0 bg-black/80 border-l border-white/10 z-20"></th>
+                  <th className="px-3 md:px-6 py-1 md:py-2 border-l border-white/10"></th>
                 </tr>
               )}
             </thead>

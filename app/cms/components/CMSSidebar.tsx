@@ -24,7 +24,7 @@ export default function CMSSidebar({ name, isContentWriterOnly }: CMSSidebarProp
   return (
     <>
       {/* MOBILE HEADER (Top) */}
-      <div className="md:hidden h-[60px] bg-[#111] border-b border-white/10 flex items-center justify-between px-6 shrink-0 z-40 relative">
+      <div className="md:hidden h-[60px] bg-[#111] border-b border-white/10 flex items-center justify-between px-6 shrink-0">
         <h1 className="font-black tracking-tighter uppercase text-xl">
           TPC <span className="text-tpc-orange">CMS</span>
         </h1>

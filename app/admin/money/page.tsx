@@ -134,7 +134,7 @@ export default function MoneyManagementPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-tpc-black text-white font-sans p-4 sm:p-8 md:p-12 pb-32">
+    <div className="h-full overflow-y-auto bg-tpc-black text-white font-sans p-4 sm:p-8 md:p-12 pb-32">
       
       {/* Floating Save Button */}
       {unsaved && (

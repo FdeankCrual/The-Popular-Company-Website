@@ -132,13 +132,13 @@ export default function ContentPage() {
   };
 
   return (
-    <div className="p-8 md:p-12 h-full flex flex-col">
-      <div className="mb-10 flex justify-between items-end shrink-0">
-        <div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter mb-2">Content <span className="text-tpc-orange">Manager</span></h2>
-          <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">Global Site Content & Blogs</p>
+    <div className="p-4 md:p-12 h-full flex flex-col min-h-0">
+      <div className="mb-4 md:mb-10 flex flex-col md:flex-row md:items-end justify-between shrink-0 gap-4">
+        <div className="hidden md:block">
+          <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter mb-2">Content <span className="text-tpc-orange">Manager</span></h2>
+          <p className="text-gray-500 font-mono text-[10px] md:text-sm uppercase tracking-widest">Global Site Content & Blogs</p>
         </div>
-        <button onClick={handleOpenNew} className="bg-tpc-orange text-black px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-colors cursor-pointer">
+        <button onClick={handleOpenNew} className="w-full md:w-auto justify-center bg-tpc-orange text-black px-4 py-2.5 md:px-6 md:py-3 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-colors cursor-pointer">
           <Plus className="w-4 h-4" /> New Blog Post
         </button>
       </div>
@@ -231,7 +231,7 @@ export default function ContentPage() {
       {/* EDIT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center md:p-4">
-          <div className="bg-[#191919] md:border border-white/10 rounded-none md:rounded-2xl w-full h-[100dvh] md:h-auto max-w-5xl flex flex-col md:max-h-[95vh] pt-12 md:pt-0 pb-[env(safe-area-inset-bottom)]">
+          <div className="bg-[#191919] md:border border-white/10 rounded-none md:rounded-2xl w-full h-[100dvh] md:h-auto max-w-5xl flex flex-col md:max-h-[95vh] pt-[env(safe-area-inset-top)] md:pt-0 pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-between items-center p-4 md:p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white">{formData.title ? 'Edit Post' : 'New Post'}</h3>
               <button type="button" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>

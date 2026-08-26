@@ -511,7 +511,7 @@ export default function ClientResearchHub({ initialRoles }: { initialRoles?: str
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100dvh-60px)] md:h-dvh bg-[#191919] text-[#D4D4D4] overflow-hidden relative">
+    <div className="flex flex-col md:flex-row h-full bg-[#191919] text-[#D4D4D4] overflow-hidden relative min-h-0">
 
       {/* SIDEBAR: Vault/Client Selector & File Tree */}
       <div className={`w-full md:w-72 bg-[#111] border-b md:border-r border-white/10 flex-col shrink-0 h-full ${selectedFile ? 'hidden md:flex' : 'flex'}`}>
