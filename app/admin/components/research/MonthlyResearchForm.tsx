@@ -13,6 +13,31 @@ interface Props {
   onCancel: () => void;
 }
 
+const SectionHeader = ({ title, desc }: { title: string, desc?: string }) => (
+  <div className="mb-6 border-b border-white/10 pb-2">
+    <h2 className="text-lg font-bold text-tpc-orange uppercase tracking-widest">{title}</h2>
+    {desc && <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">{desc}</p>}
+  </div>
+);
+
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <label className="text-[10px] uppercase text-gray-400 font-bold mb-1 block">{children}</label>
+);
+
+const Input = (props: any) => (
+  <input {...props} className={`w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-tpc-orange focus:outline-none ${props.className || ''}`} />
+);
+
+const Textarea = (props: any) => (
+  <textarea {...props} className={`w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-tpc-orange focus:outline-none min-h-[100px] ${props.className || ''}`} />
+);
+
+const Select = (props: any) => (
+  <select {...props} className={`w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-tpc-orange focus:outline-none ${props.className || ''}`}>
+    {props.children}
+  </select>
+);
+
 export default function MonthlyResearchForm({ clientName, initialData, analyticsReports, onSave, onCancel }: Props) {
   // Find all monthly analytics reports to allow user to select which month to base research on
   const monthlyAnalytics = analyticsReports.filter(r => r.type === "Monthly" && r.status === "Submitted") as MonthlyAnalyticsReport[];
@@ -202,31 +227,6 @@ export default function MonthlyResearchForm({ clientName, initialData, analytics
       setIsGeneratingAI(false);
     }
   };
-
-  const SectionHeader = ({ title, desc }: { title: string, desc?: string }) => (
-    <div className="mb-6 border-b border-white/10 pb-2">
-      <h2 className="text-lg font-bold text-tpc-orange uppercase tracking-widest">{title}</h2>
-      {desc && <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">{desc}</p>}
-    </div>
-  );
-
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <label className="text-[10px] uppercase text-gray-400 font-bold mb-1 block">{children}</label>
-  );
-
-  const Input = (props: any) => (
-    <input {...props} className={`w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-tpc-orange focus:outline-none ${props.className || ''}`} />
-  );
-
-  const Textarea = (props: any) => (
-    <textarea {...props} className={`w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-tpc-orange focus:outline-none min-h-[100px] ${props.className || ''}`} />
-  );
-
-  const Select = (props: any) => (
-    <select {...props} className={`w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-tpc-orange focus:outline-none ${props.className || ''}`}>
-      {props.children}
-    </select>
-  );
 
   const tabs = [
     { id: 1, name: "Overview & KPIs" },
