@@ -55,6 +55,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
     setUpdating(task.id);
     try {
       const getNextStatus = () => {
+        if (roles.includes("PAGE MANAGER")) return "Completed";
         if (roles.includes("CONTENT WRITER")) return "Reviewing Script";
         if (roles.includes("VIDEOGRAPHER")) return "Reviewing Shoot";
         if (roles.includes("EDITOR")) return "Reviewing Edit";
@@ -129,6 +130,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
     if (roles.includes("GRAPHIC DESIGNER")) stages.push("Designing");
     if (roles.includes("VIDEOGRAPHER")) stages.push("Shooting");
     if (roles.includes("EDITOR")) stages.push("Editing");
+    if (roles.includes("PAGE MANAGER")) stages.push("Posting");
 
     if (stages.length > 0) {
       stages.push("Review");

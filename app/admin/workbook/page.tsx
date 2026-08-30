@@ -452,7 +452,7 @@ export default function WorkbookPage() {
             Production Pipeline Manager
           </p>
         </div>
-        
+
         <div className="flex gap-2 w-full md:w-auto">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -774,9 +774,19 @@ export default function WorkbookPage() {
                   {/* Actions */}
                   <td className="px-3 md:px-6 py-1.5 md:py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
+                      {(row.status || "").toLowerCase() === "editing" && (
+                        <button onClick={() => handleInlineChange(row.id, 'status', 'Reviewing Edit')} className="px-2 py-0.5 md:px-3 md:py-1 bg-blue-500/20 text-blue-400 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-blue-500/30 transition-colors">
+                          Send to Review
+                        </button>
+                      )}
                       {(row.status || "").toLowerCase().includes("review") && (
                         <button onClick={() => setReviewTask(row)} className="px-2 py-0.5 md:px-3 md:py-1 bg-yellow-500/20 text-yellow-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-yellow-500/30 transition-colors animate-pulse">
                           Review
+                        </button>
+                      )}
+                      {(row.status || "").toLowerCase() === "posting" && (
+                        <button onClick={() => handleInlineChange(row.id, 'status', 'Completed')} className="px-2 py-0.5 md:px-3 md:py-1 bg-green-500/20 text-green-500 font-bold uppercase tracking-widest text-[10px] rounded hover:bg-green-500/30 transition-colors">
+                          Mark Posted
                         </button>
                       )}
                       <button onClick={() => handleDeleteRow(row.id)} className="p-1 md:p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100">
@@ -1149,6 +1159,7 @@ export default function WorkbookPage() {
                   let nextStatus = "Completed";
                   if (s === "reviewing script") nextStatus = "Shooting";
                   else if (s === "reviewing shoot") nextStatus = "Editing";
+                  else if (s === "reviewing edit") nextStatus = "Posting";
 
                   handleInlineChange(reviewTask.id, 'status', nextStatus);
                   setReviewTask(null);
