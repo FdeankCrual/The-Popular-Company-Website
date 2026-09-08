@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const clientName = searchParams.get('clientName');
+    const yearName = searchParams.get('yearName');
     const monthName = searchParams.get('monthName');
     const taskName = searchParams.get('taskName');
     const folderUrl = searchParams.get('folderUrl');
@@ -26,14 +27,13 @@ export async function GET(request: Request) {
 
     // Fallback: Traverse the tree to find the folder dynamically if folder URL is not available
     if (!targetFolderId && clientName && taskName) {
-      const clientFolderId = await findOrCreateFolder(clientName, rootFolderId);
+      let currentParentId = rootFolderId;
       
-      let monthFolderId = clientFolderId;
-      if (monthName) {
-        monthFolderId = await findOrCreateFolder(monthName, clientFolderId);
-      }
+      if (yearName) currentParentId = await findOrCreateFolder(yearName, currentParentId);
+      if (monthName) currentParentId = await findOrCreateFolder(monthName, currentParentId);
+      if (clientName) currentParentId = await findOrCreateFolder(clientName, currentParentId);
       
-      targetFolderId = await findOrCreateFolder(taskName, monthFolderId);
+      targetFolderId = await findOrCreateFolder(taskName, currentParentId);
     }
 
     if (!targetFolderId) {

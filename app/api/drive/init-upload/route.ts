@@ -4,7 +4,7 @@ import { findOrCreateFolder, generateResumableUploadUrl } from '@/lib/googleDriv
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { clientName, monthName, taskName, categoryName, fileName, mimeType } = body;
+    const { clientName, yearName, monthName, taskName, categoryName, fileName, mimeType } = body;
     const origin = request.headers.get('origin') || `http://${request.headers.get('host')}` || 'http://localhost:3000';
 
     if (!clientName || !fileName || !mimeType) {
@@ -16,22 +16,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing GOOGLE_DRIVE_ROOT_FOLDER_ID in environment variables' }, { status: 500 });
     }
 
-    // 1. Find or create the client folder inside the root drive folder
-    const clientFolderId = await findOrCreateFolder(clientName, rootFolderId);
+    // Step 1: Ensure directory structure exists (Root -> Year -> Month -> Client -> Task -> Category)
+    let targetFolderId = rootFolderId;
 
-    // 2. Find or create the month folder
-    let monthFolderId = clientFolderId;
+    if (yearName) {
+      targetFolderId = await findOrCreateFolder(yearName, targetFolderId);
+    }
     if (monthName) {
-      monthFolderId = await findOrCreateFolder(monthName, clientFolderId);
+      targetFolderId = await findOrCreateFolder(monthName, targetFolderId);
     }
-
-    // 3. Find or create the task folder (Reel Name)
-    let taskFolderId = monthFolderId;
+    if (clientName) {
+      targetFolderId = await findOrCreateFolder(clientName, targetFolderId);
+    }
     if (taskName) {
-      taskFolderId = await findOrCreateFolder(taskName, monthFolderId);
+      targetFolderId = await findOrCreateFolder(taskName, targetFolderId);
     }
 
-    // 4. Find or create the category folder (Raw, Final, Scripts, Thumbnails)
+    // We return the task folder ID so the frontend can link directly to the task
+    const taskFolderId = targetFolderId;
     let categoryFolderId = taskFolderId;
     if (categoryName) {
       categoryFolderId = await findOrCreateFolder(categoryName, taskFolderId);

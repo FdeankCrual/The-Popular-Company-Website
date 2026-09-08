@@ -69,14 +69,14 @@ export default function WorkbookPage() {
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const uploadFileToDrive = async (file: File, taskId: string, clientName: string, monthName: string, taskName: string, categoryName: string, type: 'docLink' | 'driveA') => {
+  const uploadFileToDrive = async (file: File, taskId: string, yearName: string, monthName: string, clientName: string, taskName: string, categoryName: string, type: 'docLink' | 'driveA') => {
     try {
       setUploadingState(prev => ({ ...prev, [taskId]: { progress: 0, type: type === 'docLink' ? 'doc' : 'drive' } }));
 
       const initRes = await fetch('/api/drive/init-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName: clientName || 'Unknown Client', monthName, taskName, categoryName, fileName: file.name, mimeType: file.type || 'application/octet-stream' })
+        body: JSON.stringify({ clientName: clientName || 'Unknown Client', yearName, monthName, taskName, categoryName, fileName: file.name, mimeType: file.type || 'application/octet-stream' })
       });
       
       if (!initRes.ok) throw new Error('Failed to initialize upload');
@@ -150,10 +150,10 @@ export default function WorkbookPage() {
     setLoadingFiles(true);
     setDriveFiles([]);
     try {
-      const month = task.month ? (task.year ? `${task.month} ${task.year}` : task.month) : '';
       const params = new URLSearchParams({
         clientName: task.client || 'Unknown Client',
-        monthName: month,
+        yearName: task.year || '',
+        monthName: task.month || '',
         taskName: task.name || 'Untitled Reel'
       });
       if (task.driveA) {
@@ -1424,8 +1424,9 @@ export default function WorkbookPage() {
                             uploadFileToDrive(
                               e.target.files[0], 
                               fileManagerTask.id, 
-                              fileManagerTask.client, 
-                              fileManagerTask.month ? (fileManagerTask.year ? `${fileManagerTask.month} ${fileManagerTask.year}` : fileManagerTask.month) : '', 
+                              fileManagerTask.year || '',
+                              fileManagerTask.month || '',
+                              fileManagerTask.client || 'Unknown Client',
                               fileManagerTask.name || 'Untitled Reel', 
                               category, 
                               category === 'Scripts' ? 'docLink' : 'driveA'
