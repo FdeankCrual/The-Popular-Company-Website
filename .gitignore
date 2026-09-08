@@ -42,3 +42,6 @@ next-env.d.ts
 
 # portable node environment
 /.node-portable/
+
+generate-token.js
+scratch/credentials.json

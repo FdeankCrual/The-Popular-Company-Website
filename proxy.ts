@@ -4,7 +4,7 @@ import { verifySessionCookie } from './lib/auth';
 
 const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN_VIDEO', 'ADMIN_CONTENT', 'ADMIN_EDITOR'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect /admin, /employee, and /cms routes
