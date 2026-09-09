@@ -455,28 +455,6 @@ export default function WorkbookPage() {
         return next;
       });
 
-      // Trigger Telegram Notification for updated rows
-      for (const newRow of updates) {
-        if (!newRow.assigned) continue;
-        const msg = 
-`🔔 <b>Task Updated</b>
-<b>Task:</b> <i>${newRow.name}</i>
-<b>Client:</b> ${newRow.client || 'N/A'}
-<b>Status:</b> ${newRow.status || 'N/A'}
-
-📅 <b>Deadlines:</b>
-• Script: ${newRow.scriptDate ? new Date(newRow.scriptDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
-• Shoot: ${newRow.shootDate ? new Date(newRow.shootDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
-• Edit: ${newRow.editDate ? new Date(newRow.editDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
-• Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
-
-🔗 <b>Links & Resources:</b>
-• ${newRow.driveLink ? `<a href="${newRow.driveLink}">Google Drive</a>` : 'No Drive Link'}
-• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Doc</a>` : 'No Notion Link'}
-`;
-         sendTelegramAlert(msg, newRow.assigned);
-      }
-
     } catch (err) {
       console.error("Failed to save all changes", err);
     } finally {
