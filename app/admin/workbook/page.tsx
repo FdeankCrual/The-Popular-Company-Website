@@ -325,6 +325,24 @@ export default function WorkbookPage() {
   };
 
   // Handlers
+  const sendTelegramAlert = (message: string, assigneesStr: string) => {
+    const assignees = assigneesStr.split(',').map(s => s.trim());
+    const targetUsers = users.filter(u => {
+      return assignees.includes(u.Name);
+    });
+
+    const chatIds = targetUsers.map(u => u.TelegramChatID).filter(Boolean);
+    const uniqueChatIds = Array.from(new Set(chatIds));
+
+    if (uniqueChatIds.length > 0) {
+      fetch('/api/telegram/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, chatIds: uniqueChatIds })
+      }).catch(e => console.error("Notification failed", e));
+    }
+  };
+
   const handleAddNewRow = async (nameOverride?: string | React.MouseEvent) => {
     const defaultName = typeof nameOverride === 'string' ? nameOverride : "Untitled Task";
     const newRow = { ...emptyForm, id: "proj_" + Math.random().toString(36).substring(2, 9), name: defaultName };
@@ -404,6 +422,39 @@ export default function WorkbookPage() {
       if (!updatedRow) return;
       const newRow = applyAutomation(updatedRow, field, value);
 
+      // TELEGRAM NOTIFICATIONS
+      if (field === 'status' && updatedRow.status !== value) {
+         sendTelegramAlert(
+`🔔 <b>Status Update</b>
+<b>Task:</b> <i>${newRow.name}</i>
+<b>Client:</b> ${newRow.client || 'N/A'}
+<b>New Status:</b> <b>${value}</b>`, 
+            newRow.assigned || ""
+         );
+      }
+      if (field === 'assigned' && updatedRow.assigned !== value) {
+         const msg = 
+`👤 <b>New Task Assigned</b>
+<b>Task:</b> <i>${newRow.name}</i>
+<b>Client:</b> ${newRow.client || 'N/A'}
+<b>Platform:</b> ${newRow.platform || 'N/A'}
+
+📅 <b>Deadlines:</b>
+• Script: ${newRow.scriptDate ? new Date(newRow.scriptDate).toLocaleDateString() : 'TBD'}
+• Shoot: ${newRow.shootDate ? new Date(newRow.shootDate).toLocaleDateString() : 'TBD'}
+• Edit: ${newRow.editDate ? new Date(newRow.editDate).toLocaleDateString() : 'TBD'}
+• Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleDateString() : 'TBD'}
+
+🔗 <b>Links & Resources:</b>
+• ${newRow.driveLink ? `<a href="${newRow.driveLink}">Google Drive Folder</a>` : 'No Drive Link'}
+• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Doc</a>` : 'No Notion Link'}
+
+📝 <b>Notes:</b>
+${newRow.notes ? newRow.notes : 'No extra notes provided.'}
+`;
+         sendTelegramAlert(msg, value || "");
+      }
+
       setData(prev => prev.map(item => item.id === id ? newRow : item));
 
       setUnsavedUpdates(prev => {
@@ -433,6 +484,7 @@ export default function WorkbookPage() {
         idsToClear.forEach(id => next.delete(id));
         return next;
       });
+
     } catch (err) {
       console.error("Failed to save all changes", err);
     } finally {
