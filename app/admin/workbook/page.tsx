@@ -423,8 +423,29 @@ export default function WorkbookPage() {
       const newRow = applyAutomation(updatedRow, field, value);
 
       // TELEGRAM NOTIFICATIONS
-      // We will handle all change notifications in saveAllChanges to debounce keystrokes.
-      // However, we can track specifically WHAT changed if we wanted to, but sending the updated summary is sufficient.
+      if (field === 'assigned' && updatedRow.assigned !== value && value) {
+         const msg = 
+`👤 <b>New Task Assigned</b>
+<b>Task:</b> <i>${newRow.name}</i>
+<b>Client:</b> ${newRow.client || 'N/A'}
+<b>Platform:</b> ${newRow.platform || 'N/A'}
+
+📅 <b>Deadlines:</b>
+• Script: ${newRow.scriptDate ? new Date(newRow.scriptDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+• Shoot: ${newRow.shootDate ? new Date(newRow.shootDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+• Edit: ${newRow.editDate ? new Date(newRow.editDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+• Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+
+🔗 <b>Links & Resources:</b>
+• ${newRow.driveLink ? `<a href="${newRow.driveLink}">Google Drive Folder</a>` : 'No Drive Link'}
+• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Doc</a>` : 'No Notion Link'}
+
+📝 <b>Notes:</b>
+${newRow.notes ? newRow.notes : 'No extra notes provided.'}
+`;
+         sendTelegramAlert(msg, value || "");
+      }
+
       setData(prev => prev.map(item => item.id === id ? newRow : item));
 
       setUnsavedUpdates(prev => {
