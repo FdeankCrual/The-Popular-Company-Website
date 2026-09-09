@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     // 5. Generate the resumable upload URL for this specific file in the category folder
     const uploadUrl = await generateResumableUploadUrl(fileName, mimeType, categoryFolderId, origin);
 
-    return NextResponse.json({ uploadUrl, taskFolderId });
+    return NextResponse.json({ uploadUrl, taskFolderId, folderId: categoryFolderId });
   } catch (error) {
     const err = error as Error;
     console.error('Error in /api/drive/init-upload:', err);

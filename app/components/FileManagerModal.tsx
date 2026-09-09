@@ -77,8 +77,8 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
       })
         .then((res) => res.json())
         .then(async (data) => {
-          if (!data.success || !data.uploadUrl) throw new Error("Init failed");
-          const { uploadUrl, fileId, folderId } = data;
+          if (!data.uploadUrl) throw new Error("Init failed");
+          const { uploadUrl, folderId } = data;
 
           const CHUNK_SIZE = 1024 * 1024;
           let offset = 0;
@@ -92,16 +92,12 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
               const end = Math.min(offset + chunk.byteLength - 1, file.size - 1);
 
               try {
-                const uploadRes = await fetch("/api/drive/upload-chunk", {
-                  method: "POST",
+                const uploadRes = await fetch(uploadUrl, {
+                  method: "PUT",
                   headers: {
-                    "Content-Type": "application/json",
+                    "Content-Range": `bytes ${offset}-${end}/${file.size}`,
                   },
-                  body: JSON.stringify({
-                    uploadUrl,
-                    chunk: Array.from(new Uint8Array(chunk)),
-                    contentRange: `bytes ${offset}-${end}/${file.size}`,
-                  }),
+                  body: chunk,
                 });
 
                 if (!uploadRes.ok && uploadRes.status !== 308) throw new Error("Chunk failed");
@@ -111,6 +107,8 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
                 setUploadingState({ progress: percent, type: type === "docLink" ? "doc" : "drive", filename: file.name, current, total });
 
                 if (uploadRes.status === 200 || uploadRes.status === 201) {
+                  const fileData = await uploadRes.json();
+                  const fileId = fileData.id;
                   const fileLink = `https://drive.google.com/file/d/${fileId}/view`;
                   const driveLink = type === "driveA" && folderId ? `https://drive.google.com/drive/folders/${folderId}` : fileLink;
 
