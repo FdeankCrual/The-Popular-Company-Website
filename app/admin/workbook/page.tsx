@@ -423,38 +423,8 @@ export default function WorkbookPage() {
       const newRow = applyAutomation(updatedRow, field, value);
 
       // TELEGRAM NOTIFICATIONS
-      if (field === 'status' && updatedRow.status !== value) {
-         sendTelegramAlert(
-`🔔 <b>Status Update</b>
-<b>Task:</b> <i>${newRow.name}</i>
-<b>Client:</b> ${newRow.client || 'N/A'}
-<b>New Status:</b> <b>${value}</b>`, 
-            newRow.assigned || ""
-         );
-      }
-      if (field === 'assigned' && updatedRow.assigned !== value) {
-         const msg = 
-`👤 <b>New Task Assigned</b>
-<b>Task:</b> <i>${newRow.name}</i>
-<b>Client:</b> ${newRow.client || 'N/A'}
-<b>Platform:</b> ${newRow.platform || 'N/A'}
-
-📅 <b>Deadlines:</b>
-• Script: ${newRow.scriptDate ? new Date(newRow.scriptDate).toLocaleDateString() : 'TBD'}
-• Shoot: ${newRow.shootDate ? new Date(newRow.shootDate).toLocaleDateString() : 'TBD'}
-• Edit: ${newRow.editDate ? new Date(newRow.editDate).toLocaleDateString() : 'TBD'}
-• Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleDateString() : 'TBD'}
-
-🔗 <b>Links & Resources:</b>
-• ${newRow.driveLink ? `<a href="${newRow.driveLink}">Google Drive Folder</a>` : 'No Drive Link'}
-• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Doc</a>` : 'No Notion Link'}
-
-📝 <b>Notes:</b>
-${newRow.notes ? newRow.notes : 'No extra notes provided.'}
-`;
-         sendTelegramAlert(msg, value || "");
-      }
-
+      // We will handle all change notifications in saveAllChanges to debounce keystrokes.
+      // However, we can track specifically WHAT changed if we wanted to, but sending the updated summary is sufficient.
       setData(prev => prev.map(item => item.id === id ? newRow : item));
 
       setUnsavedUpdates(prev => {
@@ -484,6 +454,28 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
         idsToClear.forEach(id => next.delete(id));
         return next;
       });
+
+      // Trigger Telegram Notification for updated rows
+      for (const newRow of updates) {
+        if (!newRow.assigned) continue;
+        const msg = 
+`🔔 <b>Task Updated</b>
+<b>Task:</b> <i>${newRow.name}</i>
+<b>Client:</b> ${newRow.client || 'N/A'}
+<b>Status:</b> ${newRow.status || 'N/A'}
+
+📅 <b>Deadlines:</b>
+• Script: ${newRow.scriptDate ? new Date(newRow.scriptDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+• Shoot: ${newRow.shootDate ? new Date(newRow.shootDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+• Edit: ${newRow.editDate ? new Date(newRow.editDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+• Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
+
+🔗 <b>Links & Resources:</b>
+• ${newRow.driveLink ? `<a href="${newRow.driveLink}">Google Drive</a>` : 'No Drive Link'}
+• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Doc</a>` : 'No Notion Link'}
+`;
+         sendTelegramAlert(msg, newRow.assigned);
+      }
 
     } catch (err) {
       console.error("Failed to save all changes", err);
@@ -902,37 +894,37 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
                     </div>
                   </td>
                   {/* Dates */}
-                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
-                    <input
-                      type="datetime-local"
-                      value={formatForDateTimeLocal(row.scriptDate)}
-                      onChange={(e) => handleInlineChange(row.id, 'scriptDate', e.target.value)}
-                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('script', row.status, row.scriptDate)}`}
-                    />
+                  <td className="p-2 md:p-3 border-b border-white/5 relative min-w-[150px]">
+                    <div className="flex items-center gap-2">
+                      <input type="datetime-local" className="w-full bg-transparent text-white text-[10px] uppercase focus:outline-none"
+                        value={row.scriptDate ? new Date(row.scriptDate).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => handleInlineChange(row.id, 'scriptDate', e.target.value)}
+                      />
+                    </div>
                   </td>
-                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
-                    <input
-                      type="datetime-local"
-                      value={formatForDateTimeLocal(row.shootDate)}
-                      onChange={(e) => handleInlineChange(row.id, 'shootDate', e.target.value)}
-                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('shoot', row.status, row.shootDate)}`}
-                    />
+                  <td className="p-2 md:p-3 border-b border-white/5 relative min-w-[150px]">
+                    <div className="flex items-center gap-2">
+                      <input type="datetime-local" className="w-full bg-transparent text-white text-[10px] uppercase focus:outline-none"
+                        value={row.shootDate ? new Date(row.shootDate).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => handleInlineChange(row.id, 'shootDate', e.target.value)}
+                      />
+                    </div>
                   </td>
-                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
-                    <input
-                      type="datetime-local"
-                      value={formatForDateTimeLocal(row.editDate)}
-                      onChange={(e) => handleInlineChange(row.id, 'editDate', e.target.value)}
-                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('edit', row.status, row.editDate)}`}
-                    />
+                  <td className="p-2 md:p-3 border-b border-white/5 relative min-w-[150px]">
+                    <div className="flex items-center gap-2">
+                      <input type="datetime-local" className="w-full bg-transparent text-white text-[10px] uppercase focus:outline-none"
+                        value={row.editDate ? new Date(row.editDate).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => handleInlineChange(row.id, 'editDate', e.target.value)}
+                      />
+                    </div>
                   </td>
-                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5">
-                    <input
-                      type="datetime-local"
-                      value={formatForDateTimeLocal(row.finalDate)}
-                      onChange={(e) => handleInlineChange(row.id, 'finalDate', e.target.value)}
-                      className={`w-full border-none outline-none p-0 md:p-1 rounded transition-colors [color-scheme:dark] text-[10px] md:text-xs cursor-pointer ${getDateClass('final', row.status, row.finalDate)}`}
-                    />
+                  <td className="p-2 md:p-3 border-b border-white/5 relative min-w-[150px]">
+                    <div className="flex items-center gap-2">
+                      <input type="datetime-local" className="w-full bg-transparent text-white text-[10px] uppercase focus:outline-none"
+                        value={row.finalDate ? new Date(row.finalDate).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => handleInlineChange(row.id, 'finalDate', e.target.value)}
+                      />
+                    </div>
                   </td>
                   {/* Platform - NotionDropdown */}
                   <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 relative">

@@ -48,10 +48,11 @@ export async function GET(request: Request) {
           const emoji = isOverdue ? '🚨' : '⚠️';
           const urgency = isOverdue ? `<b>OVERDUE by ${Math.abs(diffDays)} days!</b>` : `<b>Due Tomorrow!</b>`;
 
+          const formattedTime = new Date(dateStr).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'});
           const msg = `${emoji} <b>Deadline Alert</b>
 <b>Task:</b> <i>${task.name}</i>
 <b>Client:</b> ${task.client || 'N/A'}
-<b>Stage:</b> ${name}
+<b>Stage:</b> ${name} (${formattedTime})
 <b>Status:</b> ${urgency}`;
 
           // Find users who should get this alert
