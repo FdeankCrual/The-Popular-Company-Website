@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, CheckCircle, Clock, Link as LinkIcon, FileText, X, MessageSquare } from "lucide-react";
+import { Loader2, CheckCircle, Clock, Link as LinkIcon, FileText, X, MessageSquare, Folder } from "lucide-react";
+import FileManagerModal from "@/app/components/FileManagerModal";
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "TBD";
@@ -22,6 +23,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [fileManagerTask, setFileManagerTask] = useState<any>(null);
   const [activeQueryTask, setActiveQueryTask] = useState<any>(null);
   const [activeActionTask, setActiveActionTask] = useState<any>(null);
   const [activeView, setActiveView] = useState<'List' | 'Kanban' | 'Calendar'>('List');
@@ -249,7 +251,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
                   </thead>
                   <tbody className="divide-y divide-red-500/10">
                     {fixesTasks.map((t, i) => (
-                      <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} isFix onOpenQuery={setActiveQueryTask} />
+                      <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} isFix onOpenQuery={setActiveQueryTask} onOpenFileManager={setFileManagerTask} />
                     ))}
                   </tbody>
                 </table>
@@ -275,7 +277,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {activeTasks.map((t, i) => (
-                      <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} onOpenQuery={setActiveQueryTask} />
+                      <TaskRow key={i} task={t} onMarkDone={markDone} updating={updating} roles={roles} onOpenQuery={setActiveQueryTask} onOpenFileManager={setFileManagerTask} />
                     ))}
                   </tbody>
                 </table>
@@ -335,39 +337,17 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
             <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-tpc-orange mb-4">Required Links</h4>
 
-              {(roles.includes("CONTENT WRITER") || roles.includes("ADMIN_CONTENT")) && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs uppercase tracking-widest text-gray-300 font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> Script Doc Link</span>
-                  <input
-                    type="text"
-                    placeholder="Paste Google Doc link here..."
-                    value={activeActionTask.docLink || ""}
-                    onChange={e => updateTaskDetails(activeActionTask, { docLink: e.target.value })}
-                    className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm focus:outline-none focus:border-tpc-orange transition-colors"
-                  />
-                </div>
-              )}
-
-              {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR") || roles.includes("GRAPHIC DESIGNER")) && (
-                <div className="flex flex-col gap-3">
-                  {activeActionTask.docLink ? (
-                    <a href={activeActionTask.docLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 p-4 rounded-xl text-sm font-bold transition-colors">
-                      <FileText className="w-5 h-5" /> Open Script Doc
-                    </a>
-                  ) : (
-                    <div className="text-center text-xs text-gray-500 italic p-2 border border-dashed border-white/10 rounded-lg">No Script Doc available</div>
-                  )}
-                  {activeActionTask.driveA ? (
-                    <a href={activeActionTask.driveA} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-xl text-sm font-bold transition-colors">
-                      <LinkIcon className="w-5 h-5" /> Open Google Drive Folder
-                    </a>
-                  ) : (
-                    <div className="flex items-center justify-center w-full bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-bold italic">
-                      No Drive Folder Provided
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-col gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    setFileManagerTask(activeActionTask);
+                    setActiveActionTask(null);
+                  }}
+                  className="flex items-center justify-center gap-2 w-full bg-tpc-orange/10 hover:bg-tpc-orange/20 border border-tpc-orange/30 text-tpc-orange p-4 rounded-xl text-sm font-bold transition-colors"
+                >
+                  <Folder className="w-5 h-5" /> Manage Files & Links
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -446,17 +426,33 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
           </div>
         </div>
       )}
+
+      {/* FILE MANAGER MODAL */}
+      {fileManagerTask && (
+        <FileManagerModal
+          task={fileManagerTask}
+          currentUserRoles={roles}
+          onClose={() => setFileManagerTask(null)}
+          onUpdateTask={async (taskId, field, value) => {
+            // Update the task locally
+            setTasks(prev => prev.map(t => t.id === taskId ? { ...t, [field]: value } : t));
+            if (activeActionTask && activeActionTask.id === taskId) {
+              setActiveActionTask({ ...activeActionTask, [field]: value });
+            }
+            // Sync with server
+            await updateTaskDetails(fileManagerTask, { [field]: value });
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function TaskRow({ task, onMarkDone, updating, roles, isFix = false, onOpenQuery }: any) {
+function TaskRow({ task, onMarkDone, updating, roles, isFix = false, onOpenQuery, onOpenFileManager }: any) {
   const isUpdating = updating === task.id;
 
-  // Local state for role-specific links
-  const [docLink, setDocLink] = useState(task.docLink || "");
   const handleMarkDone = () => {
-    onMarkDone(task, { docLink });
+    onMarkDone(task, {});
   };
 
   return (
@@ -486,39 +482,12 @@ function TaskRow({ task, onMarkDone, updating, roles, isFix = false, onOpenQuery
 
       <td className="px-4 py-4 align-top min-w-[250px]">
         <div className="space-y-3">
-          {/* Content Writer Links */}
-          {(roles.includes("CONTENT WRITER") || roles.includes("ADMIN_CONTENT")) && (
-            <div className="flex flex-col gap-1">
-              <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold flex items-center gap-1"><FileText className="w-3 h-3" /> Script Doc</span>
-              <input
-                type="text"
-                placeholder="Paste Google Doc link..."
-                value={docLink}
-                onChange={e => setDocLink(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-xs focus:outline-none focus:border-tpc-orange transition-colors"
-              />
-            </div>
-          )}
-
-          {/* Videographer, Editor & Graphic Designer Links */}
-          {(roles.includes("VIDEOGRAPHER") || roles.includes("EDITOR") || roles.includes("GRAPHIC DESIGNER")) && (
-            <div className="flex flex-col gap-2 mt-2">
-              {task.docLink && (
-                <a href={task.docLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 p-3 rounded-lg text-xs font-bold transition-colors">
-                  <FileText className="w-4 h-4" /> Open Script Doc
-                </a>
-              )}
-              {task.driveA ? (
-                <a href={task.driveA} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white p-3 rounded-lg text-xs font-bold transition-colors">
-                  <LinkIcon className="w-4 h-4" /> Open Google Drive Folder
-                </a>
-              ) : (
-                <div className="flex items-center justify-center w-full bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-xs font-bold italic">
-                  No Drive Folder Provided
-                </div>
-              )}
-            </div>
-          )}
+          <button
+            onClick={() => onOpenFileManager(task)}
+            className="flex items-center justify-center gap-2 w-full bg-tpc-orange/10 hover:bg-tpc-orange/20 border border-tpc-orange/30 text-tpc-orange p-3 rounded-lg text-xs font-bold transition-colors"
+          >
+            <Folder className="w-4 h-4" /> Manage Files & Links
+          </button>
         </div>
       </td>
 

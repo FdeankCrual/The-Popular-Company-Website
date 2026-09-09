@@ -6,6 +6,7 @@ import { NotionDropdown } from "./components/NotionDropdown";
 import { NotionMultiSelect } from "./components/NotionMultiSelect";
 import { KanbanView } from "./components/KanbanView";
 import { CalendarView } from "./components/CalendarView";
+import FileManagerModal from "@/app/components/FileManagerModal";
 
 const initialData: any[] = [];
 const emptyForm = { id: "", name: "", client: "", status: "Ideation", assigned: "", scriptDate: "", shootDate: "", editDate: "", finalDate: "", platform: "Instagram", month: "", year: "", desc: "", captionApproved: "false" };
@@ -48,10 +49,7 @@ export default function WorkbookPage() {
   const [currentUserRoles, setCurrentUserRoles] = useState<string[]>([]);
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
   const [draggableRow, setDraggableRow] = useState<string | null>(null);
-  const [uploadingState, setUploadingState] = useState<Record<string, { progress: number, type: 'doc' | 'drive' }>>({});
   const [fileManagerTask, setFileManagerTask] = useState<any>(null);
-  const [driveFiles, setDriveFiles] = useState<any[]>([]);
-  const [loadingFiles, setLoadingFiles] = useState(false);
 
   // Extracted unique values for dropdowns
   const clients = (config.clients && config.clients.length > 0)
@@ -69,114 +67,8 @@ export default function WorkbookPage() {
 
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const uploadFileToDrive = async (file: File, taskId: string, yearName: string, monthName: string, clientName: string, taskName: string, categoryName: string, type: 'docLink' | 'driveA') => {
-    try {
-      setUploadingState(prev => ({ ...prev, [taskId]: { progress: 0, type: type === 'docLink' ? 'doc' : 'drive' } }));
-
-      const initRes = await fetch('/api/drive/init-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName: clientName || 'Unknown Client', yearName, monthName, taskName, categoryName, fileName: file.name, mimeType: file.type || 'application/octet-stream' })
-      });
-      
-      if (!initRes.ok) throw new Error('Failed to initialize upload');
-      const { uploadUrl } = await initRes.json();
-
-      const result = await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', uploadUrl, true);
-        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-        
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            setUploadingState(prev => ({ ...prev, [taskId]: { progress: percent, type: type === 'docLink' ? 'doc' : 'drive' } }));
-          }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            let fileId = "";
-            let folderId = "";
-            if (xhr.responseText) {
-              try {
-                const response = JSON.parse(xhr.responseText);
-                fileId = response.id;
-                folderId = response.taskFolderId || "";
-              } catch (e) {
-                console.error("Failed to parse drive response", e);
-              }
-            }
-            if (!fileId) {
-              reject(new Error('No file ID returned'));
-              return;
-            }
-            
-            // If they uploaded to docLink, use the file link.
-            // If they uploaded to driveA (Raw, Final, Thumbnails), use the TASK FOLDER link so they see everything!
-            const fileLink = `https://drive.google.com/file/d/${fileId}/view`;
-            const driveLink = type === 'driveA' && folderId ? `https://drive.google.com/drive/folders/${folderId}` : fileLink;
-            
-            handleInlineChange(taskId, type, driveLink);
-            setUploadingState(prev => { const next = {...prev}; delete next[taskId]; return next; });
-            
-            // Refresh files if the modal is open
-            if (fileManagerTask && fileManagerTask.id === taskId) {
-               fetchDriveFiles(fileManagerTask);
-            }
-            
-            resolve(driveLink);
-          } else {
-            let errorMsg = xhr.responseText || xhr.statusText || `Upload failed with status ${xhr.status}`;
-            try {
-               const parsed = JSON.parse(errorMsg);
-               if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
-            } catch (e) {}
-            reject(new Error(errorMsg));
-          }
-        };
-        
-        xhr.onerror = () => reject(new Error(`Network Error (CORS or network disconnected). Status: ${xhr.status}. Response: ${xhr.responseText}`));
-        xhr.send(file);
-      });
-      return result;
-    } catch (err) {
-      alert('Upload failed: ' + (err as Error).message);
-      setUploadingState(prev => { const next = {...prev}; delete next[taskId]; return next; });
-    }
-  };
-
-  const fetchDriveFiles = async (task: any) => {
-    setLoadingFiles(true);
-    setDriveFiles([]);
-    try {
-      const params = new URLSearchParams({
-        clientName: task.client || 'Unknown Client',
-        yearName: task.year || '',
-        monthName: task.month || '',
-        taskName: task.name || 'Untitled Reel'
-      });
-      if (task.driveA) {
-        params.append('folderUrl', task.driveA);
-      }
-
-      const res = await fetch(`/api/drive/list-files?${params}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.tree) {
-          setDriveFiles(data.tree);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch drive files", err);
-    } finally {
-      setLoadingFiles(false);
-    }
-  };
-
   const openFileManager = (task: any) => {
     setFileManagerTask(task);
-    fetchDriveFiles(task);
   };
 
   useEffect(() => {
@@ -437,8 +329,9 @@ export default function WorkbookPage() {
 • Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
 
 🔗 <b>Links & Resources:</b>
-• ${newRow.driveLink ? `<a href="${newRow.driveLink}">Google Drive Folder</a>` : 'No Drive Link'}
-• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Doc</a>` : 'No Notion Link'}
+• ${newRow.driveA ? `<a href="${newRow.driveA}">Google Drive Folder</a>` : 'No Drive Folder'}
+• ${newRow.docLink ? `<a href="${newRow.docLink}">Script Doc</a>` : 'No Script Doc'}
+• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Link</a>` : 'No Notion Link'}
 
 📝 <b>Notes:</b>
 ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
@@ -831,66 +724,24 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
                     />
                   </td>
                   {/* Script Link */}
-                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative">
-                    <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.docLink ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'} ${uploadingState[row.id]?.type === 'doc' ? 'opacity-50' : ''}`}>
-                      <LinkIcon className={`w-3 h-3 shrink-0 ${row.docLink ? 'text-green-500' : 'text-gray-500'}`} />
-                      {uploadingState[row.id]?.type === 'doc' ? (
-                        <div className="w-full h-1 bg-white/10 rounded overflow-hidden">
-                          <div className="h-full bg-tpc-orange transition-all duration-300" style={{ width: `${uploadingState[row.id]?.progress || 0}%` }} />
-                        </div>
-                      ) : (
-                        <input
-                          value={row.docLink || ''}
-                          onChange={(e) => handleInlineChange(row.id, 'docLink', e.target.value)}
-                          placeholder="Paste Script URL..."
-                          className="w-full bg-transparent border-none outline-none text-white text-xs"
-                        />
-                      )}
-                      
-                      <button 
-                        onClick={() => openFileManager(row)}
-                        className="text-gray-400 hover:text-tpc-orange shrink-0 ml-1 cursor-pointer" 
-                        title="Manage Files">
-                        <UploadCloud className="w-3 h-3" />
-                      </button>
-
-                      {row.docLink && (
-                        <a href={row.docLink} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white shrink-0 ml-1">
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative text-center">
+                    <button 
+                      onClick={() => openFileManager(row)} 
+                      className={`px-3 py-2 rounded-lg flex items-center justify-center gap-2 w-full transition-colors text-[11px] uppercase tracking-wider font-bold border ${row.docLink ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'}`}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      {row.docLink ? 'View Script' : 'Add Script'}
+                    </button>
                   </td>
                   {/* Drive Link */}
-                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative">
-                    <div className={`flex items-center gap-2 border rounded px-2 py-1 transition-colors ${row.driveA ? 'bg-green-500/10 border-green-500/30' : 'bg-black/50 border-white/10 focus-within:border-tpc-orange'} ${uploadingState[row.id]?.type === 'drive' ? 'opacity-50' : ''}`}>
-                      <FileText className={`w-3 h-3 shrink-0 ${row.driveA ? 'text-green-500' : 'text-gray-500'}`} />
-                      {uploadingState[row.id]?.type === 'drive' ? (
-                        <div className="w-full h-1 bg-white/10 rounded overflow-hidden">
-                          <div className="h-full bg-tpc-orange transition-all duration-300" style={{ width: `${uploadingState[row.id]?.progress || 0}%` }} />
-                        </div>
-                      ) : (
-                        <input
-                          value={row.driveA || ''}
-                          onChange={(e) => handleInlineChange(row.id, 'driveA', e.target.value)}
-                          placeholder="Paste Drive URL..."
-                          className="w-full bg-transparent border-none outline-none text-white text-xs"
-                        />
-                      )}
-                      
-                      <button 
-                        onClick={() => openFileManager(row)}
-                        className="text-gray-400 hover:text-tpc-orange shrink-0 ml-1 cursor-pointer" 
-                        title="Manage Files">
-                        <UploadCloud className="w-3 h-3" />
-                      </button>
-
-                      {row.driveA && (
-                        <a href={row.driveA} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white shrink-0 ml-1">
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
+                  <td className="px-3 md:px-6 py-1.5 md:py-3 border-r border-white/5 w-24 md:w-32 md:w-48 relative text-center">
+                    <button 
+                      onClick={() => openFileManager(row)} 
+                      className={`px-3 py-2 rounded-lg flex items-center justify-center gap-2 w-full transition-colors text-[11px] uppercase tracking-wider font-bold border ${row.driveA ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'}`}
+                    >
+                      <Folder className="w-3.5 h-3.5" />
+                      {row.driveA ? 'Open Drive' : 'Manage Files'}
+                    </button>
                   </td>
                   {/* Dates */}
                   <td className="p-2 md:p-3 border-b border-white/5 relative min-w-[150px]">
@@ -1418,148 +1269,12 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
       )}
 
       {fileManagerTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/10 rounded-2xl p-6 w-full max-w-lg relative">
-            <button onClick={() => setFileManagerTask(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Folder className="w-5 h-5 text-tpc-orange" />
-              Manage Reel Files
-            </h2>
-            <div className="space-y-4">
-              {(() => {
-                const roles = currentUserRoles || [];
-                if (roles.length === 0) return <div className="text-gray-500 text-sm italic">You do not have permission to upload files.</div>;
-                
-                const allowed = new Set<string>();
-                if (roles.some(r => r === 'SUPER_ADMIN' || r.startsWith('ADMIN_'))) {
-                  allowed.add('Raw Videos'); allowed.add('Final Videos'); allowed.add('Scripts'); allowed.add('Thumbnails');
-                } else {
-                  if (roles.includes('EDITOR') || roles.includes('AI VIDEO CREATOR')) {
-                    allowed.add('Raw Videos'); allowed.add('Final Videos');
-                  }
-                  if (roles.includes('VIDEOGRAPHER')) {
-                    allowed.add('Raw Videos');
-                  }
-                  if (roles.includes('GRAPHIC DESIGNER')) {
-                    allowed.add('Thumbnails');
-                  }
-                  if (roles.includes('CONTENT WRITER')) {
-                    allowed.add('Scripts');
-                  }
-                }
-                
-                const allowedArr = Array.from(allowed);
-                if (allowedArr.length === 0) return <div className="text-gray-500 text-sm italic">You do not have permission to upload files.</div>;
-                
-                return allowedArr.map(category => (
-                  <div key={category} className="flex items-center justify-between bg-black/50 border border-white/5 p-4 rounded-xl">
-                    <span className="text-sm font-medium text-white">{category}</span>
-                    <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded cursor-pointer transition-colors text-xs text-white">
-                      <UploadCloud className="w-3 h-3" />
-                      Upload
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          if (e.target.files?.[0]) {
-                            uploadFileToDrive(
-                              e.target.files[0], 
-                              fileManagerTask.id, 
-                              fileManagerTask.year || '',
-                              fileManagerTask.month || '',
-                              fileManagerTask.client || 'Unknown Client',
-                              fileManagerTask.name || 'Untitled Reel', 
-                              category, 
-                              category === 'Scripts' ? 'docLink' : 'driveA'
-                            );
-                          }
-                        }} 
-                      />
-                    </label>
-                  </div>
-                ));
-              })()}
-              
-              {uploadingState[fileManagerTask.id] && (
-                <div className="mt-4 p-4 border border-tpc-orange/30 bg-tpc-orange/5 rounded-xl">
-                  <div className="flex justify-between text-xs text-white mb-2">
-                    <span>Uploading to Google Drive...</span>
-                    <span>{uploadingState[fileManagerTask.id].progress}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-black rounded-full overflow-hidden">
-                    <div className="h-full bg-tpc-orange transition-all duration-300" style={{ width: `${uploadingState[fileManagerTask.id].progress}%` }} />
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="mt-8 border-t border-white/10 pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-tpc-orange" />
-                  Files in Drive
-                </h3>
-                <button onClick={() => fetchDriveFiles(fileManagerTask)} className="text-gray-400 hover:text-white transition-colors" title="Refresh Files">
-                  <RefreshCw className={`w-4 h-4 ${loadingFiles ? 'animate-spin' : ''}`} />
-                </button>
-              </div>
-
-              {loadingFiles ? (
-                <div className="flex justify-center py-6">
-                  <Loader2 className="w-6 h-6 text-tpc-orange animate-spin" />
-                </div>
-              ) : driveFiles.length === 0 ? (
-                <div className="text-center py-6 text-sm text-gray-500 bg-white/5 rounded-xl border border-white/5">
-                  No files found. Upload something to see it here!
-                </div>
-              ) : (
-                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {driveFiles.map((category: any) => (
-                    <div key={category.id} className="bg-black/50 border border-white/5 rounded-xl overflow-hidden">
-                      <div className="bg-white/5 px-4 py-2 font-semibold text-sm text-gray-300 flex items-center gap-2 border-b border-white/5">
-                        <Folder className="w-4 h-4 text-tpc-orange" />
-                        {category.name}
-                        <span className="text-xs font-normal text-gray-500 bg-black px-2 py-0.5 rounded-full ml-auto">{category.files?.length || 0} files</span>
-                      </div>
-                      <div className="p-2 space-y-1">
-                        {category.files && category.files.length > 0 ? (
-                          category.files.map((file: any) => (
-                            <a 
-                              key={file.id} 
-                              href={file.webViewLink} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-colors group"
-                            >
-                              {file.thumbnailLink ? (
-                                <img src={file.thumbnailLink} alt="Thumb" className="w-8 h-8 object-cover rounded shadow-sm border border-white/10" />
-                              ) : (
-                                <img src={file.iconLink} alt="Icon" className="w-5 h-5 ml-1.5 opacity-80" />
-                              )}
-                              <span className="text-sm text-gray-300 group-hover:text-white truncate flex-1">{file.name}</span>
-                              <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-tpc-orange opacity-0 group-hover:opacity-100 transition-all" />
-                            </a>
-                          ))
-                        ) : (
-                          <div className="text-xs text-gray-500 italic p-3 text-center">Empty</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 text-xs text-gray-500 text-center">
-              Files are automatically organized in Google Drive under:<br/>
-              <span className="text-gray-300 font-mono mt-1 block bg-black/50 p-2 rounded">
-                Client / Month / Reel Name / Category
-              </span>
-            </div>
-          </div>
-        </div>
+        <FileManagerModal
+          task={fileManagerTask}
+          currentUserRoles={currentUserRoles}
+          onClose={() => setFileManagerTask(null)}
+          onUpdateTask={(id, field, value) => handleInlineChange(id, field, value)}
+        />
       )}
     </div>
   );
