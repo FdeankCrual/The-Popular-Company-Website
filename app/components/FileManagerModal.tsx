@@ -324,7 +324,7 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
                 Files in Drive
               </h3>
               <button
-                onClick={fetchDriveFiles}
+                onClick={() => fetchDriveFiles()}
                 className="text-gray-400 hover:text-white transition-colors"
                 title="Refresh Files"
               >

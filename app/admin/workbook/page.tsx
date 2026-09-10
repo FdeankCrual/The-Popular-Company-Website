@@ -1275,7 +1275,7 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
           onClose={() => setFileManagerTask(null)}
           onUpdateTask={(id, field, value) => {
             handleInlineChange(id, field, value);
-            setFileManagerTask(prev => prev ? { ...prev, [field]: value } : null);
+            setFileManagerTask((prev: any) => prev ? { ...prev, [field]: value } : null);
           }}
         />
       )}
