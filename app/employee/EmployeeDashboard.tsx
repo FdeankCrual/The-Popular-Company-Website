@@ -439,6 +439,7 @@ export default function EmployeeDashboard({ email, name, roles }: { email: strin
             if (activeActionTask && activeActionTask.id === taskId) {
               setActiveActionTask({ ...activeActionTask, [field]: value });
             }
+            setFileManagerTask((prev: any) => prev ? { ...prev, [field]: value } : null);
             // Sync with server
             await updateTaskDetails(fileManagerTask, { [field]: value });
           }}

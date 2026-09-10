@@ -1273,7 +1273,10 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
           task={fileManagerTask}
           currentUserRoles={currentUserRoles}
           onClose={() => setFileManagerTask(null)}
-          onUpdateTask={(id, field, value) => handleInlineChange(id, field, value)}
+          onUpdateTask={(id, field, value) => {
+            handleInlineChange(id, field, value);
+            setFileManagerTask(prev => prev ? { ...prev, [field]: value } : null);
+          }}
         />
       )}
     </div>

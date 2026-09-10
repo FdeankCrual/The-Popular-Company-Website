@@ -22,19 +22,22 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
     }
   }, [task?.id]);
 
-  const fetchDriveFiles = async () => {
+  const fetchDriveFiles = async (overrideDocUrl?: string, overrideFolderUrl?: string) => {
     if (!task) return;
     setLoadingFiles(true);
     setDriveFiles([]);
     try {
       const params = new URLSearchParams();
-      if (task.docLink) {
-        params.append("docUrl", task.docLink);
+      const currentDocUrl = overrideDocUrl !== undefined ? overrideDocUrl : task.docLink;
+      const currentFolderUrl = overrideFolderUrl !== undefined ? overrideFolderUrl : task.driveA;
+      
+      if (currentDocUrl) {
+        params.append("docUrl", currentDocUrl);
       }
-      if (task.driveA) {
-        params.append("folderUrl", task.driveA);
+      if (currentFolderUrl) {
+        params.append("folderUrl", currentFolderUrl);
       }
-      if (!task.docLink && !task.driveA) {
+      if (!currentDocUrl && !currentFolderUrl) {
         setLoadingFiles(false);
         return;
       }
@@ -57,7 +60,8 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
     categoryName: string,
     type: "docLink" | "driveA",
     current: number,
-    total: number
+    total: number,
+    currentDriveA: string
   ) => {
     return new Promise((resolve, reject) => {
       setUploadingState({ progress: 0, type: type === "docLink" ? "doc" : "drive", filename: file.name, current, total });
@@ -73,6 +77,7 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
           clientName: task.client || "Unknown Client",
           taskName: task.name || "Untitled Task",
           categoryName,
+          taskFolderUrl: currentDriveA || "",
         }),
       })
         .then((res) => res.json())
@@ -132,16 +137,20 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
 
   const handleBulkUpload = async (files: FileList, categoryName: string, type: "docLink" | "driveA") => {
     const fileArray = Array.from(files);
+    let currentDriveA = task.driveA;
     for (let i = 0; i < fileArray.length; i++) {
       try {
-        await uploadFileToDrive(fileArray[i], categoryName, type, i + 1, fileArray.length);
+        const newDriveA = await uploadFileToDrive(fileArray[i], categoryName, type, i + 1, fileArray.length, currentDriveA);
+        if (newDriveA && type === "driveA") {
+          currentDriveA = newDriveA as string;
+        }
       } catch (err) {
         console.error(`Failed to upload ${fileArray[i].name}`, err);
         alert(`Failed to upload ${fileArray[i].name}`);
       }
     }
     setUploadingState(null);
-    fetchDriveFiles();
+    fetchDriveFiles(undefined, currentDriveA);
   };
 
   const downloadAll = (files: any[]) => {
