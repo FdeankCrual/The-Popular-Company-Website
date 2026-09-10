@@ -83,7 +83,7 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
         .then((res) => res.json())
         .then(async (data) => {
           if (!data.uploadUrl) throw new Error("Init failed");
-          const { uploadUrl, folderId } = data;
+          const { uploadUrl, folderId, taskFolderId } = data;
 
           const CHUNK_SIZE = 1024 * 1024;
           let offset = 0;
@@ -115,7 +115,7 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
                   const fileData = await uploadRes.json();
                   const fileId = fileData.id;
                   const fileLink = `https://drive.google.com/file/d/${fileId}/view`;
-                  const driveLink = type === "driveA" && folderId ? `https://drive.google.com/drive/folders/${folderId}` : fileLink;
+                  const driveLink = type === "driveA" && taskFolderId ? `https://drive.google.com/drive/folders/${taskFolderId}` : fileLink;
 
                   onUpdateTask(task.id, type, driveLink);
                   resolve(driveLink);
@@ -226,36 +226,31 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
         </h2>
 
         <div className="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-6">
-          {/* Existing Links Section */}
-          <div className="space-y-3">
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                placeholder="Script / Doc URL..." 
-                value={task.docLink || ""} 
-                onChange={(e) => onUpdateTask(task.id, 'docLink', e.target.value)}
-                className="flex-1 bg-black/50 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-tpc-orange outline-none"
-              />
-              {task.docLink && (
-                <a href={task.docLink} target="_blank" rel="noopener noreferrer" className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-3 rounded-lg border border-blue-500/30 flex items-center justify-center transition-colors">
-                  <FileText className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                placeholder="Google Drive Folder URL..." 
-                value={task.driveA || ""} 
-                onChange={(e) => onUpdateTask(task.id, 'driveA', e.target.value)}
-                className="flex-1 bg-black/50 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-tpc-orange outline-none"
-              />
-              {task.driveA && (
-                <a href={task.driveA} target="_blank" rel="noopener noreferrer" className="bg-white/5 hover:bg-white/10 text-white p-3 rounded-lg border border-white/10 flex items-center justify-center transition-colors">
-                  <Folder className="w-4 h-4" />
-                </a>
-              )}
-            </div>
+          {/* Header Links Section */}
+          <div className="flex gap-3 border-b border-white/10 pb-4">
+            {task.docLink ? (
+              <a href={task.docLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-3 rounded-xl border border-blue-500/30 flex items-center justify-center gap-2 transition-colors font-bold text-sm">
+                <FileText className="w-4 h-4" />
+                Open Script Doc
+              </a>
+            ) : (
+              <div className="flex-1 bg-white/5 text-gray-500 p-3 rounded-xl border border-white/5 flex items-center justify-center gap-2 font-bold text-sm">
+                <FileText className="w-4 h-4 opacity-50" />
+                No Script Yet
+              </div>
+            )}
+            
+            {task.driveA ? (
+              <a href={task.driveA} target="_blank" rel="noopener noreferrer" className="flex-1 bg-tpc-orange/10 hover:bg-tpc-orange/20 text-tpc-orange p-3 rounded-xl border border-tpc-orange/30 flex items-center justify-center gap-2 transition-colors font-bold text-sm">
+                <Folder className="w-4 h-4" />
+                Open Task Folder
+              </a>
+            ) : (
+              <div className="flex-1 bg-white/5 text-gray-500 p-3 rounded-xl border border-white/5 flex items-center justify-center gap-2 font-bold text-sm">
+                <Folder className="w-4 h-4 opacity-50" />
+                No Folder Yet
+              </div>
+            )}
           </div>
 
           {/* Upload Section */}
@@ -349,6 +344,17 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
                       <span className="text-xs font-normal text-gray-500 bg-black px-2 py-0.5 rounded-full ml-auto">
                         {category.files?.length || 0} files
                       </span>
+                      {category.webViewLink && (
+                        <a 
+                          href={category.webViewLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="ml-2 flex items-center gap-1 text-[10px] uppercase tracking-wider bg-white/10 text-white hover:bg-white/20 px-2 py-1 rounded transition-colors font-bold"
+                          title={`Open ${category.name} folder in Drive`}
+                        >
+                          <ExternalLink className="w-3 h-3" /> Folder
+                        </a>
+                      )}
                       {category.files && category.files.length > 0 && (
                         <button 
                           onClick={() => downloadAll(category.files)}
