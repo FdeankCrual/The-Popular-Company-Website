@@ -60,15 +60,16 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
     categoryName: string,
     type: "docLink" | "driveA",
     current: number,
-    total: number,
-    currentDriveA: string
+    total: number
   ) => {
     return new Promise((resolve, reject) => {
       setUploadingState({ progress: 0, type: type === "docLink" ? "doc" : "drive", filename: file.name, current, total });
 
-      const initRes = fetch("/api/drive/init-upload", {
+      fetch("/api/drive/init-upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           fileName: file.name,
           mimeType: file.type || "application/octet-stream",
@@ -77,7 +78,6 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
           clientName: task.client || "Unknown Client",
           taskName: task.name || "Untitled Task",
           categoryName,
-          taskFolderUrl: currentDriveA || "",
         }),
       })
         .then((res) => res.json())
@@ -137,20 +137,16 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
 
   const handleBulkUpload = async (files: FileList, categoryName: string, type: "docLink" | "driveA") => {
     const fileArray = Array.from(files);
-    let currentDriveA = task.driveA;
     for (let i = 0; i < fileArray.length; i++) {
       try {
-        const newDriveA = await uploadFileToDrive(fileArray[i], categoryName, type, i + 1, fileArray.length, currentDriveA);
-        if (newDriveA && type === "driveA") {
-          currentDriveA = newDriveA as string;
-        }
+        await uploadFileToDrive(fileArray[i], categoryName, type, i + 1, fileArray.length);
       } catch (err) {
         console.error(`Failed to upload ${fileArray[i].name}`, err);
         alert(`Failed to upload ${fileArray[i].name}`);
       }
     }
     setUploadingState(null);
-    fetchDriveFiles(undefined, currentDriveA);
+    fetchDriveFiles();
   };
 
   const downloadAll = (files: any[]) => {

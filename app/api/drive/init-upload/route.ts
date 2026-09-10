@@ -4,7 +4,7 @@ import { findOrCreateFolder, generateResumableUploadUrl } from '@/lib/googleDriv
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { clientName, yearName, monthName, taskName, categoryName, fileName, mimeType, taskFolderUrl } = body;
+    const { clientName, yearName, monthName, taskName, categoryName, fileName, mimeType } = body;
     const origin = request.headers.get('origin') || `http://${request.headers.get('host')}` || 'http://localhost:3000';
 
     if (!clientName || !fileName || !mimeType) {
@@ -17,30 +17,18 @@ export async function POST(request: Request) {
     }
 
     let targetFolderId = rootFolderId;
-    let skipHierarchyCreation = false;
 
-    // If taskFolderUrl is provided (e.g. driveA already exists), extract its ID and skip creating the Year/Month/Client/Task hierarchy
-    if (taskFolderUrl && taskFolderUrl.includes('drive.google.com/drive/folders/')) {
-      const parts = taskFolderUrl.split('folders/');
-      if (parts.length > 1) {
-        targetFolderId = parts[1].split('?')[0];
-        skipHierarchyCreation = true;
-      }
+    if (yearName) {
+      targetFolderId = await findOrCreateFolder(yearName, targetFolderId);
     }
-
-    if (!skipHierarchyCreation) {
-      if (yearName) {
-        targetFolderId = await findOrCreateFolder(yearName, targetFolderId);
-      }
-      if (monthName) {
-        targetFolderId = await findOrCreateFolder(monthName, targetFolderId);
-      }
-      if (clientName) {
-        targetFolderId = await findOrCreateFolder(clientName, targetFolderId);
-      }
-      if (taskName) {
-        targetFolderId = await findOrCreateFolder(taskName, targetFolderId);
-      }
+    if (monthName) {
+      targetFolderId = await findOrCreateFolder(monthName, targetFolderId);
+    }
+    if (clientName) {
+      targetFolderId = await findOrCreateFolder(clientName, targetFolderId);
+    }
+    if (taskName) {
+      targetFolderId = await findOrCreateFolder(taskName, targetFolderId);
     }
 
     // We return the task folder ID so the frontend can link directly to the task
