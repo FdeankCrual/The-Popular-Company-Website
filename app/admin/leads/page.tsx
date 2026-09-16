@@ -317,7 +317,83 @@ export default function AdminLeadsPage() {
             <Loader2 className="w-5 h-5 animate-spin"/> Loading Leads...
           </div>
         ) : (
-          <table className="w-max min-w-full text-left text-sm whitespace-nowrap border-collapse pb-32">
+          <>
+            {/* MOBILE CARD VIEW */}
+            <div className="md:hidden flex flex-col gap-4 p-4 pb-32">
+              {processedData.map((row) => (
+                <div key={row.id} className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-4 flex flex-col gap-3 relative shadow-lg">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1">
+                      <div className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-1">{row.date || 'No Date'}</div>
+                      <input 
+                        value={row.name || ''} 
+                        onChange={e => handleInlineChange(row._originalIndex, 'name', e.target.value)}
+                        placeholder="Lead Name"
+                        className="w-full bg-transparent font-bold text-lg text-white border-none outline-none focus:bg-white/5 rounded p-1 -ml-1 transition-colors"
+                      />
+                    </div>
+                    <div className="shrink-0">
+                      <select 
+                        value={row.status || ''} 
+                        onChange={e => handleInlineChange(row._originalIndex, 'status', e.target.value)}
+                        className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-black border ${
+                          row.status === 'Closed (Won)' ? 'border-green-500 text-green-500' :
+                          row.status === 'Closed (Lost)' ? 'border-red-500 text-red-500' :
+                          row.status === 'In Progress' ? 'border-yellow-500 text-yellow-500' :
+                          'border-white/20 text-gray-400'
+                        }`}
+                      >
+                        <option value="">Status...</option>
+                        {['New', 'Contacted', 'In Progress', 'Proposal Sent', 'Closed (Won)', 'Closed (Lost)', 'Spam'].map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-1">
+                    <div className="flex items-center gap-2 bg-black/30 p-2 rounded-lg border border-white/5">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold w-16 shrink-0">Email</span>
+                      <input value={row.email || ''} onChange={e => handleInlineChange(row._originalIndex, 'email', e.target.value)} className="w-full bg-transparent text-sm text-white outline-none" />
+                    </div>
+                    <div className="flex items-center gap-2 bg-black/30 p-2 rounded-lg border border-white/5">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold w-16 shrink-0">Phone</span>
+                      <input value={row.phone || ''} onChange={e => handleInlineChange(row._originalIndex, 'phone', e.target.value)} className="w-full bg-transparent text-sm text-white outline-none" />
+                    </div>
+                    <div className="flex items-center gap-2 bg-black/30 p-2 rounded-lg border border-white/5">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold w-16 shrink-0">Service</span>
+                      <input value={row.target || ''} onChange={e => handleInlineChange(row._originalIndex, 'target', e.target.value)} className="w-full bg-transparent text-sm text-white outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="mt-2">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block mb-1">Notes</label>
+                    <textarea 
+                      value={row.message || ''} 
+                      onChange={e => handleInlineChange(row._originalIndex, 'message', e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-lg p-2 text-xs text-gray-300 min-h-[60px] resize-none outline-none focus:border-tpc-orange"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 mt-2 pt-3 border-t border-white/5">
+                    <button onClick={() => setActiveQueryLead(row)} className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+                      Hub {row.employeeQuery && <span className="w-2 h-2 rounded-full bg-tpc-orange animate-pulse" />}
+                    </button>
+                    <button onClick={() => handleDeleteRow(row._originalIndex)} className="px-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors flex items-center justify-center">
+                      Del
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {processedData.length === 0 && (
+                <div className="text-center text-gray-500 text-sm py-10 border border-white/5 rounded-2xl border-dashed">
+                  No leads found.
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP TABLE VIEW */}
+            <table className="hidden md:table w-max min-w-full text-left text-sm whitespace-nowrap border-collapse pb-32">
             <thead className="sticky top-0 bg-[#111] z-20 text-gray-400 shadow-sm border-b border-white/10">
               <tr>
                 <th className="px-4 py-4 w-12 text-center border-r border-white/5">
@@ -435,7 +511,8 @@ export default function AdminLeadsPage() {
                 </td>
               </tr>
             </tbody>
-          </table>
+            </table>
+          </>
         )}
       </div>
 
@@ -483,8 +560,8 @@ export default function AdminLeadsPage() {
 
       {/* ADMIN QUERY MODAL */}
       {activeQueryLead && (
-        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-end md:items-center justify-center md:p-4 backdrop-blur-sm">
+          <div className="bg-[#191919] border border-white/10 rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl flex flex-col shadow-2xl animate-in slide-in-from-bottom-full md:slide-in-from-bottom-10 duration-300 max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">💬 Agent Support Hub</h3>
               <button onClick={() => setActiveQueryLead(null)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>

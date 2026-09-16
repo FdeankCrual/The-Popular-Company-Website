@@ -576,8 +576,62 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
         ) : activeView === 'Calendar' ? (
           <CalendarView data={processedData} onTaskClick={(task) => setEditingTask(task)} />
         ) : (
-          <table className="w-max min-w-full text-left text-sm whitespace-nowrap border-collapse pb-32">
-            <thead className="sticky top-0 bg-[#111] z-20 text-gray-400 shadow-sm border-b border-white/10">
+          <>
+            {/* MOBILE CARD VIEW */}
+            <div className="md:hidden flex flex-col gap-4 p-4 pb-32">
+              {processedData.map((row) => (
+                <div key={row.id} className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-4 flex flex-col gap-3 relative shadow-lg">
+                  {/* Card Header: Client & Status */}
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1">
+                      <div className="text-[10px] uppercase tracking-widest text-tpc-orange font-bold mb-1">{row.client || 'No Client'}</div>
+                      <div className="text-sm font-bold text-white break-words leading-tight pr-2">{row.name || 'Untitled Task'}</div>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-1.5 mt-0.5">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${row.status === 'Completed' ? 'bg-green-500' : (row.status || '').toLowerCase().includes('fixes') ? 'bg-red-500' : 'bg-tpc-orange animate-pulse'}`}></div>
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 max-w-[80px] truncate text-right">{row.status || 'Planning'}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Card Details */}
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <div className="bg-black/30 p-2 rounded-lg border border-white/5">
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest mb-1 font-bold">Assigned</div>
+                      <div className="text-xs text-white truncate font-medium">{row.assigned || 'Unassigned'}</div>
+                    </div>
+                    <div className="bg-black/30 p-2 rounded-lg border border-white/5">
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest mb-1 font-bold">Platform</div>
+                      <div className="text-xs text-white truncate font-medium">{row.platform || 'Not Set'}</div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 mt-2">
+                    <button 
+                      onClick={() => setEditingTask(row)} 
+                      className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-widest py-3 rounded-xl transition-colors text-center min-h-[44px]"
+                    >
+                      Edit Row
+                    </button>
+                    <button 
+                      onClick={() => setFileManagerTask(row)} 
+                      className="flex-1 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 text-blue-400 font-bold text-[10px] uppercase tracking-widest py-3 rounded-xl transition-colors text-center min-h-[44px]"
+                    >
+                      Files
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {processedData.length === 0 && (
+                <div className="text-center text-gray-500 text-sm py-10 border border-white/5 rounded-2xl border-dashed">
+                  No tasks found in this view.
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP TABLE VIEW */}
+            <table className="hidden md:table w-max min-w-full text-left text-sm whitespace-nowrap border-collapse pb-32">
+              <thead className="sticky top-0 bg-[#111] z-20 text-gray-400 shadow-sm border-b border-white/10">
               <tr>
                 <th className="px-2 md:px-4 py-2 md:py-4 w-8 md:w-12 text-center border-r border-white/5">
                   <input
@@ -869,6 +923,7 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
               </tr>
             </tbody>
           </table>
+          </>
         )}
       </div>
 
@@ -1154,8 +1209,8 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
 
       {/* REVIEW MODAL */}
       {reviewTask && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/10 rounded-2xl p-8 max-w-md w-full relative">
+        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm md:p-4">
+          <div className="bg-[#111] border border-white/10 rounded-t-3xl md:rounded-2xl p-6 md:p-8 w-full md:max-w-md relative animate-in slide-in-from-bottom-full md:slide-in-from-bottom-10 duration-300">
             <button onClick={() => { setReviewTask(null); setReviewNote(""); }} className="absolute top-4 right-4 text-gray-500 hover:text-white">
               <X className="w-5 h-5" />
             </button>
@@ -1220,8 +1275,8 @@ ${newRow.notes ? newRow.notes : 'No extra notes provided.'}
 
       {/* ADMIN QUERY MODAL */}
       {activeQueryTask && (
-        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#191919] border border-white/10 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-[20000] bg-black/80 flex items-end md:items-center justify-center md:p-4 backdrop-blur-sm">
+          <div className="bg-[#191919] border border-white/10 rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl flex flex-col shadow-2xl animate-in slide-in-from-bottom-full md:slide-in-from-bottom-10 duration-300 max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-white/10 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">💬 Task Support Hub</h3>
               <button onClick={() => setActiveQueryTask(null)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5" /></button>

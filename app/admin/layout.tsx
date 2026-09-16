@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   try { roles = JSON.parse(rolesStr); } catch(e) {}
 
   return (
-    <div className="admin-panel fixed inset-0 z-[10000] bg-tpc-black text-white flex flex-col md:flex-row overflow-hidden font-sans cursor-default">
+    <div className="admin-panel fixed inset-0 h-[100dvh] w-full z-[10000] bg-tpc-black text-white flex flex-col md:flex-row overflow-hidden font-sans cursor-default overscroll-none">
       <style>{`
         .admin-panel, .admin-panel * { cursor: auto !important; }
         .admin-panel a, .admin-panel button, .admin-panel [role="button"] { cursor: pointer !important; }

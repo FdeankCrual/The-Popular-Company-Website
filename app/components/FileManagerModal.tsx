@@ -263,8 +263,8 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
   const allowedArr = Array.from(allowed);
 
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#111] border border-white/10 rounded-2xl p-6 w-full max-w-lg relative max-h-[90vh] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-[100000] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm md:p-4">
+      <div className="bg-[#111] border border-white/10 rounded-t-3xl md:rounded-2xl p-6 w-full md:max-w-lg relative h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-full md:slide-in-from-bottom-10 duration-300">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
