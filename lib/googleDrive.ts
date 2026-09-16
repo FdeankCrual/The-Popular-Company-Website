@@ -4,7 +4,30 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googl
 
 function getAuthClient(): any {
   try {
-    // 1. Prefer OAuth 2.0 User credentials (for uploading to a regular Google One account)
+    // 1. Prefer Service Account (for Workspace/Shared Drives or backend-only)
+    const clientEmail = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
+    const privateKey = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
+    
+    let saCredentials: any = {};
+    if (clientEmail && privateKey) {
+      saCredentials = { client_email: clientEmail, private_key: privateKey };
+    } else {
+      try {
+        saCredentials = JSON.parse(process.env.GOOGLE_DRIVE_CREDENTIALS || '{}');
+      } catch (e) {}
+    }
+
+    if (saCredentials.client_email && saCredentials.private_key) {
+      return new google.auth.GoogleAuth({
+        credentials: {
+          client_email: saCredentials.client_email,
+          private_key: saCredentials.private_key.replace(/\\n/g, '\n'),
+        },
+        scopes: SCOPES,
+      });
+    }
+
+    // 2. Fallback to OAuth 2.0 User credentials
     if (process.env.GOOGLE_DRIVE_REFRESH_TOKEN && process.env.GOOGLE_DRIVE_CLIENT_ID && process.env.GOOGLE_DRIVE_CLIENT_SECRET) {
       const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_DRIVE_CLIENT_ID,
@@ -16,18 +39,7 @@ function getAuthClient(): any {
       return oauth2Client;
     }
 
-    // 2. Fallback to Service Account (for Workspace/Shared Drives or read-only)
-    const credentials = JSON.parse(process.env.GOOGLE_DRIVE_CREDENTIALS || '{}');
-    if (!credentials.client_email || !credentials.private_key) {
-      throw new Error('Missing Google Drive Credentials. Please provide an OAuth Refresh Token or a valid Service Account JSON.');
-    }
-    return new google.auth.GoogleAuth({
-      credentials: {
-        client_email: credentials.client_email,
-        private_key: credentials.private_key.replace(/\\n/g, '\n'),
-      },
-      scopes: SCOPES,
-    });
+    throw new Error('Missing Google Drive Credentials. Please provide an OAuth Refresh Token or a valid Service Account.');
   } catch (err) {
     console.error('Failed to initialize Google Auth', err);
     throw new Error('Invalid GOOGLE_DRIVE_CREDENTIALS configuration.');

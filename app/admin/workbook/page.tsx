@@ -329,9 +329,9 @@ export default function WorkbookPage() {
 • Final: ${newRow.finalDate ? new Date(newRow.finalDate).toLocaleString('en-US', {dateStyle: 'medium', timeStyle: 'short'}) : 'TBD'}
 
 🔗 <b>Links & Resources:</b>
-• ${newRow.driveA ? `<a href="${newRow.driveA}">Google Drive Folder</a>` : 'No Drive Folder'}
-• ${newRow.docLink ? `<a href="${newRow.docLink}">Script Doc</a>` : 'No Script Doc'}
-• ${newRow.notionLink ? `<a href="${newRow.notionLink}">Notion Link</a>` : 'No Notion Link'}
+• Drive: ${newRow.driveA || 'No Drive Folder'}
+• Script: ${newRow.docLink || 'No Script Doc'}
+• Notion: ${newRow.notionLink || 'No Notion Link'}
 
 📝 <b>Notes:</b>
 ${newRow.notes ? newRow.notes : 'No extra notes provided.'}

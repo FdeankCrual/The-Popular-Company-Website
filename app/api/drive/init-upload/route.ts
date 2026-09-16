@@ -4,11 +4,13 @@ import { findOrCreateFolder, generateResumableUploadUrl } from '@/lib/googleDriv
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { clientName, yearName, monthName, taskName, categoryName, fileName, mimeType } = body;
+    const { clientName, yearName, monthName, taskName, categoryName, fileName, mimeType, files } = body;
     const origin = request.headers.get('origin') || `http://${request.headers.get('host')}` || 'http://localhost:3000';
 
-    if (!clientName || !fileName || !mimeType) {
-      return NextResponse.json({ error: 'Missing clientName, fileName, or mimeType' }, { status: 400 });
+    const filesToInit = files || (fileName && mimeType ? [{ fileName, mimeType }] : []);
+
+    if (!clientName || filesToInit.length === 0) {
+      return NextResponse.json({ error: 'Missing clientName or files' }, { status: 400 });
     }
 
     const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
@@ -38,10 +40,15 @@ export async function POST(request: Request) {
       categoryFolderId = await findOrCreateFolder(categoryName, taskFolderId);
     }
 
-    // 5. Generate the resumable upload URL for this specific file in the category folder
-    const uploadUrl = await generateResumableUploadUrl(fileName, mimeType, categoryFolderId, origin);
+    // 5. Generate the resumable upload URL for each file in the category folder
+    const uploadUrls = await Promise.all(
+      filesToInit.map((f: any) => generateResumableUploadUrl(f.fileName, f.mimeType, categoryFolderId, origin))
+    );
 
-    return NextResponse.json({ uploadUrl, taskFolderId, folderId: categoryFolderId });
+    // Keep backwards compatibility for single file
+    const uploadUrl = uploadUrls[0];
+
+    return NextResponse.json({ uploadUrl, uploadUrls, taskFolderId, folderId: categoryFolderId });
   } catch (error) {
     const err = error as Error;
     console.error('Error in /api/drive/init-upload:', err);

@@ -30,15 +30,17 @@ export function NotionDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(opt => opt.toLowerCase().includes(search.toLowerCase()));
-  const exactMatch = options.some(opt => opt.toLowerCase() === search.toLowerCase());
+  const safeOptions = options.map(opt => String(opt || ''));
+  const filteredOptions = safeOptions.filter(opt => opt.toLowerCase().includes(search.toLowerCase()));
+  const exactMatch = safeOptions.some(opt => opt.toLowerCase() === search.toLowerCase());
 
-  const getColorClass = (val: string) => {
+  const getColorClass = (val: string | number) => {
     if (!val) return "bg-gray-500/20 text-gray-400";
-    if (colorMap[val.toLowerCase()]) return colorMap[val.toLowerCase()];
+    const strVal = String(val);
+    if (colorMap[strVal.toLowerCase()]) return colorMap[strVal.toLowerCase()];
     // Fallback pseudo-random color based on string
     const colors = ["bg-blue-500/20 text-blue-500", "bg-purple-500/20 text-purple-500", "bg-pink-500/20 text-pink-500", "bg-indigo-500/20 text-indigo-500", "bg-teal-500/20 text-teal-500"];
-    return colors[val.length % colors.length];
+    return colors[strVal.length % colors.length];
   };
 
   return (

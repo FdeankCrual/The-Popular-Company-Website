@@ -55,96 +55,147 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
     }
   };
 
+  const handleOpenFolder = async (categoryName: string) => {
+    // Check if we already have it in state
+    const driveFolder = driveFiles.find((c: any) => c.name === categoryName);
+    if (driveFolder) {
+      window.open(`https://drive.google.com/drive/folders/${driveFolder.id}`, '_blank');
+      return;
+    }
+    
+    // To bypass popup blockers, we must open the tab synchronously on click, BEFORE any await
+    const newTab = window.open('about:blank', '_blank');
+    if (!newTab) {
+      alert("Please allow popups to open folders!");
+      return;
+    }
+    newTab.document.write("<div style='font-family: sans-serif; padding: 20px;'>Creating folder in Google Drive...</div>");
+    
+    // Otherwise fetch/create it on the fly
+    try {
+      setLoadingFiles(true);
+      const res = await fetch('/api/drive/get-category-folder', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          yearName: task.year || "General",
+          monthName: task.month || "General",
+          clientName: task.client || "Unknown Client",
+          taskName: task.name || "Untitled Task",
+          categoryName,
+        })
+      });
+      const data = await res.json();
+      if (data.folderId) {
+        newTab.location.href = `https://drive.google.com/drive/folders/${data.folderId}`;
+        fetchDriveFiles();
+      } else {
+        newTab.close();
+        alert("Failed to find folder ID: " + (data.details || data.error));
+      }
+    } catch (e) {
+      newTab.close();
+      console.error(e);
+      alert("Failed to open folder");
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
   const uploadFileToDrive = async (
     file: File,
-    categoryName: string,
     type: "docLink" | "driveA",
-    current: number,
-    total: number
+    uploadUrl: string,
+    taskFolderId: string,
+    folderId: string,
+    onProgress: (bytes: number) => void
   ) => {
     return new Promise((resolve, reject) => {
-      setUploadingState({ progress: 0, type: type === "docLink" ? "doc" : "drive", filename: file.name, current, total });
+      const CHUNK_SIZE = 1024 * 1024; // 1MB chunks
+      let offset = 0;
 
-      fetch("/api/drive/init-upload", {
+      const uploadNextChunk = async () => {
+        while (offset < file.size) {
+          const chunk = file.slice(offset, offset + CHUNK_SIZE);
+          const end = Math.min(offset + chunk.size - 1, file.size - 1);
+
+          try {
+            const uploadRes = await fetch(uploadUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Range": `bytes ${offset}-${end}/${file.size}`,
+              },
+              body: chunk,
+            });
+
+            if (!uploadRes.ok && uploadRes.status !== 308) throw new Error("Chunk failed");
+
+            offset += chunk.size;
+            onProgress(chunk.size);
+
+            if (uploadRes.status === 200 || uploadRes.status === 201) {
+              const fileData = await uploadRes.json();
+              const fileId = fileData.id;
+              const fileLink = `https://drive.google.com/file/d/${fileId}/view`;
+              const driveLink = type === "driveA" && taskFolderId ? `https://drive.google.com/drive/folders/${taskFolderId}` : fileLink;
+
+              onUpdateTask(task.id, type, driveLink);
+              resolve(driveLink);
+              return;
+            }
+          } catch (e) {
+            reject(e);
+            return;
+          }
+        }
+      };
+      
+      uploadNextChunk().catch(reject);
+    });
+  };
+
+  const handleBulkUpload = async (files: FileList, categoryName: string, type: "docLink" | "driveA") => {
+    const fileArray = Array.from(files);
+    if (fileArray.length === 0) return;
+
+    setUploadingState({ progress: 0, type: type === "docLink" ? "doc" : "drive", filename: `${fileArray.length} file(s)`, current: 1, total: fileArray.length });
+
+    try {
+      const initRes = await fetch("/api/drive/init-upload", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fileName: file.name,
-          mimeType: file.type || "application/octet-stream",
+          files: fileArray.map(f => ({ fileName: f.name, mimeType: f.type || "application/octet-stream" })),
           yearName: task.year || "General",
           monthName: task.month || "General",
           clientName: task.client || "Unknown Client",
           taskName: task.name || "Untitled Task",
           categoryName,
         }),
-      })
-        .then((res) => res.json())
-        .then(async (data) => {
-          if (!data.uploadUrl) throw new Error("Init failed");
-          const { uploadUrl, folderId, taskFolderId } = data;
+      });
 
-          const CHUNK_SIZE = 1024 * 1024;
-          let offset = 0;
+      const initData = await initRes.json();
+      if (!initData.uploadUrls) throw new Error("Initialization failed");
 
-          const reader = new FileReader();
-          reader.onload = async (e) => {
-            const buffer = e.target?.result as ArrayBuffer;
+      const { uploadUrls, taskFolderId, folderId } = initData;
+      const totalBytes = fileArray.reduce((acc, f) => acc + f.size, 0);
+      let uploadedBytes = 0;
 
-            while (offset < file.size) {
-              const chunk = buffer.slice(offset, offset + CHUNK_SIZE);
-              const end = Math.min(offset + chunk.byteLength - 1, file.size - 1);
+      await Promise.all(
+        fileArray.map((file, index) => 
+          uploadFileToDrive(file, type, uploadUrls[index], taskFolderId, folderId, (bytesUploaded) => {
+            uploadedBytes += bytesUploaded;
+            const percent = Math.round((uploadedBytes / totalBytes) * 100);
+            setUploadingState(prev => prev ? { ...prev, progress: percent } : null);
+          })
+        )
+      );
 
-              try {
-                const uploadRes = await fetch(uploadUrl, {
-                  method: "PUT",
-                  headers: {
-                    "Content-Range": `bytes ${offset}-${end}/${file.size}`,
-                  },
-                  body: chunk,
-                });
-
-                if (!uploadRes.ok && uploadRes.status !== 308) throw new Error("Chunk failed");
-
-                offset += chunk.byteLength;
-                const percent = Math.round((offset / file.size) * 100);
-                setUploadingState({ progress: percent, type: type === "docLink" ? "doc" : "drive", filename: file.name, current, total });
-
-                if (uploadRes.status === 200 || uploadRes.status === 201) {
-                  const fileData = await uploadRes.json();
-                  const fileId = fileData.id;
-                  const fileLink = `https://drive.google.com/file/d/${fileId}/view`;
-                  const driveLink = type === "driveA" && taskFolderId ? `https://drive.google.com/drive/folders/${taskFolderId}` : fileLink;
-
-                  onUpdateTask(task.id, type, driveLink);
-                  resolve(driveLink);
-                  return;
-                }
-              } catch (e) {
-                reject(e);
-                return;
-              }
-            }
-          };
-          reader.readAsArrayBuffer(file);
-        })
-        .catch((e) => {
-          reject(e);
-        });
-    });
-  };
-
-  const handleBulkUpload = async (files: FileList, categoryName: string, type: "docLink" | "driveA") => {
-    const fileArray = Array.from(files);
-    for (let i = 0; i < fileArray.length; i++) {
-      try {
-        await uploadFileToDrive(fileArray[i], categoryName, type, i + 1, fileArray.length);
-      } catch (err) {
-        console.error(`Failed to upload ${fileArray[i].name}`, err);
-        alert(`Failed to upload ${fileArray[i].name}`);
-      }
+    } catch (err: any) {
+      console.error(`Failed to upload files`, err);
+      alert(`Failed to upload files: ${err.message}`);
     }
+
     setUploadingState(null);
     fetchDriveFiles();
   };
@@ -267,24 +318,33 @@ export default function FileManagerModal({ task, currentUserRoles, onClose, onUp
                   className="flex items-center justify-between bg-black/50 border border-white/5 p-4 rounded-xl"
                 >
                   <span className="text-sm font-medium text-white">{category}</span>
-                  <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded cursor-pointer transition-colors text-xs text-white">
-                    <UploadCloud className="w-3 h-3" />
-                    Upload
-                    <input
-                      type="file"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          handleBulkUpload(
-                            e.target.files,
-                            category,
-                            category === "Scripts" ? "docLink" : "driveA"
-                          );
-                        }
-                      }}
-                    />
-                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenFolder(category)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-tpc-orange/10 hover:bg-tpc-orange/20 text-tpc-orange border border-tpc-orange/30 rounded transition-colors text-xs font-bold"
+                    >
+                      <Folder className="w-3 h-3" />
+                      Open Folder
+                    </button>
+                    <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded cursor-pointer transition-colors text-xs text-white">
+                      <UploadCloud className="w-3 h-3" />
+                      Upload
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleBulkUpload(
+                              e.target.files,
+                              category,
+                              category === "Scripts" ? "docLink" : "driveA"
+                            );
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
               ))
             )}

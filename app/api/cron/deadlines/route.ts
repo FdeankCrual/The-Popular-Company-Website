@@ -53,7 +53,11 @@ export async function GET(request: Request) {
 <b>Task:</b> <i>${task.name}</i>
 <b>Client:</b> ${task.client || 'N/A'}
 <b>Stage:</b> ${name} (${formattedTime})
-<b>Status:</b> ${urgency}`;
+<b>Status:</b> ${urgency}
+
+🔗 <b>Links:</b>
+• Drive: ${task.driveA || 'None'}
+• Script: ${task.docLink || 'None'}`;
 
           // Find users who should get this alert
           for (const assignee of assignees) {
